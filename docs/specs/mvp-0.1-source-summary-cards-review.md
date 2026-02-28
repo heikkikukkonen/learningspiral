@@ -1,5 +1,17 @@
 # MVP 0.1: Source summary → cards → daily review
 
+
+## Konsepti: Kuratoitu oppimisen arkisto
+
+Rakennat web-sovelluksen, joka tekee henkilökohtaisesta tietotaidosta kuratoidun, kertautuvan ja haettavan arkiston. Sovellus ei ole “muistiinpanoapp”, vaan oppimiskone: se auttaa muuttamaan kirjapoiminnoista ja oivalluksista pieniä oppiatomeja ja kertauskortteja, joita järjestelmä aikatauluttaa ja palauttaa mieleen.
+
+Design-periaate: ihminen päättää, järjestelmä ehdottaa
+
+Ihminen kuratoi (pakollinen): käyttäjä lisää lähteen (kirja/artikkeli), poiminnan (quote/note) ja valitsee mikä on “säilyttämisen arvoista” ja mihin opintosuunnitelmaan se kuuluu.
+
+Järjestelmä ehdottaa (opt-in): yhdellä napilla AI ehdottaa ydinteesiä, kortteja, soveltavia harjoitteita ja linkityksiä aiempiin oppeihin — mutta mikään ei mene käyttöön ilman käyttäjän hyväksyntää/editoimista.
+
+Tavoite: estää “AI-arkiston” karkaaminen ja säilyttää käyttäjän omistajuus.
 ## Tavoite
 
 Web-sovellus, jossa käyttäjä voi:
