@@ -3,27 +3,16 @@ export default function LoginPage() {
     <section className="review-shell">
       <div className="page-header">
         <h1>Login</h1>
-        <p className="muted">
-          MVP UI placeholder. Supabase Auth liitetään seuraavassa vaiheessa.
-        </p>
+        <p className="muted">Auth tulee seuraavassa vaiheessa. Nyt data tallennetaan APP_USER_ID:lla.</p>
       </div>
 
       <article className="card">
-        <form className="form">
-          <label className="form-row">
-            <span>Email</span>
-            <input type="email" placeholder="you@example.com" />
-          </label>
-          <label className="form-row">
-            <span>Password</span>
-            <input type="password" placeholder="********" />
-          </label>
-          <div className="actions">
-            <button type="button" className="primary">
-              Sign in
-            </button>
-          </div>
-        </form>
+        <ol style={{ margin: 0, paddingLeft: "1.1rem" }}>
+          <li>Luo Supabase-projekti.</li>
+          <li>Aja SQL tiedostosta `supabase/migrations/20260228103000_mvp_01_schema.sql`.</li>
+          <li>Tayta `.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `APP_USER_ID`).</li>
+          <li>Kaynista appi uudestaan.</li>
+        </ol>
       </article>
     </section>
   );
