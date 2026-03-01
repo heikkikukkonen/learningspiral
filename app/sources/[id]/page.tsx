@@ -171,8 +171,6 @@ export default async function SourceDetailsPage({
           <div className="actions">
             <form action={generateCardsAction}>
               <input type="hidden" name="sourceId" value={source.id} />
-              <input type="hidden" name="summaryId" value={summary?.id ?? ""} />
-              <input type="hidden" name="summaryContent" value={summary?.content ?? ""} />
               <SubmitButton className="secondary" pendingText="Generating...">
                 Generate cards from summary
               </SubmitButton>

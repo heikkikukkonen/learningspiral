@@ -407,13 +407,34 @@ export async function upsertSummary(
 
 export async function generateSuggestedCards(params: {
   sourceId: string;
-  summaryId: string | null;
-  summaryContent: string;
 }) {
   const supabase = getSupabaseAdmin();
   const userId = appUserId();
-  const trimmed = params.summaryContent.trim();
-  if (!trimmed) return;
+  const { data: summary, error: summaryError } = await supabase
+    .from("summaries")
+    .select("id, content, raw_input")
+    .eq("source_id", params.sourceId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (summaryError) throw summaryError;
+  if (!summary?.content?.trim()) return;
+
+  const trimmed = summary.content.trim();
+  let rawInput = (summary.raw_input || "").trim();
+  if (!rawInput) {
+    const { data: captureMessages, error: captureError } = await supabase
+      .from("capture_messages")
+      .select("content, role")
+      .eq("source_id", params.sourceId)
+      .eq("user_id", userId)
+      .eq("role", "user")
+      .order("created_at", { ascending: true });
+    if (captureError) throw captureError;
+    rawInput = (captureMessages ?? [])
+      .map((message) => message.content.trim())
+      .filter(Boolean)
+      .join("\n\n");
+  }
 
   await supabase
     .from("cards")
@@ -426,7 +447,7 @@ export async function generateSuggestedCards(params: {
     {
       user_id: userId,
       source_id: params.sourceId,
-      summary_id: params.summaryId,
+      summary_id: summary.id,
       status: "suggested",
       card_type: "recall",
       prompt: "Mika on taman summaryn tarkein vaittama?",
@@ -437,7 +458,7 @@ export async function generateSuggestedCards(params: {
     {
       user_id: userId,
       source_id: params.sourceId,
-      summary_id: params.summaryId,
+      summary_id: summary.id,
       status: "suggested",
       card_type: "apply",
       prompt: "Miten sovellat tata ideaa seuraavaan oikeaan tilanteeseen?",
@@ -448,7 +469,7 @@ export async function generateSuggestedCards(params: {
     {
       user_id: userId,
       source_id: params.sourceId,
-      summary_id: params.summaryId,
+      summary_id: summary.id,
       status: "suggested",
       card_type: "reflect",
       prompt: "Mika tassa ideassa haastaa nykyisen ajattelutapasi?",
@@ -459,7 +480,7 @@ export async function generateSuggestedCards(params: {
     {
       user_id: userId,
       source_id: params.sourceId,
-      summary_id: params.summaryId,
+      summary_id: summary.id,
       status: "suggested",
       card_type: "decision",
       prompt: "Mika paatostradeoff kannattaa ratkaista tanaan taman pohjalta?",
@@ -471,7 +492,8 @@ export async function generateSuggestedCards(params: {
   ];
 
   const llmCards = await generateReviewCardsFromSummary({
-    summary: trimmed
+    summary: trimmed,
+    rawInput
   }).catch((error) => {
     logLlmError("generateSuggestedCards.generateReviewCardsFromSummary", error, {
       sourceId: params.sourceId
@@ -482,7 +504,7 @@ export async function generateSuggestedCards(params: {
   if (!llmCards.ok && isLlmConfigured()) {
     logLlmWarning("generateSuggestedCards.fallback_to_rule_cards", {
       sourceId: params.sourceId,
-      summaryId: params.summaryId
+      summaryId: summary.id
     });
   }
 
@@ -490,7 +512,7 @@ export async function generateSuggestedCards(params: {
     ? llmCards.data.map((card) => ({
         user_id: userId,
         source_id: params.sourceId,
-        summary_id: params.summaryId,
+        summary_id: summary.id,
         status: "suggested" as const,
         card_type: card.cardType,
         prompt: card.prompt,

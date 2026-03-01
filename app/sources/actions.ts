@@ -74,9 +74,7 @@ export async function saveSummaryAction(formData: FormData) {
 
 export async function generateCardsAction(formData: FormData) {
   const sourceId = asString(formData.get("sourceId"));
-  const summaryId = asString(formData.get("summaryId")) || null;
-  const summaryContent = asString(formData.get("summaryContent"));
-  await generateSuggestedCards({ sourceId, summaryId, summaryContent });
+  await generateSuggestedCards({ sourceId });
   revalidatePath(`/sources/${sourceId}`);
 }
 

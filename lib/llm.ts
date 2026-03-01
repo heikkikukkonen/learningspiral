@@ -166,6 +166,7 @@ export async function generateCaptureSummaryReply(input: {
 
 export async function generateReviewCardsFromSummary(input: {
   summary: string;
+  rawInput: string;
 }): Promise<LlmResult<GeneratedCard[]>> {
   if (!isLlmConfigured()) {
     return { ok: false, data: [] };
@@ -186,7 +187,18 @@ export async function generateReviewCardsFromSummary(input: {
 
   const reply = await callResponsesApi([
     { role: "system", content: systemPrompt },
-    { role: "user", content: `Summary:\n${input.summary}` }
+    {
+      role: "user",
+      content: [
+        "Generate cards using both the original capture and the refined summary.",
+        "",
+        "Original capture:",
+        input.rawInput || "(none)",
+        "",
+        "Summary:",
+        input.summary
+      ].join("\n")
+    }
   ]);
 
   let parsed: { cards?: Partial<GeneratedCard>[] } = {};
