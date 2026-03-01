@@ -2,7 +2,8 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { CaptureRole, CardType, InputModality, SourceType } from "@/lib/types";
 import {
   generateCaptureSummaryReply,
-  generateReviewCardsFromSummary
+  generateReviewCardsFromSummary,
+  isLlmConfigured
 } from "@/lib/llm";
 
 function appUserId(): string {
@@ -109,6 +110,24 @@ function buildFallbackAssistantSummary(text: string): string {
   ].join("\n");
 }
 
+function logLlmError(
+  context: string,
+  error: unknown,
+  metadata?: Record<string, unknown>
+) {
+  const message = error instanceof Error ? error.message : String(error);
+  const stack = error instanceof Error ? error.stack : undefined;
+  console.error("[llm-error]", context, {
+    message,
+    stack,
+    ...metadata
+  });
+}
+
+function logLlmWarning(context: string, metadata?: Record<string, unknown>) {
+  console.warn("[llm-warning]", context, metadata ?? {});
+}
+
 export async function logLearningEvent(input: {
   eventType: string;
   entityId?: string | null;
@@ -187,7 +206,19 @@ export async function createSourceFromCapture(input: {
 
   const llmReply = await generateCaptureSummaryReply({
     messages: [{ role: "user", content: input.rawInput }]
-  }).catch(() => ({ ok: false, data: "" }));
+  }).catch((error) => {
+    logLlmError("createSourceFromCapture.generateCaptureSummaryReply", error, {
+      sourceId: source.id
+    });
+    return { ok: false, data: "" };
+  });
+
+  if (!llmReply.ok && isLlmConfigured()) {
+    logLlmWarning("createSourceFromCapture.fallback_to_rule_summary", {
+      sourceId: source.id
+    });
+  }
+
   const assistantSummary =
     llmReply.ok && llmReply.data
       ? llmReply.data
@@ -256,7 +287,18 @@ export async function respondInCapture(sourceId: string, userMessage: string) {
       role: item.role === "assistant" ? "assistant" : "user",
       content: item.content
     }))
-  }).catch(() => ({ ok: false, data: "" }));
+  }).catch((error) => {
+    logLlmError("respondInCapture.generateCaptureSummaryReply", error, {
+      sourceId
+    });
+    return { ok: false, data: "" };
+  });
+
+  if (!llmReply.ok && isLlmConfigured()) {
+    logLlmWarning("respondInCapture.fallback_to_rule_summary", {
+      sourceId
+    });
+  }
 
   const reply =
     llmReply.ok && llmReply.data
@@ -420,7 +462,19 @@ export async function generateSuggestedCards(params: {
 
   const llmCards = await generateReviewCardsFromSummary({
     summary: trimmed
-  }).catch(() => ({ ok: false, data: [], model: undefined }));
+  }).catch((error) => {
+    logLlmError("generateSuggestedCards.generateReviewCardsFromSummary", error, {
+      sourceId: params.sourceId
+    });
+    return { ok: false, data: [], model: undefined };
+  });
+
+  if (!llmCards.ok && isLlmConfigured()) {
+    logLlmWarning("generateSuggestedCards.fallback_to_rule_cards", {
+      sourceId: params.sourceId,
+      summaryId: params.summaryId
+    });
+  }
 
   const cardsToInsert = llmCards.ok
     ? llmCards.data.map((card) => ({
