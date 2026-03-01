@@ -57,6 +57,16 @@ export interface CardRow {
   updated_at: string;
 }
 
+export interface DueReviewCard extends CardRow {
+  source_title: string;
+  summary_content: string | null;
+}
+
+export interface CardAnswerHistoryItem {
+  created_at: string;
+  user_answer: string;
+}
+
 export interface CaptureMessageRow {
   id: string;
   user_id: string;
@@ -583,7 +593,79 @@ export async function listDueCards() {
   return (data ?? []) as CardRow[];
 }
 
-export async function completeReview(cardId: string, rating: number) {
+export async function listDueCardsWithContext(): Promise<DueReviewCard[]> {
+  const dueCards = await listDueCards();
+  if (!dueCards.length) return [];
+
+  const supabase = getSupabaseAdmin();
+  const userId = appUserId();
+  const sourceIds = Array.from(new Set(dueCards.map((card) => card.source_id)));
+
+  const [{ data: sources, error: sourcesError }, { data: summaries, error: summariesError }] =
+    await Promise.all([
+      supabase.from("sources").select("id, title").eq("user_id", userId).in("id", sourceIds),
+      supabase
+        .from("summaries")
+        .select("source_id, content")
+        .eq("user_id", userId)
+        .in("source_id", sourceIds)
+    ]);
+
+  if (sourcesError) throw sourcesError;
+  if (summariesError) throw summariesError;
+
+  const sourceTitleById = new Map((sources ?? []).map((item) => [item.id, item.title]));
+  const summaryBySourceId = new Map((summaries ?? []).map((item) => [item.source_id, item.content]));
+
+  return dueCards.map((card) => ({
+    ...card,
+    source_title: sourceTitleById.get(card.source_id) ?? "Unknown source",
+    summary_content: summaryBySourceId.get(card.source_id) ?? null
+  }));
+}
+
+export async function listCardAnswerHistory(cardId: string): Promise<CardAnswerHistoryItem[]> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("learning_events")
+    .select("created_at, payload")
+    .eq("user_id", appUserId())
+    .eq("event_type", "review_completed")
+    .eq("entity_id", cardId)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  if (error) throw error;
+
+  return (data ?? [])
+    .map((row) => {
+      const payload = (row.payload ?? {}) as Record<string, unknown>;
+      const userAnswer = typeof payload.user_answer === "string" ? payload.user_answer.trim() : "";
+      if (!userAnswer) return null;
+      return { created_at: row.created_at, user_answer: userAnswer };
+    })
+    .filter((item): item is CardAnswerHistoryItem => Boolean(item));
+}
+
+export async function countReviewsCompletedToday(): Promise<number> {
+  const supabase = getSupabaseAdmin();
+  const now = new Date();
+  const dayStartUtc = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0)
+  ).toISOString();
+
+  const { count, error } = await supabase
+    .from("learning_events")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", appUserId())
+    .eq("event_type", "review_completed")
+    .gte("created_at", dayStartUtc);
+
+  if (error) throw error;
+  return count ?? 0;
+}
+
+export async function completeReview(cardId: string, rating: number, userAnswer?: string) {
   const supabase = getSupabaseAdmin();
   const userId = appUserId();
   const reviewedAt = new Date();
@@ -610,7 +692,7 @@ export async function completeReview(cardId: string, rating: number) {
   await logLearningEvent({
     eventType: "review_completed",
     entityId: cardId,
-    payload: { rating }
+    payload: { rating, user_answer: userAnswer?.trim() || null }
   });
 }
 

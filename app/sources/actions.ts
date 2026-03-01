@@ -40,7 +40,8 @@ export async function createSourceAction(formData: FormData) {
 export async function completeReviewAction(formData: FormData) {
   const cardId = asString(formData.get("cardId"));
   const rating = Number(asString(formData.get("rating")) || "3");
-  await completeReview(cardId, rating);
+  const userAnswer = asString(formData.get("userAnswer"));
+  await completeReview(cardId, rating, userAnswer);
   revalidatePath("/review");
   revalidatePath("/progress");
 }

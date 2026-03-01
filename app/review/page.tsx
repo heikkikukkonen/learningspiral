@@ -1,41 +1,39 @@
-import { completeReviewAction } from "@/app/sources/actions";
-import { SubmitButton } from "@/app/components/submit-button";
-import { listDueCards } from "@/lib/db";
-import { CardType } from "@/lib/types";
+import {
+  countReviewsCompletedToday,
+  listCardAnswerHistory,
+  listDueCardsWithContext
+} from "@/lib/db";
+import { ReviewSessionCard } from "@/app/review/review-session-card";
 
 export const dynamic = "force-dynamic";
 
-type ReviewCard = {
-  id: string;
-  card_type: CardType;
-  status: "suggested" | "active" | "rejected";
-  prompt: string;
-  answer: string;
-};
-
-function cardLabel(cardType: CardType): string {
-  if (cardType === "decision") return "decision prompt";
-  return cardType;
-}
-
 export default async function ReviewPage() {
-  let dueCards: ReviewCard[] = [];
   let loadError = "";
-
-  try {
-    dueCards = await listDueCards();
-  } catch (error) {
+  let reviewedToday = 0;
+  let dueCards = await listDueCardsWithContext().catch((error) => {
     loadError =
       error instanceof Error
         ? error.message
         : "Could not load review cards. Check Supabase configuration.";
+    return [];
+  });
+
+  if (!loadError) {
+    reviewedToday = await countReviewsCompletedToday().catch(() => 0);
   }
+
+  const currentCard = dueCards[0] ?? null;
+  const history = currentCard
+    ? await listCardAnswerHistory(currentCard.id).catch(() => [])
+    : [];
+  const remainingCount = dueCards.length;
+  const totalTodayCount = reviewedToday + remainingCount;
 
   return (
     <section className="review-shell">
       <div className="page-header">
         <h1>Daily Review</h1>
-        <p className="muted">Due tasks across recall, apply, reflect and decision prompt types.</p>
+        <p className="muted">Yksi tehtava kerrallaan: vastaa, tarkista, arvioi tarkeys.</p>
       </div>
 
       {loadError ? (
@@ -45,56 +43,21 @@ export default async function ReviewPage() {
             {loadError}
           </p>
         </article>
+      ) : currentCard ? (
+        <ReviewSessionCard
+          card={currentCard}
+          history={history}
+          remainingCount={remainingCount}
+          totalTodayCount={totalTodayCount}
+        />
       ) : (
         <article className="card">
-          <p className="status" style={{ marginTop: 0 }}>
-            Due cards: {dueCards.length}
+          <p className="status" style={{ margin: 0 }}>
+            0 / {totalTodayCount} tehtavaa tanaan
           </p>
-          <div className="list">
-            {dueCards.map((card) => (
-              <article key={card.id} className="card">
-                <div className="source-meta">
-                  <span className="pill" data-variant="primary">
-                    {cardLabel(card.card_type)}
-                  </span>
-                  <span className="pill">{card.status}</span>
-                </div>
-                <h3 style={{ marginBottom: "0.5rem" }}>{card.prompt}</h3>
-                <p className="muted" style={{ marginTop: 0 }}>
-                  {card.answer}
-                </p>
-
-                <div className="actions">
-                  <form action={completeReviewAction}>
-                    <input type="hidden" name="cardId" value={card.id} />
-                    <input type="hidden" name="rating" value="2" />
-                    <SubmitButton className="secondary" pendingText="Saving...">
-                      Hard
-                    </SubmitButton>
-                  </form>
-                  <form action={completeReviewAction}>
-                    <input type="hidden" name="cardId" value={card.id} />
-                    <input type="hidden" name="rating" value="3" />
-                    <SubmitButton className="primary" pendingText="Saving...">
-                      Good
-                    </SubmitButton>
-                  </form>
-                  <form action={completeReviewAction}>
-                    <input type="hidden" name="cardId" value={card.id} />
-                    <input type="hidden" name="rating" value="4" />
-                    <SubmitButton className="success" pendingText="Saving...">
-                      Easy
-                    </SubmitButton>
-                  </form>
-                </div>
-              </article>
-            ))}
-            {dueCards.length === 0 ? (
-              <p className="muted" style={{ margin: 0 }}>
-                No due cards right now. Accept suggested cards from source details first.
-              </p>
-            ) : null}
-          </div>
+          <p className="muted" style={{ marginBottom: 0 }}>
+            Ei uusia kerrattavia juuri nyt. Hyvaksy ensin ehdotettuja kortteja source-sivulta.
+          </p>
         </article>
       )}
     </section>
