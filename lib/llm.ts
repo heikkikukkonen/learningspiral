@@ -29,6 +29,35 @@ export function isLlmConfigured(): boolean {
   return Boolean(getApiKey());
 }
 
+function extractTextFromResponse(json: unknown): string {
+  if (!json || typeof json !== "object") return "";
+
+  const topLevel = (json as { output_text?: unknown }).output_text;
+  if (typeof topLevel === "string" && topLevel.trim()) {
+    return topLevel.trim();
+  }
+
+  const output = (json as { output?: unknown }).output;
+  if (!Array.isArray(output)) return "";
+
+  const chunks: string[] = [];
+  for (const item of output) {
+    if (!item || typeof item !== "object") continue;
+    const content = (item as { content?: unknown }).content;
+    if (!Array.isArray(content)) continue;
+
+    for (const part of content) {
+      if (!part || typeof part !== "object") continue;
+      const text = (part as { text?: unknown }).text;
+      if (typeof text === "string" && text.trim()) {
+        chunks.push(text.trim());
+      }
+    }
+  }
+
+  return chunks.join("\n").trim();
+}
+
 async function callResponsesApi(messages: ChatMessage[]): Promise<{ text: string; model?: string }> {
   const apiKey = getApiKey();
   if (!apiKey) {
@@ -64,10 +93,22 @@ async function callResponsesApi(messages: ChatMessage[]): Promise<{ text: string
   const json = (await response.json()) as {
     output_text?: string;
     model?: string;
+    output?: unknown;
   };
+  const extractedText = extractTextFromResponse(json);
+
+  if (!extractedText) {
+    console.warn("[llm-warning] responses_api_empty_text", {
+      model: json.model,
+      response_shape: {
+        has_output_text: typeof json.output_text === "string",
+        has_output_array: Array.isArray(json.output)
+      }
+    });
+  }
 
   return {
-    text: (json.output_text || "").trim(),
+    text: extractedText,
     model: json.model
   };
 }
