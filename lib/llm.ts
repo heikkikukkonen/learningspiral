@@ -45,7 +45,12 @@ async function callResponsesApi(messages: ChatMessage[]): Promise<{ text: string
       model: getModel(),
       input: messages.map((message) => ({
         role: message.role,
-        content: [{ type: "input_text", text: message.content }]
+        content: [
+          {
+            type: message.role === "assistant" ? "output_text" : "input_text",
+            text: message.content
+          }
+        ]
       })),
       temperature: 0.3
     })
