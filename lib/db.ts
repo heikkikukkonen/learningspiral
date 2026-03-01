@@ -1,6 +1,10 @@
 import { randomUUID } from "crypto";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { CaptureRole, CardType, InputModality, SourceType } from "@/lib/types";
+import {
+  generateCaptureSummaryReply,
+  generateReviewCardsFromSummary
+} from "@/lib/llm";
 
 function appUserId(): string {
   return process.env.APP_USER_ID ?? "11111111-1111-1111-1111-111111111111";
@@ -90,7 +94,7 @@ function shiftDays(base: Date, delta: number): Date {
   return copy;
 }
 
-function buildAssistantSummary(text: string): string {
+function buildFallbackAssistantSummary(text: string): string {
   const normalized = text.replace(/\s+/g, " ").trim();
   if (!normalized) {
     return "Kerro lahteesta muutamalla lauseella, niin teen sinulle summary-ehdotuksen.";
@@ -181,13 +185,22 @@ export async function createSourceFromCapture(input: {
     role: "user",
     content: input.rawInput
   });
+
+  const llmReply = await generateCaptureSummaryReply({
+    messages: [{ role: "user", content: input.rawInput }]
+  }).catch(() => ({ ok: false, data: "" }));
+  const assistantSummary =
+    llmReply.ok && llmReply.data
+      ? llmReply.data
+      : buildFallbackAssistantSummary(input.rawInput);
+
   await appendCaptureMessage({
     sourceId: source.id,
     role: "assistant",
-    content: buildAssistantSummary(input.rawInput)
+    content: assistantSummary
   });
 
-  await upsertSummary(source.id, buildAssistantSummary(input.rawInput), {
+  await upsertSummary(source.id, assistantSummary, {
     rawInput: input.rawInput,
     inputModality: input.inputModality,
     source: "chatgpt"
@@ -237,7 +250,20 @@ export async function appendCaptureMessage(input: {
 
 export async function respondInCapture(sourceId: string, userMessage: string) {
   await appendCaptureMessage({ sourceId, role: "user", content: userMessage });
-  const reply = buildAssistantSummary(userMessage);
+
+  const messageHistory = await listCaptureMessages(sourceId);
+  const llmReply = await generateCaptureSummaryReply({
+    messages: messageHistory.map((item) => ({
+      role: item.role === "assistant" ? "assistant" : "user",
+      content: item.content
+    }))
+  }).catch(() => ({ ok: false, data: "" }));
+
+  const reply =
+    llmReply.ok && llmReply.data
+      ? llmReply.data
+      : buildFallbackAssistantSummary(userMessage);
+
   await appendCaptureMessage({ sourceId, role: "assistant", content: reply });
 }
 
@@ -347,7 +373,7 @@ export async function generateSuggestedCards(params: {
     .eq("user_id", userId)
     .eq("status", "suggested");
 
-  const cards = [
+  const fallbackCards = [
     {
       user_id: userId,
       source_id: params.sourceId,
@@ -395,13 +421,31 @@ export async function generateSuggestedCards(params: {
     }
   ];
 
-  const { error } = await supabase.from("cards").insert(cards);
+  const llmCards = await generateReviewCardsFromSummary({
+    summary: trimmed
+  }).catch(() => ({ ok: false, data: [], model: undefined }));
+
+  const cardsToInsert = llmCards.ok
+    ? llmCards.data.map((card) => ({
+        user_id: userId,
+        source_id: params.sourceId,
+        summary_id: params.summaryId,
+        status: "suggested" as const,
+        card_type: card.cardType,
+        prompt: card.prompt,
+        answer: card.answer,
+        generation_model: llmCards.model ?? "openai",
+        generation_context: { mode: "summary", provider: "openai", variant: card.cardType }
+      }))
+    : fallbackCards;
+
+  const { error } = await supabase.from("cards").insert(cardsToInsert);
   if (error) throw error;
 
   await logLearningEvent({
     eventType: "cards_generated",
     entityId: params.sourceId,
-    payload: { count: cards.length }
+    payload: { count: cardsToInsert.length }
   });
 }
 

@@ -31,6 +31,8 @@ npm install
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `APP_USER_ID` (fixed UUID for local development)
+- `OPENAI_API_KEY` (for live LLM responses and card generation)
+- `OPENAI_MODEL` (optional, defaults to `gpt-4.1-mini`)
 
 3. Run SQL migrations in order in Supabase SQL editor:
 
@@ -63,7 +65,7 @@ Changed tables:
 
 ## Notes
 
-- Current agent behavior is rule-based placeholder logic on server side.
+- If `OPENAI_API_KEY` is missing, capture replies and card generation fall back to rule-based placeholder logic.
 - Telemetry events are written to `learning_events` and feed progress metrics.
 - Login/Auth flow is still not connected to real user auth in UI.
 
