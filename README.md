@@ -1,19 +1,22 @@
-# LearningSpiral MVP 0.1
+# LearningSpiral MVP 0.2 (Interim Release)
 
-Project now has a working Supabase database layer for:
+This release includes:
 
-- sources
-- summaries
-- cards
-- review_logs
+- capture chat flow (`/capture`)
+- source details with capture history, summary editing and card curation (`/sources/[id]`)
+- daily review with multiple task types (including `decision`) (`/review`)
+- progress dashboard with LMS trend and 30-day metrics (`/progress`)
 
-UI routes:
+## Current Routes
 
-- `/login`
+- `/`
+- `/capture`
 - `/sources`
-- `/sources/new`
+- `/sources/new` (redirects to `/capture`)
 - `/sources/[id]`
 - `/review`
+- `/progress`
+- `/login`
 
 ## Setup
 
@@ -27,11 +30,12 @@ npm install
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `APP_USER_ID` (any fixed UUID for now)
+- `APP_USER_ID` (fixed UUID for local development)
 
-3. Run SQL migration in Supabase SQL editor:
+3. Run SQL migrations in order in Supabase SQL editor:
 
 - `supabase/migrations/20260228103000_mvp_01_schema.sql`
+- `supabase/migrations/20260301102000_mvp_02_capture_metrics.sql`
 
 4. Start dev server:
 
@@ -39,13 +43,31 @@ npm install
 npm run dev
 ```
 
+## Database Changes in MVP 0.2
+
+New tables:
+
+- `capture_messages`
+- `learning_events`
+- `applied_insights`
+- `learning_daily_metrics`
+
+Changed tables:
+
+- `sources.capture_mode`
+- `summaries.raw_input`
+- `summaries.input_modality`
+- `cards.generation_model`
+- `cards.generation_context`
+- `card_type` enum now includes `decision`
+
 ## Notes
 
-- Current implementation writes with service role on server side.
-- RLS policies are included in schema for `auth.uid() = user_id`.
-- Login/Auth flow is not connected yet.
+- Current agent behavior is rule-based placeholder logic on server side.
+- Telemetry events are written to `learning_events` and feed progress metrics.
+- Login/Auth flow is still not connected to real user auth in UI.
 
-## CI migration pipeline
+## CI Migration Pipeline
 
 GitHub Actions workflow file:
 
@@ -56,7 +78,7 @@ It runs on:
 - push to `main` when files under `supabase/migrations/**` change
 - manual trigger (`workflow_dispatch`)
 
-Add these GitHub repository secrets:
+Required repository secrets:
 
 - `SUPABASE_ACCESS_TOKEN`
 - `SUPABASE_PROJECT_REF`

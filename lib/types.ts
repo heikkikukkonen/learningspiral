@@ -7,8 +7,10 @@ export type SourceType =
   | "video"
   | "other";
 
-export type CardType = "recall" | "apply" | "reflect";
+export type CardType = "recall" | "apply" | "reflect" | "decision";
 export type CardStatus = "suggested" | "active" | "rejected";
+export type InputModality = "text" | "image" | "audio" | "mixed";
+export type CaptureRole = "user" | "assistant" | "system";
 
 export interface Source {
   id: string;

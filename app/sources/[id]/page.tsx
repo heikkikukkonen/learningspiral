@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSourceWithDetails } from "@/lib/db";
+import { getSourceWithDetails, listAppliedInsights } from "@/lib/db";
 import {
   acceptAllSuggestedAction,
   generateCardsAction,
+  logInsightAction,
   saveCardAction,
   saveSummaryAction,
   setCardStatusAction
 } from "@/app/sources/actions";
-import { CardType, SourceType } from "@/lib/types";
+import { CardType, CaptureRole, SourceType } from "@/lib/types";
 
 type SourceDetails = {
   id: string;
@@ -17,11 +18,14 @@ type SourceDetails = {
   author: string | null;
   origin: string | null;
   url: string | null;
+  capture_mode: string;
 };
 
 type SummaryDetails = {
   id: string;
   content: string;
+  raw_input: string | null;
+  input_modality: string;
   updated_at: string;
 };
 
@@ -33,6 +37,13 @@ type CardDetails = {
   answer: string;
 };
 
+type CaptureMessage = {
+  id: string;
+  role: CaptureRole;
+  content: string;
+  created_at: string;
+};
+
 export default async function SourceDetailsPage({
   params
 }: {
@@ -41,6 +52,8 @@ export default async function SourceDetailsPage({
   let source: SourceDetails | null = null;
   let summary: SummaryDetails | null = null;
   let cards: CardDetails[] = [];
+  let captureMessages: CaptureMessage[] = [];
+  let insights: Array<{ id: string; note: string; created_at: string }> = [];
   let loadError = "";
 
   try {
@@ -48,6 +61,8 @@ export default async function SourceDetailsPage({
     source = result.source;
     summary = result.summary;
     cards = result.cards;
+    captureMessages = result.captureMessages;
+    insights = await listAppliedInsights(params.id);
   } catch (error) {
     loadError =
       error instanceof Error
@@ -79,12 +94,13 @@ export default async function SourceDetailsPage({
     <section className="grid">
       <div className="page-header">
         <h1>{source.title}</h1>
-        <p className="muted">Lahde, tiivistelma ja kortit samassa nakymassa.</p>
+        <p className="muted">Source details with capture history, summary, cards and applied insights.</p>
       </div>
 
       <article className="card">
         <div className="source-meta">
           <span className="pill">{source.type}</span>
+          <span className="pill">{source.capture_mode}</span>
           {source.author ? <span>{source.author}</span> : null}
           {source.origin ? <span>{source.origin}</span> : null}
           {source.url ? (
@@ -95,14 +111,43 @@ export default async function SourceDetailsPage({
         </div>
       </article>
 
+      {captureMessages.length > 0 ? (
+        <article className="card">
+          <div className="actions" style={{ justifyContent: "space-between" }}>
+            <h2 style={{ margin: 0 }}>Capture conversation</h2>
+            <Link href={`/capture?sourceId=${source.id}`} className="button-link secondary">
+              Continue in capture
+            </Link>
+          </div>
+          <div className="list" style={{ marginTop: "0.8rem" }}>
+            {captureMessages.map((message) => (
+              <article className="card" key={message.id}>
+                <div className="source-meta">
+                  <span
+                    className="pill"
+                    data-variant={message.role === "assistant" ? "primary" : undefined}
+                  >
+                    {message.role}
+                  </span>
+                  <span>{new Date(message.created_at).toLocaleString("fi-FI")}</span>
+                </div>
+                <p style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>{message.content}</p>
+              </article>
+            ))}
+          </div>
+        </article>
+      ) : null}
+
       <article className="card">
         <h2 style={{ marginTop: 0 }}>Summary</h2>
         <form className="form" action={saveSummaryAction}>
           <input type="hidden" name="sourceId" value={source.id} />
+          <input type="hidden" name="rawInput" value={summary?.raw_input ?? ""} />
+          <input type="hidden" name="inputModality" value={summary?.input_modality ?? "text"} />
           <textarea
             name="content"
             defaultValue={summary?.content ?? ""}
-            placeholder="Kirjoita lahteen tiivistelma tahan..."
+            placeholder="Write or refine the source summary here..."
             required
           />
           <div className="actions">
@@ -171,6 +216,7 @@ export default async function SourceDetailsPage({
                     <option value="recall">recall</option>
                     <option value="apply">apply</option>
                     <option value="reflect">reflect</option>
+                    <option value="decision">decision</option>
                   </select>
                 </label>
 
@@ -211,12 +257,48 @@ export default async function SourceDetailsPage({
         </div>
       </article>
 
+      <article className="card">
+        <h2 style={{ marginTop: 0 }}>Applied insights</h2>
+        <form className="form" action={logInsightAction}>
+          <input type="hidden" name="sourceId" value={source.id} />
+          <label className="form-row">
+            <span>Where did you apply this?</span>
+            <textarea name="note" placeholder="Write a concrete application from today." required />
+          </label>
+          <div className="actions">
+            <button type="submit" className="primary">
+              Log insight
+            </button>
+          </div>
+        </form>
+
+        <div className="list" style={{ marginTop: "0.8rem" }}>
+          {insights.length === 0 ? (
+            <p className="muted">No applied insights yet.</p>
+          ) : (
+            insights.map((insight) => (
+              <article key={insight.id} className="card">
+                <p style={{ marginTop: 0, marginBottom: "0.45rem", whiteSpace: "pre-wrap" }}>
+                  {insight.note}
+                </p>
+                <p className="status" style={{ marginBottom: 0 }}>
+                  {new Date(insight.created_at).toLocaleString("fi-FI")}
+                </p>
+              </article>
+            ))
+          )}
+        </div>
+      </article>
+
       <div className="actions">
         <Link href="/sources" className="button-link secondary">
           Back to Sources
         </Link>
-        <Link href="/review" className="button-link primary">
+        <Link href="/review" className="button-link secondary">
           Go to Daily Review
+        </Link>
+        <Link href="/progress" className="button-link primary">
+          Open Progress
         </Link>
       </div>
     </section>

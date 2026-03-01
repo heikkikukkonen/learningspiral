@@ -1,3 +1,4 @@
+import { completeReviewAction } from "@/app/sources/actions";
 import { listDueCards } from "@/lib/db";
 import { CardType } from "@/lib/types";
 
@@ -10,6 +11,11 @@ type ReviewCard = {
   prompt: string;
   answer: string;
 };
+
+function cardLabel(cardType: CardType): string {
+  if (cardType === "decision") return "decision prompt";
+  return cardType;
+}
 
 export default async function ReviewPage() {
   let dueCards: ReviewCard[] = [];
@@ -28,7 +34,7 @@ export default async function ReviewPage() {
     <section className="review-shell">
       <div className="page-header">
         <h1>Daily Review</h1>
-        <p className="muted">Ensimmainen kanta-versio: listaa due-kortit tietokannasta.</p>
+        <p className="muted">Due tasks across recall, apply, reflect and decision prompt types.</p>
       </div>
 
       {loadError ? (
@@ -48,7 +54,7 @@ export default async function ReviewPage() {
               <article key={card.id} className="card">
                 <div className="source-meta">
                   <span className="pill" data-variant="primary">
-                    {card.card_type}
+                    {cardLabel(card.card_type)}
                   </span>
                   <span className="pill">{card.status}</span>
                 </div>
@@ -56,11 +62,35 @@ export default async function ReviewPage() {
                 <p className="muted" style={{ marginTop: 0 }}>
                   {card.answer}
                 </p>
+
+                <div className="actions">
+                  <form action={completeReviewAction}>
+                    <input type="hidden" name="cardId" value={card.id} />
+                    <input type="hidden" name="rating" value="2" />
+                    <button type="submit" className="secondary">
+                      Hard
+                    </button>
+                  </form>
+                  <form action={completeReviewAction}>
+                    <input type="hidden" name="cardId" value={card.id} />
+                    <input type="hidden" name="rating" value="3" />
+                    <button type="submit" className="primary">
+                      Good
+                    </button>
+                  </form>
+                  <form action={completeReviewAction}>
+                    <input type="hidden" name="cardId" value={card.id} />
+                    <input type="hidden" name="rating" value="4" />
+                    <button type="submit" className="success">
+                      Easy
+                    </button>
+                  </form>
+                </div>
               </article>
             ))}
             {dueCards.length === 0 ? (
               <p className="muted" style={{ margin: 0 }}>
-                Ei due-kortteja juuri nyt. Hyvaksy ensin suggested-kortteja lahdesivulta.
+                No due cards right now. Accept suggested cards from source details first.
               </p>
             ) : null}
           </div>

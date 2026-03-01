@@ -4,12 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   acceptAllSuggested,
+  completeReview,
+  createAppliedInsight,
   createSource,
   generateSuggestedCards,
   updateCard,
   upsertSummary
 } from "@/lib/db";
-import { CardType, SourceType } from "@/lib/types";
+import { CardType, InputModality, SourceType } from "@/lib/types";
 
 function asString(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
@@ -35,11 +37,38 @@ export async function createSourceAction(formData: FormData) {
   redirect(`/sources/${source.id}`);
 }
 
+export async function completeReviewAction(formData: FormData) {
+  const cardId = asString(formData.get("cardId"));
+  const rating = Number(asString(formData.get("rating")) || "3");
+  await completeReview(cardId, rating);
+  revalidatePath("/review");
+  revalidatePath("/progress");
+}
+
+export async function logInsightAction(formData: FormData) {
+  const sourceId = asString(formData.get("sourceId")) || null;
+  const cardId = asString(formData.get("cardId")) || null;
+  const note = asString(formData.get("note"));
+
+  await createAppliedInsight({ note, sourceId, cardId });
+
+  if (sourceId) revalidatePath(`/sources/${sourceId}`);
+  revalidatePath("/progress");
+}
+
 export async function saveSummaryAction(formData: FormData) {
   const sourceId = asString(formData.get("sourceId"));
   const content = asString(formData.get("content"));
-  await upsertSummary(sourceId, content);
+  const rawInput = asString(formData.get("rawInput")) || null;
+  const inputModality = asString(formData.get("inputModality")) as InputModality;
+
+  await upsertSummary(sourceId, content, {
+    rawInput,
+    inputModality: inputModality || "text"
+  });
+
   revalidatePath(`/sources/${sourceId}`);
+  revalidatePath("/progress");
 }
 
 export async function generateCardsAction(formData: FormData) {
@@ -74,6 +103,7 @@ export async function setCardStatusAction(formData: FormData) {
   });
   revalidatePath(`/sources/${sourceId}`);
   revalidatePath("/review");
+  revalidatePath("/progress");
 }
 
 export async function acceptAllSuggestedAction(formData: FormData) {
@@ -81,4 +111,5 @@ export async function acceptAllSuggestedAction(formData: FormData) {
   await acceptAllSuggested(sourceId);
   revalidatePath(`/sources/${sourceId}`);
   revalidatePath("/review");
+  revalidatePath("/progress");
 }

@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "LearningSpiral",
-  description: "MVP 0.1 UI prototype for source -> summary -> cards -> review"
+  description: "MVP 0.2 UI for capture chat, summary, cards, review and progress."
 };
 
 export default function RootLayout({
@@ -21,8 +21,10 @@ export default function RootLayout({
               LearningSpiral
             </Link>
             <nav className="nav">
+              <Link href="/capture">Capture</Link>
               <Link href="/sources">Sources</Link>
               <Link href="/review">Review</Link>
+              <Link href="/progress">Progress</Link>
               <Link href="/login">Login</Link>
             </nav>
           </div>

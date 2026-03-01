@@ -8,6 +8,7 @@ type SourceListItem = {
   title: string;
   author: string | null;
   tags: string[] | null;
+  capture_mode: string;
   created_at: string;
 };
 
@@ -28,12 +29,15 @@ export default async function SourcesPage() {
     <section>
       <div className="page-header">
         <h1>Sources</h1>
-        <p className="muted">Kaikki lahteet, joista rakennetaan tiivistelma ja kertauskortit.</p>
+        <p className="muted">All sources that feed summary and review cards.</p>
       </div>
 
       <div className="actions" style={{ marginBottom: "1rem" }}>
-        <Link href="/sources/new" className="button-link primary">
-          Add source
+        <Link href="/capture" className="button-link primary">
+          New capture
+        </Link>
+        <Link href="/progress" className="button-link secondary">
+          Open progress
         </Link>
       </div>
 
@@ -56,6 +60,7 @@ export default async function SourcesPage() {
               <h3 style={{ margin: "0 0 0.4rem" }}>{source.title}</h3>
               <div className="source-meta">
                 <span className="pill">{source.type}</span>
+                <span className="pill">{source.capture_mode}</span>
                 {source.author ? <span>{source.author}</span> : null}
                 {source.tags?.map((tag) => (
                   <span className="pill" key={tag}>
@@ -75,7 +80,7 @@ export default async function SourcesPage() {
         {!loadError && sources.length === 0 ? (
           <article className="card">
             <p className="muted" style={{ margin: 0 }}>
-              Ei viela lahteita. Luo ensimmainen lahde.
+              No sources yet. Start from Capture.
             </p>
           </article>
         ) : null}
