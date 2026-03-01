@@ -73,10 +73,12 @@ export async function setCardStatusAction(formData: FormData) {
     status: asString(formData.get("status")) as "active" | "rejected"
   });
   revalidatePath(`/sources/${sourceId}`);
+  revalidatePath("/review");
 }
 
 export async function acceptAllSuggestedAction(formData: FormData) {
   const sourceId = asString(formData.get("sourceId"));
   await acceptAllSuggested(sourceId);
   revalidatePath(`/sources/${sourceId}`);
+  revalidatePath("/review");
 }

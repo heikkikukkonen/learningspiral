@@ -1,6 +1,8 @@
 import { listDueCards } from "@/lib/db";
 import { CardType } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 type ReviewCard = {
   id: string;
   card_type: CardType;
