@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { CaptureRole, CardType, InputModality, SourceType } from "@/lib/types";
 import {
@@ -327,13 +326,11 @@ export async function upsertSummary(
 ) {
   const supabase = getSupabaseAdmin();
   const userId = appUserId();
-  const summaryId = randomUUID();
 
   const { data, error } = await supabase
     .from("summaries")
     .upsert(
       {
-        id: summaryId,
         user_id: userId,
         source_id: sourceId,
         content,
