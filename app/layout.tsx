@@ -12,6 +12,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const buildVersion = process.env.NEXT_PUBLIC_BUILD_VERSION ?? "dev";
+
   return (
     <html lang="fi">
       <body>
@@ -30,6 +32,9 @@ export default function RootLayout({
           </div>
         </header>
         <main className="container">{children}</main>
+        <footer className="container app-footer">
+          <span className="status">Build {buildVersion}</span>
+        </footer>
       </body>
     </html>
   );

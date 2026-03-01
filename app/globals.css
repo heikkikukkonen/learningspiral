@@ -67,6 +67,12 @@ main.container {
   padding-bottom: 2rem;
 }
 
+.app-footer {
+  padding-bottom: 1.25rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .page-header {
   margin-bottom: 1rem;
 }

@@ -26,6 +26,7 @@ export default async function CapturePage({
   let sourcePageUrl = "";
   let messages: Array<{ id: string; role: string; content: string; created_at: string }> = [];
   let summary = "";
+  let summarySource: "manual" | "chatgpt" | "" = "";
 
   if (sourceId) {
     try {
@@ -34,6 +35,7 @@ export default async function CapturePage({
       sourcePageUrl = details.source ? `/sources/${details.source.id}` : "";
       messages = details.captureMessages;
       summary = details.summary?.content ?? "";
+      summarySource = details.summary?.source ?? "";
     } catch {
       messages = [];
     }
@@ -147,7 +149,14 @@ export default async function CapturePage({
           </article>
 
           <article className="card">
-            <h2 style={{ marginTop: 0 }}>Latest summary draft</h2>
+            <div className="actions" style={{ justifyContent: "space-between" }}>
+              <h2 style={{ margin: 0 }}>Latest summary draft</h2>
+              {summarySource ? (
+                <span className="pill" data-variant={summarySource === "chatgpt" ? "primary" : undefined}>
+                  {summarySource === "chatgpt" ? "LLM" : "Fallback"}
+                </span>
+              ) : null}
+            </div>
             <p style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>
               {summary || "No summary draft yet. Send a message to generate one."}
             </p>
