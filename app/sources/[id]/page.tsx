@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { SubmitButton } from "@/app/components/submit-button";
 import { getSourceWithDetails, listAppliedInsights } from "@/lib/db";
 import {
   acceptAllSuggestedAction,
@@ -151,9 +152,9 @@ export default async function SourceDetailsPage({
             required
           />
           <div className="actions">
-            <button type="submit" className="primary">
+            <SubmitButton className="primary" pendingText="Saving...">
               Save summary
-            </button>
+            </SubmitButton>
           </div>
           <p className="status">
             Last saved:{" "}
@@ -172,16 +173,16 @@ export default async function SourceDetailsPage({
               <input type="hidden" name="sourceId" value={source.id} />
               <input type="hidden" name="summaryId" value={summary?.id ?? ""} />
               <input type="hidden" name="summaryContent" value={summary?.content ?? ""} />
-              <button type="submit" className="secondary">
+              <SubmitButton className="secondary" pendingText="Generating...">
                 Generate cards from summary
-              </button>
+              </SubmitButton>
             </form>
 
             <form action={acceptAllSuggestedAction}>
               <input type="hidden" name="sourceId" value={source.id} />
-              <button type="submit" className="secondary">
+              <SubmitButton className="secondary" pendingText="Accepting...">
                 Accept all suggested
-              </button>
+              </SubmitButton>
             </form>
           </div>
         </div>
@@ -221,9 +222,9 @@ export default async function SourceDetailsPage({
                 </label>
 
                 <div className="actions">
-                  <button type="submit" className="secondary">
+                  <SubmitButton className="secondary" pendingText="Saving...">
                     Save edits
-                  </button>
+                  </SubmitButton>
                 </div>
               </form>
 
@@ -235,9 +236,9 @@ export default async function SourceDetailsPage({
                   <input type="hidden" name="answer" value={card.answer} />
                   <input type="hidden" name="cardType" value={card.card_type} />
                   <input type="hidden" name="status" value="active" />
-                  <button type="submit" className="success">
+                  <SubmitButton className="success" pendingText="Accepting...">
                     Accept
-                  </button>
+                  </SubmitButton>
                 </form>
 
                 <form action={setCardStatusAction}>
@@ -247,9 +248,9 @@ export default async function SourceDetailsPage({
                   <input type="hidden" name="answer" value={card.answer} />
                   <input type="hidden" name="cardType" value={card.card_type} />
                   <input type="hidden" name="status" value="rejected" />
-                  <button type="submit" className="danger">
+                  <SubmitButton className="danger" pendingText="Rejecting...">
                     Reject
-                  </button>
+                  </SubmitButton>
                 </form>
               </div>
             </article>
@@ -266,9 +267,9 @@ export default async function SourceDetailsPage({
             <textarea name="note" placeholder="Write a concrete application from today." required />
           </label>
           <div className="actions">
-            <button type="submit" className="primary">
+            <SubmitButton className="primary" pendingText="Saving...">
               Log insight
-            </button>
+            </SubmitButton>
           </div>
         </form>
 

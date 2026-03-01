@@ -169,6 +169,32 @@ button,
   cursor: pointer;
 }
 
+button:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.submit-button-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 button.primary,
 .button-link.primary {
   background: var(--primary);

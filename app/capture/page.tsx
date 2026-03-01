@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getSourceWithDetails } from "@/lib/db";
 import { InputModality, SourceType } from "@/lib/types";
 import { sendCaptureMessageAction, startCaptureAction } from "@/app/capture/actions";
+import { SubmitButton } from "@/app/components/submit-button";
 
 const modalities: InputModality[] = ["text", "image", "audio", "mixed"];
 const sourceTypes: SourceType[] = [
@@ -90,9 +91,9 @@ export default async function CapturePage({
             </label>
 
             <div className="actions">
-              <button type="submit" className="primary">
+              <SubmitButton className="primary" pendingText="Ingesting...">
                 Ingest capture
-              </button>
+              </SubmitButton>
             </div>
           </form>
         </article>
@@ -141,9 +142,9 @@ export default async function CapturePage({
                 />
               </label>
               <div className="actions">
-                <button type="submit" className="primary">
+                <SubmitButton className="primary" pendingText="Sending...">
                   Send
-                </button>
+                </SubmitButton>
               </div>
             </form>
           </article>

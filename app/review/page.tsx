@@ -1,4 +1,5 @@
 import { completeReviewAction } from "@/app/sources/actions";
+import { SubmitButton } from "@/app/components/submit-button";
 import { listDueCards } from "@/lib/db";
 import { CardType } from "@/lib/types";
 
@@ -67,23 +68,23 @@ export default async function ReviewPage() {
                   <form action={completeReviewAction}>
                     <input type="hidden" name="cardId" value={card.id} />
                     <input type="hidden" name="rating" value="2" />
-                    <button type="submit" className="secondary">
+                    <SubmitButton className="secondary" pendingText="Saving...">
                       Hard
-                    </button>
+                    </SubmitButton>
                   </form>
                   <form action={completeReviewAction}>
                     <input type="hidden" name="cardId" value={card.id} />
                     <input type="hidden" name="rating" value="3" />
-                    <button type="submit" className="primary">
+                    <SubmitButton className="primary" pendingText="Saving...">
                       Good
-                    </button>
+                    </SubmitButton>
                   </form>
                   <form action={completeReviewAction}>
                     <input type="hidden" name="cardId" value={card.id} />
                     <input type="hidden" name="rating" value="4" />
-                    <button type="submit" className="success">
+                    <SubmitButton className="success" pendingText="Saving...">
                       Easy
-                    </button>
+                    </SubmitButton>
                   </form>
                 </div>
               </article>
