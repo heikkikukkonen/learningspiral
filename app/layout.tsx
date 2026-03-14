@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SiteNav } from "./components/site-nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,16 +20,12 @@ export default function RootLayout({
       <body>
         <header className="topbar">
           <div className="container topbar-inner">
-            <Link href="/" className="logo">
-              LearningSpiral
-            </Link>
-            <nav className="nav">
-              <Link href="/capture">Capture</Link>
-              <Link href="/sources">Sources</Link>
-              <Link href="/review">Review</Link>
-              <Link href="/progress">Progress</Link>
-              <Link href="/login">Login</Link>
-            </nav>
+            <div className="brand-lockup">
+              <Link href="/" className="logo">
+                Learning Spiral
+              </Link>
+            </div>
+            <SiteNav />
           </div>
         </header>
         <main className="container">{children}</main>
