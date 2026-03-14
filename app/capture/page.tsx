@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { getSourceWithDetails } from "@/lib/db";
 import { InputModality, SourceType } from "@/lib/types";
-import { sendCaptureMessageAction, startCaptureAction } from "@/app/capture/actions";
+import {
+  deleteCaptureAction,
+  sendCaptureMessageAction,
+  startCaptureAction
+} from "@/app/capture/actions";
 import { SubmitButton } from "@/app/components/submit-button";
 
 const modalities: InputModality[] = ["text", "image", "audio", "mixed"];
@@ -108,6 +112,16 @@ export default async function CapturePage({
                     Open source details
                   </Link>
                 ) : null}
+                <form action={deleteCaptureAction}>
+                  <input type="hidden" name="sourceId" value={sourceId} />
+                  <SubmitButton
+                    className="danger"
+                    pendingText="Deleting..."
+                    confirmMessage="Poistetaanko capture pysyvästi? Samalla poistuvat kortit ja review-vastaukset."
+                  >
+                    Delete capture
+                  </SubmitButton>
+                </form>
                 <Link className="button-link secondary" href="/capture">
                   New capture
                 </Link>

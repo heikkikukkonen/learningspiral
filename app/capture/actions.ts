@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   createSourceFromCapture,
+  deleteSource,
   respondInCapture,
   upsertSummary,
   listCaptureMessages
@@ -69,4 +70,17 @@ export async function sendCaptureMessageAction(formData: FormData) {
 
   revalidatePath(`/capture?sourceId=${sourceId}`);
   revalidatePath(`/sources/${sourceId}`);
+}
+
+export async function deleteCaptureAction(formData: FormData) {
+  const sourceId = asString(formData.get("sourceId"));
+
+  await deleteSource(sourceId);
+
+  revalidatePath("/capture");
+  revalidatePath("/sources");
+  revalidatePath(`/sources/${sourceId}`);
+  revalidatePath("/review");
+  revalidatePath("/progress");
+  redirect("/capture");
 }

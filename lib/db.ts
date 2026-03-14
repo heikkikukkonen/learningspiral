@@ -196,6 +196,57 @@ export async function createSource(input: {
   return data as SourceRow;
 }
 
+export async function deleteSource(sourceId: string) {
+  const supabase = getSupabaseAdmin();
+  const userId = appUserId();
+
+  const { data: cards, error: cardsError } = await supabase
+    .from("cards")
+    .select("id")
+    .eq("source_id", sourceId)
+    .eq("user_id", userId);
+  if (cardsError) throw cardsError;
+
+  const cardIds = (cards ?? []).map((card) => card.id);
+
+  const { error: sourceEventsError } = await supabase
+    .from("learning_events")
+    .delete()
+    .eq("user_id", userId)
+    .eq("entity_id", sourceId);
+  if (sourceEventsError) throw sourceEventsError;
+
+  if (cardIds.length > 0) {
+    const { error: cardEventsError } = await supabase
+      .from("learning_events")
+      .delete()
+      .eq("user_id", userId)
+      .in("entity_id", cardIds);
+    if (cardEventsError) throw cardEventsError;
+
+    const { error: cardInsightsError } = await supabase
+      .from("applied_insights")
+      .delete()
+      .eq("user_id", userId)
+      .in("card_id", cardIds);
+    if (cardInsightsError) throw cardInsightsError;
+  }
+
+  const { error: sourceInsightsError } = await supabase
+    .from("applied_insights")
+    .delete()
+    .eq("user_id", userId)
+    .eq("source_id", sourceId);
+  if (sourceInsightsError) throw sourceInsightsError;
+
+  const { error: sourceError } = await supabase
+    .from("sources")
+    .delete()
+    .eq("id", sourceId)
+    .eq("user_id", userId);
+  if (sourceError) throw sourceError;
+}
+
 export async function createSourceFromCapture(input: {
   title: string;
   type: SourceType;

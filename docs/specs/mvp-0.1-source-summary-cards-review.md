@@ -185,3 +185,7 @@ LLM promptissa pitää mainita lähteen tyyppi ja otsikko (antaa kontekstia), mu
 - generoi korttiehdotukset summaryn perusteella
 - hyväksyy kortteja active-tilaan
 - tekee kertauksen ja due-aikataulu päivittyy
+
+
+
+
