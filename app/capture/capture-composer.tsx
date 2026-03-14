@@ -32,6 +32,7 @@ export function CaptureComposer() {
   const router = useRouter();
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const audioFileInputRef = useRef<HTMLInputElement | null>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -55,6 +56,12 @@ export function CaptureComposer() {
       streamRef.current?.getTracks().forEach((track) => track.stop());
     };
   }, [audioPreviewUrl]);
+
+  useEffect(() => {
+    if (mode === "text") {
+      textAreaRef.current?.focus();
+    }
+  }, [mode]);
 
   function resetDraft(nextMode: Mode) {
     setMode(nextMode);
@@ -198,6 +205,18 @@ export function CaptureComposer() {
     mediaRecorderRef.current?.stop();
   }
 
+  async function saveTextCapture() {
+    const trimmedText = textValue.trim();
+    if (!trimmedText || isSaving) return;
+
+    await saveCapture("text", {
+      rawInput: trimmedText,
+      summary: trimmedText
+    });
+  }
+
+  const textCharacterCount = textValue.trim().length;
+
   return (
     <div className="grid">
       <article className="card capture-button-panel">
@@ -250,30 +269,59 @@ export function CaptureComposer() {
       </article>
 
       {mode === "text" ? (
-        <article className="card capture-flow-card">
-          <h2 style={{ marginTop: 0 }}>Lisaa teksti</h2>
-          <label className="form-row capture-primary-field">
-            <span>Kirjoita ajatus</span>
-            <textarea value={textValue} onChange={(event) => setTextValue(event.target.value)} />
-          </label>
-          <div className="actions" style={{ justifyContent: "space-between", alignItems: "center" }}>
-            <button type="button" className="secondary" onClick={() => resetDraft("idle")}>
-              Peruuta
-            </button>
-            <button
-              type="button"
-              className="primary"
-              disabled={!textValue.trim() || isSaving}
-              onClick={() => {
-                const trimmedText = textValue.trim();
-                void saveCapture("text", {
-                  rawInput: trimmedText,
-                  summary: trimmedText
-                });
-              }}
-            >
-              {isSaving ? "Tallennetaan..." : "Tallenna"}
-            </button>
+        <article className="card capture-flow-card capture-text-card">
+          <div className="capture-text-shell">
+            <div className="capture-text-header">
+              <div className="capture-text-copy">
+                <h2 style={{ margin: 0 }}>Kirjoita ajatus</h2>
+                <p className="status capture-text-status">
+                  Tallenna idea heti. Voit palata hiomaan sita myohemmin.
+                </p>
+              </div>
+            </div>
+
+            <label className="form-row capture-primary-field capture-text-field">
+              <span className="sr-only">Ajatus</span>
+              <textarea
+                ref={textAreaRef}
+                value={textValue}
+                placeholder="Kirjoita ajatuksesi tahan..."
+                onChange={(event) => setTextValue(event.target.value)}
+                onKeyDown={(event) => {
+                  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+                    event.preventDefault();
+                    void saveTextCapture();
+                  }
+                }}
+              />
+            </label>
+
+            <div className="capture-text-footer">
+              <button
+                type="button"
+                className="primary capture-text-save"
+                disabled={!textValue.trim() || isSaving}
+                onClick={() => void saveTextCapture()}
+              >
+                {isSaving ? "Tallennetaan..." : "Tallenna"}
+              </button>
+              <p className="status capture-text-helper" style={{ margin: 0 }}>
+                {textCharacterCount > 0
+                  ? `${textCharacterCount} merkkia valmiina tallennettavaksi.`
+                  : "Aloita yhdesta lauseesta. Pikanappi toimii myos Ctrl+Enterilla."}
+              </p>
+              <button type="button" className="capture-text-cancel" onClick={() => resetDraft("idle")}>
+                Peruuta
+              </button>
+            </div>
+          </div>
+          <div className="capture-text-visual" aria-hidden="true">
+            <div className="capture-text-brain" />
+            <div className="capture-text-spiral" />
+            <div className="capture-text-ring capture-text-ring-a" />
+            <div className="capture-text-ring capture-text-ring-b" />
+            <div className="capture-text-ring capture-text-ring-c" />
+            <div className="capture-text-glow" />
           </div>
         </article>
       ) : null}
