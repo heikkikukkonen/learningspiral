@@ -82,7 +82,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     }
   }
 
-  function cancelImageCapture() {
+  function cancelCapture() {
     resetDraft("text");
     router.push("/");
   }
@@ -286,14 +286,19 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
             </label>
 
             <div className="capture-text-footer">
-              <button
-                type="button"
-                className="primary capture-text-save"
-                disabled={!textValue.trim() || isSaving}
-                onClick={() => void saveTextCapture()}
-              >
-                {isSaving ? "Tallennetaan..." : "Tallenna"}
-              </button>
+              <div className="actions">
+                <button type="button" className="secondary" onClick={cancelCapture}>
+                  Peruuta
+                </button>
+                <button
+                  type="button"
+                  className="primary capture-text-save"
+                  disabled={!textValue.trim() || isSaving}
+                  onClick={() => void saveTextCapture()}
+                >
+                  {isSaving ? "Tallennetaan..." : "Tallenna"}
+                </button>
+              </div>
               <p className="status capture-text-helper" style={{ margin: 0 }}>
                 {textCharacterCount > 0
                   ? `${textCharacterCount} merkkia valmiina tallennettavaksi.`
@@ -343,7 +348,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                   <p className="status capture-image-helper" style={{ margin: 0 }}>
                     {isAnalyzing ? "AI tulkitsee kuvaa..." : "Pelkka kuvan lataus riittaa."}
                   </p>
-                  <button type="button" className="capture-image-cancel" onClick={cancelImageCapture}>
+                  <button type="button" className="capture-image-cancel" onClick={cancelCapture}>
                     Peruuta
                   </button>
                 </div>
@@ -379,7 +384,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 </label>
 
                 <div className="capture-image-actions">
-                  <button type="button" className="secondary" onClick={cancelImageCapture}>
+                  <button type="button" className="secondary" onClick={cancelCapture}>
                     Peruuta
                   </button>
                   <div className="capture-image-save-group">
@@ -479,7 +484,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                         ? "Kasittelemme tiedostoa juuri nyt."
                         : "Voit joko nauhoittaa suoraan tai tuoda valmiin M4A-, MP3- tai WebM-tiedoston."}
                     </p>
-                    <button type="button" className="capture-voice-cancel" onClick={() => resetDraft("text")}>
+                    <button type="button" className="capture-voice-cancel" onClick={cancelCapture}>
                       Peruuta
                     </button>
                   </div>
@@ -516,7 +521,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 </label>
 
                 <div className="capture-voice-actions">
-                  <button type="button" className="secondary" onClick={() => resetDraft("text")}>
+                  <button type="button" className="secondary" onClick={cancelCapture}>
                     Peruuta
                   </button>
                   <div className="capture-voice-save-group">
