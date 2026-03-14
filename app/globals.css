@@ -1486,219 +1486,12 @@ button.danger {
 .home-visual {
   position: relative;
   width: 100%;
-  min-height: 520px;
+  min-height: 760px;
   margin-top: -0.35rem;
-}
-
-.home-visual-brain {
-  position: absolute;
-  inset: 9% -9% 12% -10%;
-  border-radius: 48% 52% 46% 54% / 54% 44% 56% 46%;
   background:
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 0 18%, rgba(141, 216, 234, 0.11) 18.4% 19.2%, rgba(255, 255, 255, 0) 20%),
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 0 30%, rgba(115, 201, 227, 0.12) 30.4% 31.2%, rgba(255, 255, 255, 0) 32%),
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 0 43%, rgba(97, 188, 220, 0.11) 43.4% 44.2%, rgba(255, 255, 255, 0) 45%),
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 0 58%, rgba(125, 213, 197, 0.1) 58.4% 59.2%, rgba(255, 255, 255, 0) 60%),
-    radial-gradient(circle at 22% 32%, rgba(112, 200, 228, 0.18) 0 0.9%, rgba(255, 255, 255, 0) 1.7%),
-    radial-gradient(circle at 31% 52%, rgba(255, 221, 144, 0.2) 0 0.9%, rgba(255, 255, 255, 0) 1.8%),
-    radial-gradient(circle at 62% 28%, rgba(255, 205, 107, 0.22) 0 0.9%, rgba(255, 255, 255, 0) 1.8%),
-    radial-gradient(circle at 72% 54%, rgba(142, 228, 213, 0.2) 0 0.9%, rgba(255, 255, 255, 0) 1.8%),
-    radial-gradient(circle at 56% 68%, rgba(120, 209, 239, 0.18) 0 0.9%, rgba(255, 255, 255, 0) 1.8%);
-  opacity: 0.82;
-  filter: blur(0.35px);
-}
-
-.home-visual-mist,
-.home-visual-links,
-.home-visual-node,
-.home-visual-dust,
-.home-visual-sprout {
-  position: absolute;
-}
-
-.home-visual-mist {
-  border-radius: 999px;
-  filter: blur(18px);
-}
-
-.home-visual-mist-a {
-  inset: 14% 10% auto 2%;
-  height: 34%;
-  background: radial-gradient(circle, rgba(204, 228, 255, 0.4) 0%, rgba(255, 255, 255, 0) 70%);
-}
-
-.home-visual-mist-b {
-  inset: auto -8% 18% auto;
-  width: 36%;
-  height: 26%;
-  background: radial-gradient(circle, rgba(210, 239, 225, 0.38) 0%, rgba(255, 255, 255, 0) 72%);
-}
-
-.home-visual-links {
-  inset: 21% 3% 14% 1%;
-  background:
-    linear-gradient(18deg, transparent 47%, rgba(116, 201, 225, 0.18) 49%, transparent 51%),
-    linear-gradient(58deg, transparent 47%, rgba(116, 201, 225, 0.14) 49%, transparent 51%),
-    linear-gradient(116deg, transparent 47%, rgba(255, 213, 126, 0.16) 49%, transparent 51%);
-  opacity: 0.6;
-}
-
-.home-visual-spiral,
-.home-visual-ring,
-.home-visual-glow {
-  position: absolute;
-  left: 55%;
-  top: 45%;
-  transform: translate(-50%, -50%);
-  border-radius: 999px;
-}
-
-.home-visual-spiral {
-  width: 69%;
-  height: 49%;
-  background:
-    radial-gradient(circle at center, rgba(255, 214, 122, 0.98) 0 3.2%, rgba(255, 214, 122, 0.22) 7%, rgba(255, 255, 255, 0) 12%),
-    repeating-radial-gradient(circle at center, rgba(128, 204, 228, 0.36) 0 1.2px, rgba(255, 255, 255, 0) 1.2px 15px),
-    conic-gradient(from 150deg, rgba(116, 205, 225, 0.12), rgba(255, 225, 146, 0.4), rgba(116, 205, 225, 0.14));
-  mask-image: radial-gradient(circle at center, black 0 55%, transparent 68%);
-  opacity: 0.9;
-}
-
-.home-visual-ring {
-  border: 1.5px solid rgba(108, 196, 222, 0.3);
-}
-
-.home-visual-ring-a {
-  width: 49%;
-  height: 21%;
-  transform: translate(-50%, -50%) rotate(14deg);
-}
-
-.home-visual-ring-b {
-  width: 71%;
-  height: 31%;
-  transform: translate(-50%, -50%) rotate(-11deg);
-}
-
-.home-visual-ring-c {
-  width: 89%;
-  height: 43%;
-  transform: translate(-50%, -50%) rotate(8deg);
-}
-
-.home-visual-glow {
-  width: 18%;
-  height: 18%;
-  background: radial-gradient(circle, rgba(255, 210, 106, 0.95) 0%, rgba(255, 210, 106, 0.12) 52%, rgba(255, 255, 255, 0) 74%);
-  filter: blur(6px);
-}
-
-.home-visual-node {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: #f9ffff;
-  box-shadow: 0 0 0 2px rgba(116, 202, 226, 0.16);
-}
-
-.home-visual-node-a {
-  left: 21%;
-  top: 31%;
-}
-
-.home-visual-node-b {
-  left: 41%;
-  top: 23%;
-}
-
-.home-visual-node-c {
-  left: 73%;
-  top: 20%;
-}
-
-.home-visual-node-d {
-  left: 24%;
-  top: 52%;
-}
-
-.home-visual-node-e {
-  left: 60%;
-  top: 58%;
-}
-
-.home-visual-node-f {
-  left: 79%;
-  top: 42%;
-}
-
-.home-visual-dust {
-  inset: 12% -6% 4% -6%;
-  background:
-    radial-gradient(circle at 12% 88%, rgba(170, 201, 239, 0.16) 0 0.8%, rgba(255, 255, 255, 0) 1.6%),
-    radial-gradient(circle at 18% 78%, rgba(170, 201, 239, 0.14) 0 0.7%, rgba(255, 255, 255, 0) 1.6%),
-    radial-gradient(circle at 84% 72%, rgba(164, 230, 210, 0.16) 0 0.8%, rgba(255, 255, 255, 0) 1.6%),
-    radial-gradient(circle at 90% 64%, rgba(164, 230, 210, 0.14) 0 0.7%, rgba(255, 255, 255, 0) 1.6%),
-    radial-gradient(circle at 54% 18%, rgba(255, 222, 150, 0.16) 0 0.8%, rgba(255, 255, 255, 0) 1.7%);
-  opacity: 0.9;
-}
-
-.home-visual-sprout {
-  right: 1.5%;
-  bottom: 8%;
-  width: 118px;
-  height: 118px;
-}
-
-.home-visual-sprout-glow {
-  position: absolute;
-  inset: 28% 8% 6%;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(179, 239, 205, 0.82) 0%, rgba(170, 236, 201, 0.08) 58%, rgba(255, 255, 255, 0) 76%);
-  filter: blur(6px);
-}
-
-.home-visual-sprout-base {
-  position: absolute;
-  left: 13%;
-  right: 2%;
-  bottom: 8%;
-  height: 34%;
-  border-radius: 50% 50% 44% 56% / 56% 58% 42% 44%;
-  background:
-    radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.6) 0 4%, rgba(255, 255, 255, 0) 16%),
-    linear-gradient(180deg, rgba(165, 234, 208, 0.7), rgba(121, 207, 177, 0.18));
-  border: 1px solid rgba(144, 214, 186, 0.28);
-}
-
-.home-visual-sprout-stem {
-  position: absolute;
-  left: 52%;
-  bottom: 30%;
-  width: 4px;
-  height: 34px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #8fd365 0%, #6db14e 100%);
-  transform: translateX(-50%);
-}
-
-.home-visual-sprout-leaf {
-  position: absolute;
-  bottom: 48%;
-  width: 36px;
-  height: 22px;
-  background: linear-gradient(180deg, #bce982 0%, #86c95b 100%);
-  border-radius: 90% 10% 90% 10% / 90% 14% 86% 10%;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48);
-}
-
-.home-visual-sprout-leaf-left {
-  left: 23%;
-  transform: rotate(-28deg);
-}
-
-.home-visual-sprout-leaf-right {
-  right: 15%;
-  transform: scaleX(-1) rotate(-18deg);
+    url("/home-bg.png") center top / cover no-repeat;
+  opacity: 0.95;
+  pointer-events: none;
 }
 
 .home-list {
@@ -1892,7 +1685,7 @@ button.danger {
   }
 
   .home-visual {
-    min-height: 500px;
+    min-height: 680px;
   }
 
   .home-phone-card {
@@ -1920,10 +1713,4 @@ button.danger {
     margin-top: -2rem;
   }
 
-  .home-visual-sprout {
-    right: 0;
-    bottom: 7%;
-    width: 102px;
-    height: 102px;
-  }
 }

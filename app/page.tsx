@@ -127,31 +127,7 @@ export default function HomePage() {
             <h1>Learning Spiral</h1>
             <p>Your thinking space</p>
           </div>
-          <div className="home-visual home-visual-main" aria-hidden="true">
-            <div className="home-visual-mist home-visual-mist-a" />
-            <div className="home-visual-mist home-visual-mist-b" />
-            <div className="home-visual-brain" />
-            <div className="home-visual-links" />
-            <div className="home-visual-node home-visual-node-a" />
-            <div className="home-visual-node home-visual-node-b" />
-            <div className="home-visual-node home-visual-node-c" />
-            <div className="home-visual-node home-visual-node-d" />
-            <div className="home-visual-node home-visual-node-e" />
-            <div className="home-visual-node home-visual-node-f" />
-            <div className="home-visual-spiral" />
-            <div className="home-visual-ring home-visual-ring-a" />
-            <div className="home-visual-ring home-visual-ring-b" />
-            <div className="home-visual-ring home-visual-ring-c" />
-            <div className="home-visual-glow" />
-            <div className="home-visual-dust" />
-            <div className="home-visual-sprout">
-              <div className="home-visual-sprout-glow" />
-              <div className="home-visual-sprout-base" />
-              <div className="home-visual-sprout-stem" />
-              <div className="home-visual-sprout-leaf home-visual-sprout-leaf-left" />
-              <div className="home-visual-sprout-leaf home-visual-sprout-leaf-right" />
-            </div>
-          </div>
+          <div className="home-visual home-visual-main" aria-hidden="true" />
         </div>
 
         <div className="home-list">
