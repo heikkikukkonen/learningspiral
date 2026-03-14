@@ -210,6 +210,29 @@ export async function createSource(input: {
   return data as SourceRow;
 }
 
+export async function updateSource(input: {
+  sourceId: string;
+  title: string;
+  tags?: string[];
+}) {
+  const supabase = getSupabaseAdmin();
+  const userId = appUserId();
+
+  const { data, error } = await supabase
+    .from("sources")
+    .update({
+      title: input.title,
+      tags: input.tags?.length ? input.tags : []
+    })
+    .eq("id", input.sourceId)
+    .eq("user_id", userId)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return data as SourceRow;
+}
+
 export async function deleteSource(sourceId: string) {
   const supabase = getSupabaseAdmin();
   const userId = appUserId();

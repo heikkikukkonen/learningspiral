@@ -117,7 +117,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       });
 
       const json = await parseJson<{ sourceId: string }>(response);
-      router.push(`/capture?sourceId=${json.sourceId}`);
+      router.push(`/sources/${json.sourceId}`);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed.");

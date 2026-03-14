@@ -9,10 +9,12 @@ import {
   deleteCard,
   createSource,
   generateSuggestedCards,
+  updateSource,
   updateCard,
   upsertSummary
 } from "@/lib/db";
 import { CardType, InputModality, SourceType } from "@/lib/types";
+import { buildSourceSummaryContent } from "@/lib/source-editor";
 
 function asString(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
@@ -70,6 +72,35 @@ export async function saveSummaryAction(formData: FormData) {
   });
 
   revalidatePath(`/sources/${sourceId}`);
+  revalidatePath("/progress");
+}
+
+export async function saveSourceDraftAction(formData: FormData) {
+  const sourceId = asString(formData.get("sourceId"));
+  const title = asString(formData.get("title")).trim() || "Untitled idea";
+  const idea = asString(formData.get("idea"));
+  const analysis = asString(formData.get("analysis"));
+  const rawInput = asString(formData.get("rawInput")) || null;
+  const inputModality = asString(formData.get("inputModality")) as InputModality;
+  const tags = asString(formData.get("tags"))
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  await updateSource({
+    sourceId,
+    title,
+    tags
+  });
+
+  await upsertSummary(sourceId, buildSourceSummaryContent({ idea, analysis }), {
+    rawInput,
+    inputModality: inputModality || "text"
+  });
+
+  revalidatePath(`/sources/${sourceId}`);
+  revalidatePath(`/capture?sourceId=${sourceId}`);
+  revalidatePath("/sources");
   revalidatePath("/progress");
 }
 

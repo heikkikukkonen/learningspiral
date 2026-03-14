@@ -8,10 +8,13 @@ import {
   generateCardsAction,
   logInsightAction,
   saveCardAction,
-  saveSummaryAction,
   setCardStatusAction
 } from "@/app/sources/actions";
 import { CardType, CaptureRole, SourceType } from "@/lib/types";
+import { sendCaptureMessageAction } from "@/app/capture/actions";
+import { parseSourceSummaryContent } from "@/lib/source-editor";
+import { SourceEditorForm } from "@/app/sources/[id]/source-editor-form";
+import Image from "next/image";
 
 type SourceDetails = {
   id: string;
@@ -20,6 +23,7 @@ type SourceDetails = {
   author: string | null;
   origin: string | null;
   url: string | null;
+  tags: string[] | null;
   capture_mode: string;
 };
 
@@ -46,6 +50,20 @@ type CaptureMessage = {
   created_at: string;
 };
 
+type CaptureAsset = {
+  id: string;
+  kind: "image" | "audio";
+  file_name: string;
+  mime_type: string;
+  file_size: number;
+  base64_data: string;
+  created_at: string;
+};
+
+function assetUrl(mimeType: string, base64Data: string): string {
+  return `data:${mimeType};base64,${base64Data}`;
+}
+
 export default async function SourceDetailsPage({
   params
 }: {
@@ -55,6 +73,7 @@ export default async function SourceDetailsPage({
   let summary: SummaryDetails | null = null;
   let cards: CardDetails[] = [];
   let captureMessages: CaptureMessage[] = [];
+  let captureAssets: CaptureAsset[] = [];
   let insights: Array<{ id: string; note: string; created_at: string }> = [];
   let loadError = "";
 
@@ -64,6 +83,7 @@ export default async function SourceDetailsPage({
     summary = result.summary;
     cards = result.cards;
     captureMessages = result.captureMessages;
+    captureAssets = result.captureAssets;
     insights = await listAppliedInsights(params.id);
   } catch (error) {
     loadError =
@@ -92,79 +112,153 @@ export default async function SourceDetailsPage({
     notFound();
   }
 
+  const parsedSummary = parseSourceSummaryContent(summary?.content);
+  const latestAssistantMessage = [...captureMessages].reverse().find((message) => message.role === "assistant");
+  const rawTextMessage = captureMessages.find((message) => message.role === "user");
+  const lastSavedLabel = summary?.updated_at
+    ? `Viimeksi tallennettu ${new Date(summary.updated_at).toLocaleString("fi-FI")}`
+    : "Ei tallennettu viela";
+
   return (
-    <section className="grid">
-      <div className="page-header">
+    <section className="grid source-workspace">
+      <div className="page-header source-workspace-header">
+        <p className="source-stepper" aria-label="Vaiheet">
+          <span>1. Syötä idea</span>
+          <span className="is-active">2. Jalosta idea</span>
+          <span>3. Luo kortteja tai tehtävä</span>
+        </p>
         <h1>{source.title}</h1>
-        <p className="muted">Source details with capture history, summary, cards and applied insights.</p>
+        <p className="muted">
+          Yhdistetty capture- ja source-näkymä, jossa voit muokata idean lopulliseen muotoon ja jutella AI:n kanssa.
+        </p>
       </div>
 
-      <article className="card">
-        <div className="source-meta">
-          <span className="pill">{source.type}</span>
-          <span className="pill">{source.capture_mode}</span>
-          {source.author ? <span>{source.author}</span> : null}
-          {source.origin ? <span>{source.origin}</span> : null}
-          {source.url ? (
-            <a href={source.url} target="_blank" rel="noreferrer">
-              {source.url}
-            </a>
-          ) : null}
-        </div>
-      </article>
-
-      {captureMessages.length > 0 ? (
-        <article className="card">
-          <div className="actions" style={{ justifyContent: "space-between" }}>
-            <h2 style={{ margin: 0 }}>Capture conversation</h2>
-            <Link href={`/capture?sourceId=${source.id}`} className="button-link secondary">
-              Continue in capture
+      <div className="source-workspace-layout">
+        <article className="card source-editor-card">
+          <div className="source-editor-topbar">
+            <Link href="/sources" className="source-back-link">
+              {"<"} Takaisin
             </Link>
+            <div className="source-meta">
+              <span className="pill">{source.type}</span>
+              <span className="pill">{source.capture_mode}</span>
+            </div>
           </div>
-          <div className="list" style={{ marginTop: "0.8rem" }}>
-            {captureMessages.map((message) => (
-              <article className="card" key={message.id}>
-                <div className="source-meta">
-                  <span
-                    className="pill"
-                    data-variant={message.role === "assistant" ? "primary" : undefined}
-                  >
-                    {message.role}
-                  </span>
-                  <span>{new Date(message.created_at).toLocaleString("fi-FI")}</span>
-                </div>
-                <p style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>{message.content}</p>
-              </article>
-            ))}
+
+          <SourceEditorForm
+            sourceId={source.id}
+            initialTitle={source.title}
+            initialIdea={parsedSummary.idea}
+            initialAnalysis={parsedSummary.analysis}
+            initialTags={source.tags ?? []}
+            rawInput={summary?.raw_input ?? ""}
+            inputModality={summary?.input_modality ?? "text"}
+            lastSavedLabel={lastSavedLabel}
+          />
+
+          <div className="source-origin-panel">
+            <div className="source-origin-header">
+              <h2 style={{ margin: 0 }}>Alkuperäinen capture</h2>
+              <div className="source-meta">
+                {source.author ? <span>{source.author}</span> : null}
+                {source.origin ? <span>{source.origin}</span> : null}
+                {source.url ? (
+                  <a href={source.url} target="_blank" rel="noreferrer">
+                    Avaa linkki
+                  </a>
+                ) : null}
+              </div>
+            </div>
+
+            {captureAssets.length > 0 ? (
+              <div className="source-origin-assets">
+                {captureAssets.map((asset) => (
+                  <article key={asset.id} className="source-origin-asset">
+                    <div className="source-meta" style={{ marginBottom: "0.6rem" }}>
+                      <span className="pill" data-variant="primary">
+                        {asset.kind}
+                      </span>
+                      <span>{asset.file_name}</span>
+                    </div>
+                    {asset.kind === "image" ? (
+                      <Image
+                        src={assetUrl(asset.mime_type, asset.base64_data)}
+                        alt={asset.file_name}
+                        className="capture-asset-preview"
+                        width={1200}
+                        height={900}
+                        unoptimized
+                      />
+                    ) : (
+                      <audio controls className="capture-audio-player" src={assetUrl(asset.mime_type, asset.base64_data)} />
+                    )}
+                  </article>
+                ))}
+              </div>
+            ) : null}
+
+            {summary?.raw_input || rawTextMessage ? (
+              <details className="capture-details" open>
+                <summary>Näytä alkuperäinen raakateksti</summary>
+                <p style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>
+                  {summary?.raw_input || rawTextMessage?.content}
+                </p>
+              </details>
+            ) : null}
           </div>
         </article>
-      ) : null}
 
-      <article className="card">
-        <h2 style={{ marginTop: 0 }}>Summary</h2>
-        <form className="form" action={saveSummaryAction}>
-          <input type="hidden" name="sourceId" value={source.id} />
-          <input type="hidden" name="rawInput" value={summary?.raw_input ?? ""} />
-          <input type="hidden" name="inputModality" value={summary?.input_modality ?? "text"} />
-          <textarea
-            name="content"
-            defaultValue={summary?.content ?? ""}
-            placeholder="Write or refine the source summary here..."
-            required
-          />
-          <div className="actions">
-            <SubmitButton className="primary" pendingText="Saving...">
-              Save summary
-            </SubmitButton>
+        <aside className="card source-ai-card">
+          <div className="source-ai-header">
+            <div>
+              <h2 style={{ margin: 0 }}>AI-analyysi</h2>
+              <p className="status" style={{ marginBottom: 0 }}>
+                Pyydä vaihtoehtoisia näkökulmia, tiivistä ideaa tai ehdota uusia tageja.
+              </p>
+            </div>
+            {latestAssistantMessage ? <span className="pill" data-variant="primary">AI</span> : null}
           </div>
-          <p className="status">
-            Last saved:{" "}
-            {summary?.updated_at
-              ? new Date(summary.updated_at).toLocaleString("fi-FI")
-              : "not saved yet"}
-          </p>
-        </form>
-      </article>
+
+          <div className="source-ai-thread">
+            {captureMessages.length === 0 ? (
+              <p className="muted">Keskustelua ei vielä ole. Lähetä viesti AI:lle oikealta.</p>
+            ) : (
+              captureMessages.map((message) => (
+                <article
+                  className={`source-chat-bubble ${message.role === "assistant" ? "is-assistant" : "is-user"}`}
+                  key={message.id}
+                >
+                  <div className="source-meta">
+                    <span
+                      className="pill"
+                      data-variant={message.role === "assistant" ? "primary" : undefined}
+                    >
+                      {message.role === "assistant" ? "AI" : "Sinä"}
+                    </span>
+                    <span>{new Date(message.created_at).toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" })}</span>
+                  </div>
+                  <p style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>{message.content}</p>
+                </article>
+              ))
+            )}
+          </div>
+
+          <form className="form source-ai-form" action={sendCaptureMessageAction}>
+            <input type="hidden" name="sourceId" value={source.id} />
+            <label className="form-row">
+              <span>Kysy AI:lta seuraava jalostus</span>
+              <textarea
+                name="message"
+                placeholder="Esim. tee tästä terävämpi idea, anna eri näkökulma, ehdota parempaa otsikkoa tai 5 tagia."
+                required
+              />
+            </label>
+            <SubmitButton className="primary" pendingText="AI vastaa..." loadingVariant="idea-network">
+              Lähetä
+            </SubmitButton>
+          </form>
+        </aside>
+      </div>
 
       <article className="card">
         <div className="actions" style={{ justifyContent: "space-between" }}>
