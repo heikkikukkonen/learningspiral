@@ -178,6 +178,31 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     }
   }
 
+  async function analyzeText(text: string) {
+    setIsAnalyzing(true);
+    setError("");
+    try {
+      const response = await fetch("/api/capture/analyze-text", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text })
+      });
+
+      const json = await parseJson<AnalysisResult>(response);
+      setRawInputValue(json.rawInput);
+      setSummaryValue(json.summary);
+      setTitleValue((current) => current || json.rawInput.split(/\r?\n/).find(Boolean)?.slice(0, 90) || "Idea");
+      return json;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Text analysis failed.");
+      return null;
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }
+
   async function startRecording() {
     resetDraft("voice");
     try {
@@ -217,11 +242,15 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
   async function saveTextCapture() {
     const trimmedText = textValue.trim();
-    if (!trimmedText || isSaving) return;
+    if (!trimmedText || isSaving || isAnalyzing) return;
+
+    const analyzed = await analyzeText(trimmedText);
+    if (!analyzed) return;
 
     await saveCapture("text", {
-      rawInput: trimmedText,
-      summary: trimmedText
+      title: titleValue || analyzed.rawInput.split(/\r?\n/).find(Boolean)?.slice(0, 90),
+      rawInput: analyzed.rawInput,
+      summary: analyzed.summary
     });
   }
 
@@ -290,11 +319,27 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               <button
                 type="button"
                 className="primary capture-text-save"
-                disabled={!textValue.trim() || isSaving}
+                disabled={!textValue.trim() || isSaving || isAnalyzing}
                 onClick={() => void saveTextCapture()}
               >
-                {isSaving ? "Tallennetaan..." : "Tallenna"}
+                {isAnalyzing ? (
+                  <span className="submit-button-content">
+                    <IdeaNetworkLoader label="AI analysoi ideaa" />
+                    AI analysoi...
+                  </span>
+                ) : isSaving ? (
+                  "Tallennetaan..."
+                ) : (
+                  "Tallenna"
+                )}
               </button>
+              {isAnalyzing ? (
+                <IdeaNetworkLoader
+                  variant="panel"
+                  label="AI rakentaa assistant-pohdintaa"
+                  detail="Muodostamme tekstista yhteenvedon ja avainkohdat ennen kuin keskustelu avataan."
+                />
+              ) : null}
               <p className="status capture-text-helper" style={{ margin: 0 }}>
                 {textCharacterCount > 0
                   ? `${textCharacterCount} merkkia valmiina tallennettavaksi.`
@@ -331,30 +376,34 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
             {!asset ? (
               <div className="capture-image-intake">
-                <button
-                  type="button"
-                  className="capture-image-dropzone"
-                  onClick={() => imageInputRef.current?.click()}
-                >
-                  <span className="capture-image-dropzone-icon" aria-hidden="true">
-                    +
-                  </span>
-                  <strong>Valitse kuva</strong>
-                  <span>PNG, JPG tai screenshot. Avataan tiedostovalitsin heti.</span>
-                </button>
-
-                <div className="capture-image-footer">
-                  {isAnalyzing ? (
+                {isAnalyzing ? (
+                  <div className="capture-image-dropzone capture-image-dropzone-processing">
                     <IdeaNetworkLoader
                       variant="panel"
                       label="AI muodostaa yhteyksia kuvasta"
                       detail="Luemme sisallon, tunnistamme ydinkohdat ja rakennamme yhteenvetoa."
                     />
-                  ) : (
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="capture-image-dropzone"
+                    onClick={() => imageInputRef.current?.click()}
+                  >
+                    <span className="capture-image-dropzone-icon" aria-hidden="true">
+                      +
+                    </span>
+                    <strong>Valitse kuva</strong>
+                    <span>PNG, JPG tai screenshot. Avataan tiedostovalitsin heti.</span>
+                  </button>
+                )}
+
+                <div className="capture-image-footer">
+                  {!isAnalyzing ? (
                     <p className="status capture-image-helper" style={{ margin: 0 }}>
                       Pelkka kuvan lataus riittaa.
                     </p>
-                  )}
+                  ) : null}
                   <button type="button" className="capture-image-cancel" onClick={cancelCapture}>
                     Peruuta
                   </button>

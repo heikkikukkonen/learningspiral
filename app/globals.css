@@ -674,6 +674,10 @@ button.danger {
   padding-top: 0.1rem;
 }
 
+.capture-text-footer .idea-network-loader-panel {
+  width: min(100%, 520px);
+}
+
 .capture-text-save {
   min-width: 190px;
   min-height: 56px;
@@ -836,6 +840,7 @@ button.danger {
 .capture-image-dropzone {
   display: grid;
   justify-items: center;
+  align-content: center;
   gap: 0.5rem;
   min-height: 240px;
   padding: 1.5rem;
@@ -848,6 +853,36 @@ button.danger {
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
     0 16px 36px rgba(189, 206, 227, 0.18);
   text-align: center;
+}
+
+.capture-image-dropzone-processing {
+  padding: 1.25rem;
+}
+
+.capture-image-dropzone-processing .idea-network-loader-panel {
+  width: 100%;
+  min-height: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.35rem;
+  border-radius: 22px;
+}
+
+.capture-image-dropzone-processing .idea-network-copy {
+  gap: 0.35rem;
+  text-align: left;
+}
+
+.capture-image-dropzone-processing .idea-network-label {
+  font-size: 1.15rem;
+  color: #284766;
+}
+
+.capture-image-dropzone-processing .idea-network-detail {
+  font-size: 0.95rem;
+  color: #61768f;
 }
 
 .capture-image-dropzone:hover {
