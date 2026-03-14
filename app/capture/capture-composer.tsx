@@ -20,6 +20,10 @@ type AnalysisResult = {
   asset?: AssetPayload;
 };
 
+type CaptureComposerProps = {
+  initialMode?: Mode;
+};
+
 async function parseJson<T>(response: Response): Promise<T> {
   const json = (await response.json()) as T & { error?: string };
   if (!response.ok) {
@@ -28,7 +32,7 @@ async function parseJson<T>(response: Response): Promise<T> {
   return json;
 }
 
-export function CaptureComposer() {
+export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) {
   const router = useRouter();
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const audioFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -37,7 +41,7 @@ export function CaptureComposer() {
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
-  const [mode, setMode] = useState<Mode>("idle");
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [textValue, setTextValue] = useState("");
   const [noteValue, setNoteValue] = useState("");
   const [titleValue, setTitleValue] = useState("");
@@ -219,54 +223,31 @@ export function CaptureComposer() {
 
   return (
     <div className="grid">
-      <article className="card capture-button-panel">
-        <div className="capture-shortcuts">
-          <button type="button" className="primary" onClick={() => resetDraft("text")}>
-            Lisaa teksti
-          </button>
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => {
-              resetDraft("image");
-              imageInputRef.current?.click();
-            }}
-          >
-            Lisaa kuva
-          </button>
-          <button type="button" className="secondary" onClick={startRecording}>
-            Sanele ajatus
-          </button>
-        </div>
-        <p className="status" style={{ margin: 0 }}>
-          Kuva ja aani muutetaan ensin tekstiksi, jonka jalkeen voit muokata AI:n yhteenvetoa ennen tallennusta.
-        </p>
-        <input
-          ref={imageInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden-input"
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) void analyzeImage(file);
-            event.currentTarget.value = "";
-          }}
-        />
-        <input
-          ref={audioFileInputRef}
-          type="file"
-          accept="audio/*"
-          className="hidden-input"
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) {
-              resetDraft("voice");
-              void analyzeAudio(file);
-            }
-            event.currentTarget.value = "";
-          }}
-        />
-      </article>
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden-input"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) void analyzeImage(file);
+          event.currentTarget.value = "";
+        }}
+      />
+      <input
+        ref={audioFileInputRef}
+        type="file"
+        accept="audio/*"
+        className="hidden-input"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) {
+            resetDraft("voice");
+            void analyzeAudio(file);
+          }
+          event.currentTarget.value = "";
+        }}
+      />
 
       {mode === "text" ? (
         <article className="card capture-flow-card capture-text-card">
@@ -310,9 +291,6 @@ export function CaptureComposer() {
                   ? `${textCharacterCount} merkkia valmiina tallennettavaksi.`
                   : "Aloita yhdesta lauseesta. Pikanappi toimii myos Ctrl+Enterilla."}
               </p>
-              <button type="button" className="capture-text-cancel" onClick={() => resetDraft("idle")}>
-                Peruuta
-              </button>
             </div>
           </div>
           <div className="capture-text-visual" aria-hidden="true">
@@ -342,7 +320,7 @@ export function CaptureComposer() {
                 <textarea value={noteValue} onChange={(event) => setNoteValue(event.target.value)} />
               </label>
               <div className="actions">
-                <button type="button" className="secondary" onClick={() => resetDraft("idle")}>
+                <button type="button" className="secondary" onClick={() => resetDraft("text")}>
                   Peruuta
                 </button>
               </div>
@@ -363,7 +341,7 @@ export function CaptureComposer() {
                 <textarea value={summaryValue} onChange={(event) => setSummaryValue(event.target.value)} />
               </label>
               <div className="actions" style={{ justifyContent: "space-between", alignItems: "center" }}>
-                <button type="button" className="secondary" onClick={() => resetDraft("idle")}>
+                <button type="button" className="secondary" onClick={() => resetDraft("text")}>
                   Peruuta
                 </button>
                 <button
@@ -406,7 +384,7 @@ export function CaptureComposer() {
 
           {!asset && !isRecording ? (
             <div className="actions">
-              <button type="button" className="secondary" onClick={() => resetDraft("idle")}>
+              <button type="button" className="secondary" onClick={() => resetDraft("text")}>
                 Peruuta
               </button>
             </div>
@@ -423,7 +401,7 @@ export function CaptureComposer() {
                 <textarea value={summaryValue} onChange={(event) => setSummaryValue(event.target.value)} />
               </label>
               <div className="actions" style={{ justifyContent: "space-between", alignItems: "center" }}>
-                <button type="button" className="secondary" onClick={() => resetDraft("idle")}>
+                <button type="button" className="secondary" onClick={() => resetDraft("text")}>
                   Peruuta
                 </button>
                 <button

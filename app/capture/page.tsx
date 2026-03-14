@@ -15,9 +15,13 @@ export const dynamic = "force-dynamic";
 export default async function CapturePage({
   searchParams
 }: {
-  searchParams: { sourceId?: string };
+  searchParams: { sourceId?: string; mode?: string };
 }) {
   const sourceId = searchParams.sourceId;
+  const requestedMode =
+    searchParams.mode === "image" || searchParams.mode === "voice" || searchParams.mode === "text"
+      ? searchParams.mode
+      : "text";
   let sourceTitle = "";
   let sourcePageUrl = "";
   let messages: Array<{ id: string; role: CaptureRole; content: string; created_at: string }> = [];
@@ -55,7 +59,7 @@ export default async function CapturePage({
       </div>
 
       {!sourceId ? (
-        <CaptureComposer />
+        <CaptureComposer initialMode={requestedMode} />
       ) : (
         <>
           <article className="card">

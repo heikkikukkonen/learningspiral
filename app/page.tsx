@@ -4,19 +4,19 @@ const homeActions = [
   {
     title: "Kirjoita ajatus",
     subtitle: "Tallenna idea heti tekstina.",
-    href: "/capture",
+    href: "/capture?mode=text",
     accent: "green"
   },
   {
     title: "Lisaa kuva",
     subtitle: "Anna AI:n tulkita screenshot tai kuva.",
-    href: "/capture",
+    href: "/capture?mode=image",
     accent: "orange"
   },
   {
     title: "Nauhoita sanelu",
     subtitle: "Muuta puhuttu ajatus tekstiksi.",
-    href: "/capture",
+    href: "/capture?mode=voice",
     accent: "blue"
   },
   {
