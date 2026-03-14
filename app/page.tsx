@@ -27,7 +27,7 @@ const homeActions = [
     subtitle: "Palaa review'hun ja jatka oppimiskierretta.",
     href: "/review",
     accent: "gold",
-    icon: "bulb"
+    icon: "brain"
   }
 ] as const;
 
@@ -71,6 +71,37 @@ function ActionIcon({ icon }: { icon: (typeof homeActions)[number]["icon"] }) {
         <path d="M6.5 11.5a5.5 5.5 0 0011 0" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
         <path d="M12 17v3" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
         <path d="M9 20h6" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+      </svg>
+    );
+  }
+
+  if (icon === "brain") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M9.2 6.2a2.9 2.9 0 00-5.4 1.5c0 .6.2 1.2.5 1.7A3.3 3.3 0 004 15.8c.9.8 2 1.2 3.2 1.2h1.4"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.8"
+        />
+        <path
+          d="M14.8 6.2a2.9 2.9 0 015.4 1.5c0 .6-.2 1.2-.5 1.7a3.3 3.3 0 01.3 6.4c-.9.8-2 1.2-3.2 1.2h-1.4"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.8"
+        />
+        <path
+          d="M12 5.2v13.6M9.2 8.4C10 9 10.4 9.9 10.4 11s-.4 2-1.2 2.6m4.4-5.2c.8.6 1.2 1.5 1.2 2.6s-.4 2-1.2 2.6M8.7 16.3c.8-.2 1.5-.1 2.2.3.3.2.7.5 1.1.9m3.3-1.2c-.8-.2-1.5-.1-2.2.3-.3.2-.7.5-1.1.9"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.8"
+        />
       </svg>
     );
   }
