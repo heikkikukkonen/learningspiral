@@ -123,10 +123,6 @@ export default function HomePage() {
     <section className="home-shell home-shell-mobile">
       <div className="home-phone-card">
         <div className="home-hero">
-          <div className="home-hero-copy">
-            <h1>Learning Spiral</h1>
-            <p>Your thinking space</p>
-          </div>
           <div className="home-visual home-visual-main" aria-hidden="true" />
         </div>
 

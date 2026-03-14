@@ -63,7 +63,7 @@ a {
   font-weight: 700;
   font-size: 1.1rem;
   letter-spacing: -0.04em;
-  color: rgba(65, 85, 111, 0);
+  color: #4b5d7a;
   user-select: none;
 }
 
@@ -1458,29 +1458,7 @@ button.danger {
 }
 
 .home-hero {
-  margin-bottom: 0.35rem;
-}
-
-.home-hero-copy {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  gap: 0.22rem;
-  padding: 1rem 0.4rem 0;
-}
-
-.home-hero-copy h1 {
-  margin: 0;
-  font-size: clamp(2rem, 6vw, 2.55rem);
-  line-height: 1.02;
-  letter-spacing: -0.05em;
-  color: #4b5d7a;
-}
-
-.home-hero-copy p {
-  margin: 0;
-  font-size: 1.12rem;
-  color: #92a0b8;
+  margin-bottom: 0.2rem;
 }
 
 .home-visual {
@@ -1694,19 +1672,6 @@ button.danger {
     padding-left: 0.7rem;
     padding-right: 0.7rem;
     border-radius: 0 0 24px 24px;
-  }
-
-  .home-hero-copy {
-    padding-left: 0.35rem;
-    padding-right: 0.35rem;
-  }
-
-  .home-hero-copy h1 {
-    font-size: 1.95rem;
-  }
-
-  .home-hero-copy p {
-    font-size: 1rem;
   }
 
   .home-list {
