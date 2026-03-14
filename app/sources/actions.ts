@@ -6,6 +6,7 @@ import {
   acceptAllSuggested,
   completeReview,
   createAppliedInsight,
+  deleteCard,
   createSource,
   generateSuggestedCards,
   updateCard,
@@ -99,6 +100,17 @@ export async function setCardStatusAction(formData: FormData) {
     answer: asString(formData.get("answer")),
     cardType: asString(formData.get("cardType")) as CardType,
     status: asString(formData.get("status")) as "active" | "rejected"
+  });
+  revalidatePath(`/sources/${sourceId}`);
+  revalidatePath("/review");
+  revalidatePath("/progress");
+}
+
+export async function deleteCardAction(formData: FormData) {
+  const sourceId = asString(formData.get("sourceId"));
+  await deleteCard({
+    cardId: asString(formData.get("cardId")),
+    sourceId
   });
   revalidatePath(`/sources/${sourceId}`);
   revalidatePath("/review");

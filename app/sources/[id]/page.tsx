@@ -4,6 +4,7 @@ import { SubmitButton } from "@/app/components/submit-button";
 import { getSourceWithDetails, listAppliedInsights } from "@/lib/db";
 import {
   acceptAllSuggestedAction,
+  deleteCardAction,
   generateCardsAction,
   logInsightAction,
   saveCardAction,
@@ -248,6 +249,18 @@ export default async function SourceDetailsPage({
                   <input type="hidden" name="status" value="rejected" />
                   <SubmitButton className="danger" pendingText="Rejecting...">
                     Reject
+                  </SubmitButton>
+                </form>
+
+                <form action={deleteCardAction}>
+                  <input type="hidden" name="sourceId" value={source.id} />
+                  <input type="hidden" name="cardId" value={card.id} />
+                  <SubmitButton
+                    className="danger"
+                    pendingText="Deleting..."
+                    confirmMessage="Poistetaanko kortti pysyvästi?"
+                  >
+                    Delete
                   </SubmitButton>
                 </form>
               </div>

@@ -10,6 +10,7 @@ type SubmitButtonProps = {
   disabled?: boolean;
   name?: string;
   value?: string;
+  confirmMessage?: string;
 };
 
 export function SubmitButton({
@@ -18,7 +19,8 @@ export function SubmitButton({
   pendingText = "Loading...",
   disabled,
   name,
-  value
+  value,
+  confirmMessage
 }: SubmitButtonProps) {
   const { pending } = useFormStatus();
 
@@ -29,6 +31,12 @@ export function SubmitButton({
       disabled={pending || disabled}
       name={name}
       value={value}
+      onClick={(event) => {
+        if (!confirmMessage || pending || disabled) return;
+        if (!window.confirm(confirmMessage)) {
+          event.preventDefault();
+        }
+      }}
     >
       <span className="submit-button-content">
         {pending ? <span className="spinner" aria-hidden="true" /> : null}

@@ -574,6 +574,26 @@ export async function updateCard(params: {
   }
 }
 
+export async function deleteCard(params: { cardId: string; sourceId: string }) {
+  const supabase = getSupabaseAdmin();
+  const userId = appUserId();
+
+  const { error: eventsError } = await supabase
+    .from("learning_events")
+    .delete()
+    .eq("user_id", userId)
+    .eq("entity_id", params.cardId);
+  if (eventsError) throw eventsError;
+
+  const { error: cardError } = await supabase
+    .from("cards")
+    .delete()
+    .eq("id", params.cardId)
+    .eq("source_id", params.sourceId)
+    .eq("user_id", userId);
+  if (cardError) throw cardError;
+}
+
 export async function acceptAllSuggested(sourceId: string) {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
