@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Learning Spiral icon">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2c8ca3" />
+      <stop offset="55%" stop-color="#58d0cf" />
+      <stop offset="100%" stop-color="#c7f0a7" />
+    </linearGradient>
+    <radialGradient id="core" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#fffef0" />
+      <stop offset="30%" stop-color="#ffe677" />
+      <stop offset="68%" stop-color="#9ae287" stop-opacity="0.75" />
+      <stop offset="100%" stop-color="#9ae287" stop-opacity="0" />
+    </radialGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="14" y="14" width="228" height="228" rx="44" fill="url(#bg)" />
+
+  <path
+    d="M76 62c17-10 38-10 54-3 8-13 25-18 39-13 11 4 18 14 18 27 16 0 28 12 28 27 0 11-5 19-14 25 5 9 5 21-2 30-8 11-21 15-33 12-5 15-19 23-33 23-9 0-18-3-24-9-6 8-13 17-13 28 0 5 1 10 3 15-15-5-24-15-24-30 0-12 6-21 13-29-7-6-11-15-11-25-13-3-23-15-23-29 0-14 9-25 22-30-1-16 8-31 22-39Z"
+    fill="#ecffff"
+    fill-opacity="0.5"
+  />
+
+  <ellipse cx="132" cy="128" rx="76" ry="49" fill="url(#core)" filter="url(#glow)" />
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path
+      d="M186 112c-14-25-48-37-78-28-28 8-46 31-43 55 4 30 38 52 79 48 32-4 57-24 61-48 2-14-3-28-14-38-15-14-40-20-61-15-18 4-31 17-33 31-4 19 10 36 32 40 20 4 40-5 48-20 6-11 4-24-6-33-8-7-20-10-31-8-10 2-17 8-18 16-2 10 5 18 16 21 10 2 21-2 26-9"
+      stroke="#1f9eb3"
+      stroke-width="4"
+    />
+    <path
+      d="M198 106c-20-23-55-33-88-25-35 9-58 36-56 65 3 37 41 64 88 61"
+      stroke="#6ce2ea"
+      stroke-width="3"
+      stroke-opacity="0.8"
+    />
+    <path
+      d="M71 144c11 19 33 32 58 35 30 4 59-7 75-28"
+      stroke="#64d6c4"
+      stroke-width="3"
+      stroke-opacity="0.75"
+    />
+  </g>
+
+  <g fill="#fff">
+    <circle cx="72" cy="123" r="4.5" />
+    <circle cx="90" cy="90" r="3.5" />
+    <circle cx="115" cy="78" r="3" />
+    <circle cx="149" cy="82" r="3.5" />
+    <circle cx="185" cy="102" r="4.5" />
+    <circle cx="196" cy="138" r="3.5" />
+    <circle cx="162" cy="170" r="4.5" />
+    <circle cx="124" cy="182" r="3.5" />
+    <circle cx="90" cy="170" r="4" />
+    <circle cx="62" cy="146" r="3" />
+  </g>
+
+  <g stroke="#dffefe" stroke-opacity="0.7" stroke-width="1.5">
+    <path d="M72 123 90 90 115 78 149 82 185 102 196 138 162 170 124 182 90 170 62 146Z" fill="none" />
+    <path d="M90 90 162 170" fill="none" />
+    <path d="M149 82 90 170" fill="none" />
+    <path d="M72 123 196 138" fill="none" />
+  </g>
+
+  <circle cx="129" cy="127" r="9" fill="#fff9c9" filter="url(#glow)" />
+</svg>
