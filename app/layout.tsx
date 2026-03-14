@@ -22,7 +22,8 @@ export default function RootLayout({
           <div className="container topbar-inner">
             <div className="brand-lockup">
               <Link href="/" className="logo">
-                Learning Spiral
+                <span className="logo-title">Learning Spiral</span>
+                <span className="logo-tagline">Your thinking space</span>
               </Link>
             </div>
             <SiteNav />
