@@ -220,6 +220,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   }
 
   const textCharacterCount = textValue.trim().length;
+  const imageSummaryCharacterCount = summaryValue.trim().length;
 
   return (
     <div className="grid">
@@ -305,56 +306,113 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       ) : null}
 
       {mode === "image" ? (
-        <article className="card capture-flow-card">
-          <div className="actions" style={{ justifyContent: "space-between", alignItems: "center" }}>
-            <h2 style={{ margin: 0 }}>Lisaa kuva</h2>
-            <button type="button" className="secondary" onClick={() => imageInputRef.current?.click()}>
-              Valitse toinen kuva
-            </button>
-          </div>
-
-          {!asset ? (
-            <div className="grid" style={{ gap: "0.9rem" }}>
-              <label className="form-row">
-                <span>Lisaa halutessasi lyhyt huomio kuvan kontekstista</span>
-                <textarea value={noteValue} onChange={(event) => setNoteValue(event.target.value)} />
-              </label>
-              <div className="actions">
-                <button type="button" className="secondary" onClick={() => resetDraft("text")}>
-                  Peruuta
-                </button>
+        <article className="card capture-flow-card capture-image-card">
+          <div className="capture-image-shell">
+            <div className="capture-image-header">
+              <div className="capture-image-copy">
+                <h2 style={{ margin: 0 }}>Lisaa kuva</h2>
+                <p className="status capture-image-status">
+                  Tuo screenshot, muistiinpano tai kuva. Muutamme sen ensin tekstiksi ja viimeistelet
+                  yhteenvedon ennen tallennusta.
+                </p>
               </div>
-              {isAnalyzing ? <p className="status">AI tulkitsee kuvaa...</p> : null}
             </div>
-          ) : (
-            <div className="grid">
-              <Image
-                src={`data:${asset.mimeType};base64,${asset.base64Data}`}
-                alt={asset.fileName}
-                width={1200}
-                height={900}
-                className="capture-asset-preview"
-                unoptimized
-              />
-              <label className="form-row">
-                <span>AI:n kirjoittama yhteenveto</span>
-                <textarea value={summaryValue} onChange={(event) => setSummaryValue(event.target.value)} />
-              </label>
-              <div className="actions" style={{ justifyContent: "space-between", alignItems: "center" }}>
-                <button type="button" className="secondary" onClick={() => resetDraft("text")}>
-                  Peruuta
-                </button>
+
+            {!asset ? (
+              <div className="capture-image-intake">
                 <button
                   type="button"
-                  className="primary"
-                  disabled={!summaryValue.trim() || isSaving}
-                  onClick={() => void saveCapture("image")}
+                  className="capture-image-dropzone"
+                  onClick={() => imageInputRef.current?.click()}
                 >
-                  {isSaving ? "Tallennetaan..." : "Tallenna"}
+                  <span className="capture-image-dropzone-icon" aria-hidden="true">
+                    +
+                  </span>
+                  <strong>Valitse kuva</strong>
+                  <span>PNG, JPG tai screenshot. Avataan tiedostovalitsin heti.</span>
                 </button>
+
+                <label className="form-row capture-image-note-field">
+                  <span>Konteksti kuvasta</span>
+                  <textarea
+                    value={noteValue}
+                    placeholder="Mita kuvassa kannattaa erityisesti huomioida?"
+                    onChange={(event) => setNoteValue(event.target.value)}
+                  />
+                </label>
+
+                <div className="capture-image-footer">
+                  <p className="status capture-image-helper" style={{ margin: 0 }}>
+                    {isAnalyzing
+                      ? "AI tulkitsee kuvaa..."
+                      : "Voit lisata lyhyen huomion ennen analyysia tai jattaa kentan tyhjaksi."}
+                  </p>
+                  <button type="button" className="capture-image-cancel" onClick={() => resetDraft("text")}>
+                    Peruuta
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="capture-image-result">
+                <div className="capture-image-preview-shell">
+                  <Image
+                    src={`data:${asset.mimeType};base64,${asset.base64Data}`}
+                    alt={asset.fileName}
+                    width={1200}
+                    height={900}
+                    className="capture-asset-preview capture-image-preview"
+                    unoptimized
+                  />
+                  <div className="capture-image-preview-meta">
+                    <span className="pill" data-variant="primary">
+                      Kuva analysoitu
+                    </span>
+                    <button
+                      type="button"
+                      className="secondary capture-image-secondary-action"
+                      onClick={() => imageInputRef.current?.click()}
+                    >
+                      Valitse toinen kuva
+                    </button>
+                  </div>
+                </div>
+
+                <label className="form-row capture-image-summary-field">
+                  <span>AI:n kirjoittama yhteenveto</span>
+                  <textarea value={summaryValue} onChange={(event) => setSummaryValue(event.target.value)} />
+                </label>
+
+                <div className="capture-image-actions">
+                  <button type="button" className="secondary" onClick={() => resetDraft("text")}>
+                    Peruuta
+                  </button>
+                  <div className="capture-image-save-group">
+                    <p className="status capture-image-helper" style={{ margin: 0 }}>
+                      {imageSummaryCharacterCount > 0
+                        ? `${imageSummaryCharacterCount} merkkia valmiina tallennettavaksi.`
+                        : "Muokkaa yhteenvetoa tarvittaessa ennen tallennusta."}
+                    </p>
+                    <button
+                      type="button"
+                      className="primary capture-image-save"
+                      disabled={!summaryValue.trim() || isSaving}
+                      onClick={() => void saveCapture("image")}
+                    >
+                      {isSaving ? "Tallennetaan..." : "Tallenna"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="capture-image-visual" aria-hidden="true">
+            <div className="capture-image-frame" />
+            <div className="capture-image-glow capture-image-glow-a" />
+            <div className="capture-image-glow capture-image-glow-b" />
+            <div className="capture-image-orbit capture-image-orbit-a" />
+            <div className="capture-image-orbit capture-image-orbit-b" />
+            <div className="capture-image-dots" />
+          </div>
         </article>
       ) : null}
 
