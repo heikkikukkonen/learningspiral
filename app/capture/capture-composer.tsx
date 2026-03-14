@@ -355,6 +355,10 @@ export function CaptureComposer() {
           {asset ? (
             <div className="grid">
               <label className="form-row">
+                <span>Raakana tallennettu teksti</span>
+                <textarea value={rawInputValue} onChange={(event) => setRawInputValue(event.target.value)} />
+              </label>
+              <label className="form-row">
                 <span>AI:n kirjoittama yhteenveto</span>
                 <textarea value={summaryValue} onChange={(event) => setSummaryValue(event.target.value)} />
               </label>
@@ -365,7 +369,7 @@ export function CaptureComposer() {
                 <button
                   type="button"
                   className="primary"
-                  disabled={!summaryValue.trim() || isSaving}
+                  disabled={!rawInputValue.trim() || !summaryValue.trim() || isSaving}
                   onClick={() => void saveCapture("audio")}
                 >
                   {isSaving ? "Tallennetaan..." : "Tallenna"}

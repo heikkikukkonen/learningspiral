@@ -11,7 +11,6 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get("audioFile");
-    const note = typeof formData.get("note") === "string" ? String(formData.get("note")).trim() : "";
 
     if (!(file instanceof File) || file.size === 0) {
       return NextResponse.json({ error: "Audio file is required." }, { status: 400 });
@@ -24,13 +23,7 @@ export async function POST(request: Request) {
       bytes
     });
 
-    const rawInput = [
-      note ? `User note:\n${note}` : "",
-      transcribed.data.trim() ? `Voice transcript:\n${transcribed.data.trim()}` : ""
-    ]
-      .filter(Boolean)
-      .join("\n\n")
-      .trim();
+    const rawInput = transcribed.data.trim();
 
     const summaryReply = rawInput
       ? await generateCaptureSummaryReply({
