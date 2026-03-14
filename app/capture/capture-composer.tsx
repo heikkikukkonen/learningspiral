@@ -286,24 +286,22 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
             </label>
 
             <div className="capture-text-footer">
-              <div className="actions">
-                <button type="button" className="secondary" onClick={cancelCapture}>
-                  Peruuta
-                </button>
-                <button
-                  type="button"
-                  className="primary capture-text-save"
-                  disabled={!textValue.trim() || isSaving}
-                  onClick={() => void saveTextCapture()}
-                >
-                  {isSaving ? "Tallennetaan..." : "Tallenna"}
-                </button>
-              </div>
+              <button
+                type="button"
+                className="primary capture-text-save"
+                disabled={!textValue.trim() || isSaving}
+                onClick={() => void saveTextCapture()}
+              >
+                {isSaving ? "Tallennetaan..." : "Tallenna"}
+              </button>
               <p className="status capture-text-helper" style={{ margin: 0 }}>
                 {textCharacterCount > 0
                   ? `${textCharacterCount} merkkia valmiina tallennettavaksi.`
                   : "Aloita yhdesta lauseesta. Pikanappi toimii myos Ctrl+Enterilla."}
               </p>
+              <button type="button" className="capture-text-cancel" onClick={cancelCapture}>
+                Peruuta
+              </button>
             </div>
           </div>
           <div className="capture-text-visual" aria-hidden="true">

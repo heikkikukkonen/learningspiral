@@ -444,6 +444,11 @@ button.danger {
   background: transparent;
   color: #7c8ca1;
   padding: 0.2rem 0.4rem;
+  justify-self: end;
+}
+
+.capture-text-cancel:hover {
+  color: #51657e;
 }
 
 .capture-text-cancel:hover {
