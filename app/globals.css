@@ -249,8 +249,88 @@ button.danger {
   max-width: 680px;
 }
 
+.capture-entry-card {
+  padding: 1.25rem;
+}
+
+.capture-intro {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.capture-mode-pills,
+.capture-quick-hints {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.capture-primary-field textarea {
+  min-height: 240px;
+  padding: 0.85rem 0.9rem;
+}
+
+.capture-details {
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  background: var(--surface-soft);
+}
+
+.capture-details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.capture-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.capture-mode-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.capture-mode-card span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.capture-mode-card.is-active {
+  background: var(--primary-soft);
+  border-color: #98d3e6;
+}
+
+.capture-asset-preview {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+
+.capture-audio-player {
+  width: 100%;
+}
+
 @media (max-width: 760px) {
   .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .capture-intro {
+    flex-direction: column;
+  }
+
+  .capture-mode-grid {
     grid-template-columns: 1fr;
   }
 }

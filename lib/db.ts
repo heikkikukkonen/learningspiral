@@ -1,9 +1,11 @@
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import { CaptureRole, CardType, InputModality, SourceType } from "@/lib/types";
+import { CaptureAssetKind, CaptureRole, CardType, InputModality, SourceType } from "@/lib/types";
 import {
+  extractTextFromCaptureImage,
   generateCaptureSummaryReply,
   generateReviewCardsFromSummary,
-  isLlmConfigured
+  isLlmConfigured,
+  transcribeCaptureAudio
 } from "@/lib/llm";
 
 function appUserId(): string {
@@ -73,6 +75,18 @@ export interface CaptureMessageRow {
   source_id: string;
   role: CaptureRole;
   content: string;
+  created_at: string;
+}
+
+export interface CaptureAssetRow {
+  id: string;
+  user_id: string;
+  source_id: string;
+  kind: CaptureAssetKind;
+  file_name: string;
+  mime_type: string;
+  file_size: number;
+  base64_data: string;
   created_at: string;
 }
 
@@ -252,10 +266,14 @@ export async function createSourceFromCapture(input: {
   type: SourceType;
   rawInput: string;
   inputModality: InputModality;
+  origin?: string;
+  url?: string;
 }) {
   const source = await createSource({
     type: input.type,
     title: input.title,
+    origin: input.origin,
+    url: input.url,
     captureMode: "chat"
   });
 
@@ -302,6 +320,165 @@ export async function createSourceFromCapture(input: {
     entityId: source.id,
     payload: {
       input_modality: input.inputModality
+    }
+  });
+
+  return source;
+}
+
+export async function createSourceFromMultimodalCapture(input: {
+  title: string;
+  type: SourceType;
+  inputModality: InputModality;
+  textInput?: string;
+  sourceUrl?: string;
+  origin?: string;
+  imageFile?: {
+    fileName: string;
+    mimeType: string;
+    bytes: Uint8Array;
+  };
+  audioFile?: {
+    fileName: string;
+    mimeType: string;
+    bytes: Uint8Array;
+  };
+}) {
+  const supabase = getSupabaseAdmin();
+  const userId = appUserId();
+  const trimmedText = input.textInput?.trim() ?? "";
+  const trimmedUrl = input.sourceUrl?.trim() ?? "";
+
+  const source = await createSource({
+    type: input.type,
+    title: input.title,
+    origin: input.origin,
+    url: trimmedUrl || undefined,
+    captureMode: "chat"
+  });
+
+  const attachmentRows: Array<{
+    user_id: string;
+    source_id: string;
+    kind: CaptureAssetKind;
+    file_name: string;
+    mime_type: string;
+    file_size: number;
+    base64_data: string;
+  }> = [];
+
+  let extractedFromImage = "";
+  if (input.imageFile) {
+    const base64Data = Buffer.from(input.imageFile.bytes).toString("base64");
+    attachmentRows.push({
+      user_id: userId,
+      source_id: source.id,
+      kind: "image",
+      file_name: input.imageFile.fileName,
+      mime_type: input.imageFile.mimeType,
+      file_size: input.imageFile.bytes.byteLength,
+      base64_data: base64Data
+    });
+
+    const extracted = await extractTextFromCaptureImage({
+      mimeType: input.imageFile.mimeType,
+      base64Data,
+      userContext: trimmedText
+    }).catch((error) => {
+      logLlmError("createSourceFromMultimodalCapture.extractTextFromCaptureImage", error, {
+        sourceId: source.id
+      });
+      return { ok: false, data: "" };
+    });
+
+    extractedFromImage = extracted.data.trim();
+  }
+
+  let transcribedAudio = "";
+  if (input.audioFile) {
+    const base64Data = Buffer.from(input.audioFile.bytes).toString("base64");
+    attachmentRows.push({
+      user_id: userId,
+      source_id: source.id,
+      kind: "audio",
+      file_name: input.audioFile.fileName,
+      mime_type: input.audioFile.mimeType,
+      file_size: input.audioFile.bytes.byteLength,
+      base64_data: base64Data
+    });
+
+    const transcribed = await transcribeCaptureAudio({
+      fileName: input.audioFile.fileName,
+      mimeType: input.audioFile.mimeType,
+      bytes: input.audioFile.bytes
+    }).catch((error) => {
+      logLlmError("createSourceFromMultimodalCapture.transcribeCaptureAudio", error, {
+        sourceId: source.id
+      });
+      return { ok: false, data: "" };
+    });
+
+    transcribedAudio = transcribed.data.trim();
+  }
+
+  if (attachmentRows.length > 0) {
+    const { error: attachmentError } = await supabase.from("capture_assets").insert(attachmentRows);
+    if (attachmentError) throw attachmentError;
+  }
+
+  const rawInputParts = [
+    trimmedUrl ? `Source URL:\n${trimmedUrl}` : "",
+    trimmedText ? `User note:\n${trimmedText}` : "",
+    extractedFromImage ? `Image text:\n${extractedFromImage}` : "",
+    transcribedAudio ? `Voice transcript:\n${transcribedAudio}` : ""
+  ].filter(Boolean);
+
+  const rawInput = rawInputParts.join("\n\n").trim() || "Empty capture";
+
+  await appendCaptureMessage({
+    sourceId: source.id,
+    role: "user",
+    content: rawInput
+  });
+
+  const llmReply = await generateCaptureSummaryReply({
+    messages: [{ role: "user", content: rawInput }]
+  }).catch((error) => {
+    logLlmError("createSourceFromMultimodalCapture.generateCaptureSummaryReply", error, {
+      sourceId: source.id
+    });
+    return { ok: false, data: "" };
+  });
+
+  if (!llmReply.ok && isLlmConfigured()) {
+    logLlmWarning("createSourceFromMultimodalCapture.fallback_to_rule_summary", {
+      sourceId: source.id
+    });
+  }
+
+  const assistantSummary =
+    llmReply.ok && llmReply.data ? llmReply.data : buildFallbackAssistantSummary(rawInput);
+
+  await appendCaptureMessage({
+    sourceId: source.id,
+    role: "assistant",
+    content: assistantSummary
+  });
+
+  await upsertSummary(source.id, assistantSummary, {
+    rawInput,
+    inputModality: input.inputModality,
+    source: "chatgpt"
+  });
+
+  await logLearningEvent({
+    eventType: "capture_submitted",
+    entityId: source.id,
+    payload: {
+      input_modality: input.inputModality,
+      has_image: Boolean(input.imageFile),
+      has_audio: Boolean(input.audioFile),
+      has_url: Boolean(trimmedUrl)
     }
   });
 
@@ -377,7 +554,8 @@ export async function getSourceWithDetails(sourceId: string) {
     { data: source, error: sourceError },
     { data: summary, error: summaryError },
     { data: cards, error: cardsError },
-    { data: captureMessages, error: captureMessagesError }
+    { data: captureMessages, error: captureMessagesError },
+    { data: captureAssets, error: captureAssetsError }
   ] = await Promise.all([
     supabase
       .from("sources")
@@ -402,6 +580,12 @@ export async function getSourceWithDetails(sourceId: string) {
       .select("*")
       .eq("source_id", sourceId)
       .eq("user_id", userId)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("capture_assets")
+      .select("*")
+      .eq("source_id", sourceId)
+      .eq("user_id", userId)
       .order("created_at", { ascending: true })
   ]);
 
@@ -409,12 +593,14 @@ export async function getSourceWithDetails(sourceId: string) {
   if (summaryError) throw summaryError;
   if (cardsError) throw cardsError;
   if (captureMessagesError) throw captureMessagesError;
+  if (captureAssetsError) throw captureAssetsError;
 
   return {
     source: source as SourceRow | null,
     summary: summary as SummaryRow | null,
     cards: (cards ?? []) as CardRow[],
-    captureMessages: (captureMessages ?? []) as CaptureMessageRow[]
+    captureMessages: (captureMessages ?? []) as CaptureMessageRow[],
+    captureAssets: (captureAssets ?? []) as CaptureAssetRow[]
   };
 }
 

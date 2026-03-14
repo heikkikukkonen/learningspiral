@@ -11,6 +11,8 @@ export type CardType = "recall" | "apply" | "reflect" | "decision";
 export type CardStatus = "suggested" | "active" | "rejected";
 export type InputModality = "text" | "image" | "audio" | "mixed";
 export type CaptureRole = "user" | "assistant" | "system";
+export type CaptureMode = "text" | "image" | "voice" | "url";
+export type CaptureAssetKind = "image" | "audio";
 
 export interface Source {
   id: string;
@@ -40,4 +42,15 @@ export interface Card {
   prompt: string;
   answer: string;
   dueAt?: string;
+}
+
+export interface CaptureAsset {
+  id: string;
+  sourceId: string;
+  kind: CaptureAssetKind;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  base64Data: string;
+  createdAt: string;
 }

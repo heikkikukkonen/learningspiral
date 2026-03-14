@@ -113,6 +113,44 @@ async function callResponsesApi(messages: ChatMessage[]): Promise<{ text: string
   };
 }
 
+async function callResponsesApiWithInput(
+  input: Array<{ role: "system" | "user" | "assistant"; content: Array<Record<string, unknown>> }>
+): Promise<{ text: string; model?: string }> {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not configured");
+  }
+
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: getModel(),
+      input,
+      temperature: 0.3
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OpenAI request failed (${response.status}): ${errorText}`);
+  }
+
+  const json = (await response.json()) as {
+    output_text?: string;
+    model?: string;
+    output?: unknown;
+  };
+
+  return {
+    text: extractTextFromResponse(json),
+    model: json.model
+  };
+}
+
 function sanitizeCard(input: Partial<GeneratedCard>): GeneratedCard | null {
   const allowedTypes: CardType[] = ["recall", "apply", "reflect", "decision"];
   const cardType = input.cardType;
@@ -162,6 +200,85 @@ export async function generateCaptureSummaryReply(input: {
   ]);
 
   return { ok: Boolean(reply.text), data: reply.text, model: reply.model };
+}
+
+export async function extractTextFromCaptureImage(input: {
+  mimeType: string;
+  base64Data: string;
+  userContext?: string;
+}): Promise<LlmResult<string>> {
+  if (!isLlmConfigured()) {
+    return { ok: false, data: "" };
+  }
+
+  const reply = await callResponsesApiWithInput([
+    {
+      role: "system",
+      content: [
+        {
+          type: "input_text",
+          text: [
+            "You are a learning capture assistant.",
+            "Write in concise Finnish.",
+            "Extract the useful content from the image for later learning.",
+            "If there is text in the image, transcribe it.",
+            "If there is a diagram, UI, or visual concept, describe it briefly.",
+            "Return plain text only."
+          ].join("\n")
+        }
+      ]
+    },
+    {
+      role: "user",
+      content: [
+        {
+          type: "input_text",
+          text: input.userContext?.trim()
+            ? `Additional context from user:\n${input.userContext.trim()}`
+            : "Turn this image into usable capture text."
+        },
+        {
+          type: "input_image",
+          image_url: `data:${input.mimeType};base64,${input.base64Data}`
+        }
+      ]
+    }
+  ]);
+
+  return { ok: Boolean(reply.text), data: reply.text, model: reply.model };
+}
+
+export async function transcribeCaptureAudio(input: {
+  fileName: string;
+  mimeType: string;
+  bytes: Uint8Array;
+}): Promise<LlmResult<string>> {
+  if (!isLlmConfigured()) {
+    return { ok: false, data: "" };
+  }
+
+  const apiKey = getApiKey();
+  const form = new FormData();
+  const blob = new Blob([input.bytes], { type: input.mimeType || "audio/webm" });
+  form.append("file", blob, input.fileName || "capture-audio.webm");
+  form.append("model", "gpt-4o-mini-transcribe");
+
+  const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: form
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OpenAI transcription failed (${response.status}): ${errorText}`);
+  }
+
+  const json = (await response.json()) as { text?: string };
+  const text = (json.text || "").trim();
+  return { ok: Boolean(text), data: text };
 }
 
 export async function generateReviewCardsFromSummary(input: {
