@@ -503,7 +503,7 @@ export async function createSourceFromPreparedCapture(input: {
   const supabase = getSupabaseAdmin();
   const userId = appUserId();
   const rawInput = input.rawInput.trim();
-  const summary = input.summary.trim();
+  const summary = input.summary.trim() || rawInput;
 
   const source = await createSource({
     type: input.type,

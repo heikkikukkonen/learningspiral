@@ -29,10 +29,10 @@ export async function POST(request: Request) {
     };
 
     const rawInput = (body.rawInput || "").trim();
-    const summary = (body.summary || "").trim();
+    const summary = (body.summary || "").trim() || rawInput;
 
-    if (!rawInput || !summary) {
-      return NextResponse.json({ error: "Raw input and summary are required." }, { status: 400 });
+    if (!rawInput) {
+      return NextResponse.json({ error: "Raw input is required." }, { status: 400 });
     }
 
     const source = await createSourceFromPreparedCapture({

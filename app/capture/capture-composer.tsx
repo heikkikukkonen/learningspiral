@@ -71,22 +71,32 @@ export function CaptureComposer() {
     }
   }
 
-  async function saveCapture(inputModality: "text" | "image" | "audio") {
+  async function saveCapture(
+    inputModality: "text" | "image" | "audio",
+    overrides?: {
+      title?: string;
+      rawInput?: string;
+      summary?: string;
+      asset?: AssetPayload | null;
+    }
+  ) {
     setIsSaving(true);
     setError("");
     try {
+      const payload = {
+        title: overrides?.title ?? titleValue,
+        rawInput: overrides?.rawInput ?? rawInputValue,
+        summary: overrides?.summary ?? summaryValue,
+        inputModality,
+        asset: overrides?.asset ?? asset
+      };
+
       const response = await fetch("/api/capture/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          title: titleValue,
-          rawInput: rawInputValue,
-          summary: summaryValue,
-          inputModality,
-          asset
-        })
+        body: JSON.stringify(payload)
       });
 
       const json = await parseJson<{ sourceId: string }>(response);
@@ -255,9 +265,11 @@ export function CaptureComposer() {
               className="primary"
               disabled={!textValue.trim() || isSaving}
               onClick={() => {
-                setRawInputValue(textValue.trim());
-                setSummaryValue(textValue.trim());
-                void saveCapture("text");
+                const trimmedText = textValue.trim();
+                void saveCapture("text", {
+                  rawInput: trimmedText,
+                  summary: trimmedText
+                });
               }}
             >
               {isSaving ? "Tallennetaan..." : "Tallenna"}
