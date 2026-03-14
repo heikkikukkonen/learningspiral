@@ -3,30 +3,26 @@ import Link from "next/link";
 const homeActions = [
   {
     title: "Kirjoita ajatus",
-    subtitle: "Tallenna idea heti tekstina.",
     href: "/capture?mode=text",
-    accent: "green",
+    accent: "blue",
     icon: "pen"
   },
   {
     title: "Lisaa kuva",
-    subtitle: "Anna AI:n tulkita screenshot tai kuva.",
     href: "/capture?mode=image",
-    accent: "orange",
+    accent: "teal",
     icon: "image"
   },
   {
     title: "Nauhoita sanelu",
-    subtitle: "Muuta puhuttu ajatus tekstiksi.",
     href: "/capture?mode=voice",
-    accent: "blue",
+    accent: "slate",
     icon: "mic"
   },
   {
     title: "Syvenna osaamista",
-    subtitle: "Palaa review'hun ja jatka oppimiskierretta.",
     href: "/review",
-    accent: "gold",
+    accent: "mint",
     icon: "brain"
   }
 ] as const;
@@ -36,13 +32,14 @@ function ActionIcon({ icon }: { icon: (typeof homeActions)[number]["icon"] }) {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path
-          d="M4 16.8V20h3.2L18 9.2l-3.2-3.2L4 16.8z"
+          d="M4.8 18.4V20h1.6l10.5-10.5-1.6-1.6L4.8 18.4z"
           fill="none"
           stroke="currentColor"
           strokeLinejoin="round"
-          strokeWidth="1.8"
+          strokeWidth="1.6"
         />
-        <path d="M13.7 7.1l3.2 3.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+        <path d="M14.5 6.9l1.6-1.6a1.5 1.5 0 012.1 0l.5.5a1.5 1.5 0 010 2.1l-1.6 1.6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" />
+        <path d="M13.7 7.1l3.2 3.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
       </svg>
     );
   }
@@ -50,15 +47,15 @@ function ActionIcon({ icon }: { icon: (typeof homeActions)[number]["icon"] }) {
   if (icon === "image") {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="3.5" y="5" width="17" height="14" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-        <circle cx="8.5" cy="10" r="1.6" fill="currentColor" />
+        <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="8.5" cy="10" r="1.4" fill="currentColor" />
         <path
-          d="M6 17l4.2-4.2a1 1 0 011.4 0L14 15l1.7-1.7a1 1 0 011.4 0L19 15"
+          d="M6 16l3.8-3.7a1 1 0 011.4 0l2.3 2.3 1.6-1.6a1 1 0 011.4 0L19 15.5"
           fill="none"
           stroke="currentColor"
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth="1.8"
+          strokeWidth="1.6"
         />
       </svg>
     );
@@ -67,10 +64,10 @@ function ActionIcon({ icon }: { icon: (typeof homeActions)[number]["icon"] }) {
   if (icon === "mic") {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="9" y="4" width="6" height="10" rx="3" fill="none" stroke="currentColor" strokeWidth="1.8" />
-        <path d="M6.5 11.5a5.5 5.5 0 0011 0" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-        <path d="M12 17v3" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-        <path d="M9 20h6" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+        <rect x="9" y="4" width="6" height="9.8" rx="3" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M6.7 11.4a5.3 5.3 0 0010.6 0" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
+        <path d="M12 16.8v3.1" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
+        <path d="M9.4 20h5.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
       </svg>
     );
   }
@@ -79,28 +76,28 @@ function ActionIcon({ icon }: { icon: (typeof homeActions)[number]["icon"] }) {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path
-          d="M9.2 6.2a2.9 2.9 0 00-5.4 1.5c0 .6.2 1.2.5 1.7A3.3 3.3 0 004 15.8c.9.8 2 1.2 3.2 1.2h1.4"
+          d="M9.4 6.3a2.9 2.9 0 00-5.2 1.8c0 .6.1 1.1.4 1.6A3.2 3.2 0 004 15.6c.8.8 1.9 1.2 3 1.2h1.5"
           fill="none"
           stroke="currentColor"
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth="1.8"
+          strokeWidth="1.5"
         />
         <path
-          d="M14.8 6.2a2.9 2.9 0 015.4 1.5c0 .6-.2 1.2-.5 1.7a3.3 3.3 0 01.3 6.4c-.9.8-2 1.2-3.2 1.2h-1.4"
+          d="M14.6 6.3a2.9 2.9 0 015.2 1.8c0 .6-.1 1.1-.4 1.6a3.2 3.2 0 01.5 5.9c-.8.8-1.9 1.2-3 1.2h-1.5"
           fill="none"
           stroke="currentColor"
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth="1.8"
+          strokeWidth="1.5"
         />
         <path
-          d="M12 5.2v13.6M9.2 8.4C10 9 10.4 9.9 10.4 11s-.4 2-1.2 2.6m4.4-5.2c.8.6 1.2 1.5 1.2 2.6s-.4 2-1.2 2.6M8.7 16.3c.8-.2 1.5-.1 2.2.3.3.2.7.5 1.1.9m3.3-1.2c-.8-.2-1.5-.1-2.2.3-.3.2-.7.5-1.1.9"
+          d="M12 5.3v13.2M9.2 8.4c.7.5 1.1 1.4 1.1 2.4s-.4 1.9-1.1 2.4m5.6-4.8c-.7.5-1.1 1.4-1.1 2.4s.4 1.9 1.1 2.4M8.8 16c.8-.2 1.5-.1 2.1.2.4.2.7.5 1.1.9m3.2-1.1c-.8-.2-1.5-.1-2.1.2-.4.2-.7.5-1.1.9"
           fill="none"
           stroke="currentColor"
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth="1.8"
+          strokeWidth="1.5"
         />
       </svg>
     );
@@ -126,13 +123,34 @@ export default function HomePage() {
     <section className="home-shell home-shell-mobile">
       <div className="home-phone-card">
         <div className="home-hero">
+          <div className="home-hero-copy">
+            <h1>Learning Spiral</h1>
+            <p>Your thinking space</p>
+          </div>
           <div className="home-visual home-visual-main" aria-hidden="true">
+            <div className="home-visual-mist home-visual-mist-a" />
+            <div className="home-visual-mist home-visual-mist-b" />
             <div className="home-visual-brain" />
+            <div className="home-visual-links" />
+            <div className="home-visual-node home-visual-node-a" />
+            <div className="home-visual-node home-visual-node-b" />
+            <div className="home-visual-node home-visual-node-c" />
+            <div className="home-visual-node home-visual-node-d" />
+            <div className="home-visual-node home-visual-node-e" />
+            <div className="home-visual-node home-visual-node-f" />
             <div className="home-visual-spiral" />
             <div className="home-visual-ring home-visual-ring-a" />
             <div className="home-visual-ring home-visual-ring-b" />
             <div className="home-visual-ring home-visual-ring-c" />
             <div className="home-visual-glow" />
+            <div className="home-visual-dust" />
+            <div className="home-visual-sprout">
+              <div className="home-visual-sprout-glow" />
+              <div className="home-visual-sprout-base" />
+              <div className="home-visual-sprout-stem" />
+              <div className="home-visual-sprout-leaf home-visual-sprout-leaf-left" />
+              <div className="home-visual-sprout-leaf home-visual-sprout-leaf-right" />
+            </div>
           </div>
         </div>
 
