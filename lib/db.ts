@@ -485,6 +485,77 @@ export async function createSourceFromMultimodalCapture(input: {
   return source;
 }
 
+export async function createSourceFromPreparedCapture(input: {
+  title: string;
+  type: SourceType;
+  rawInput: string;
+  summary: string;
+  inputModality: InputModality;
+  origin?: string;
+  url?: string;
+  asset?: {
+    kind: CaptureAssetKind;
+    fileName: string;
+    mimeType: string;
+    bytes: Uint8Array;
+  };
+}) {
+  const supabase = getSupabaseAdmin();
+  const userId = appUserId();
+  const rawInput = input.rawInput.trim();
+  const summary = input.summary.trim();
+
+  const source = await createSource({
+    type: input.type,
+    title: input.title,
+    origin: input.origin,
+    url: input.url,
+    captureMode: "chat"
+  });
+
+  if (input.asset) {
+    const { error: assetError } = await supabase.from("capture_assets").insert({
+      user_id: userId,
+      source_id: source.id,
+      kind: input.asset.kind,
+      file_name: input.asset.fileName,
+      mime_type: input.asset.mimeType,
+      file_size: input.asset.bytes.byteLength,
+      base64_data: Buffer.from(input.asset.bytes).toString("base64")
+    });
+    if (assetError) throw assetError;
+  }
+
+  await appendCaptureMessage({
+    sourceId: source.id,
+    role: "user",
+    content: rawInput
+  });
+
+  await appendCaptureMessage({
+    sourceId: source.id,
+    role: "assistant",
+    content: summary
+  });
+
+  await upsertSummary(source.id, summary, {
+    rawInput,
+    inputModality: input.inputModality,
+    source: "chatgpt"
+  });
+
+  await logLearningEvent({
+    eventType: "capture_submitted",
+    entityId: source.id,
+    payload: {
+      input_modality: input.inputModality,
+      has_asset: Boolean(input.asset)
+    }
+  });
+
+  return source;
+}
+
 export async function listCaptureMessages(sourceId: string) {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase

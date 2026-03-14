@@ -253,6 +253,22 @@ button.danger {
   padding: 1.25rem;
 }
 
+.capture-button-panel,
+.capture-flow-card {
+  padding: 1.25rem;
+}
+
+.capture-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.capture-shortcuts button {
+  min-height: 56px;
+}
+
 .capture-intro {
   display: flex;
   justify-content: space-between;
@@ -283,6 +299,10 @@ button.danger {
 .capture-details summary {
   cursor: pointer;
   font-weight: 600;
+}
+
+.hidden-input {
+  display: none;
 }
 
 .capture-mode-grid {
@@ -331,6 +351,10 @@ button.danger {
   }
 
   .capture-mode-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .capture-shortcuts {
     grid-template-columns: 1fr;
   }
 }
