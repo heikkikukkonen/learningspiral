@@ -143,7 +143,7 @@ export default async function CapturePage({
                 />
               </label>
               <div className="actions">
-                <SubmitButton className="primary" pendingText="Sending...">
+                <SubmitButton className="primary" pendingText="Sending..." loadingVariant="idea-network">
                   Send
                 </SubmitButton>
               </div>

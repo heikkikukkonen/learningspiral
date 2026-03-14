@@ -172,7 +172,11 @@ export default async function SourceDetailsPage({
           <div className="actions">
             <form action={generateCardsAction}>
               <input type="hidden" name="sourceId" value={source.id} />
-              <SubmitButton className="secondary" pendingText="Generating...">
+              <SubmitButton
+                className="secondary"
+                pendingText="Generating..."
+                loadingVariant="idea-network"
+              >
                 Generate cards from summary
               </SubmitButton>
             </form>

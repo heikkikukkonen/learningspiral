@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
+import { IdeaNetworkLoader } from "@/app/components/idea-network-loader";
 
 type SubmitButtonProps = {
   children: ReactNode;
@@ -11,6 +12,7 @@ type SubmitButtonProps = {
   name?: string;
   value?: string;
   confirmMessage?: string;
+  loadingVariant?: "spinner" | "idea-network";
 };
 
 export function SubmitButton({
@@ -20,7 +22,8 @@ export function SubmitButton({
   disabled,
   name,
   value,
-  confirmMessage
+  confirmMessage,
+  loadingVariant = "spinner"
 }: SubmitButtonProps) {
   const { pending } = useFormStatus();
 
@@ -39,7 +42,13 @@ export function SubmitButton({
       }}
     >
       <span className="submit-button-content">
-        {pending ? <span className="spinner" aria-hidden="true" /> : null}
+        {pending ? (
+          loadingVariant === "idea-network" ? (
+            <IdeaNetworkLoader label={pendingText} />
+          ) : (
+            <span className="spinner" aria-hidden="true" />
+          )
+        ) : null}
         <span>{pending ? pendingText : children}</span>
       </span>
     </button>

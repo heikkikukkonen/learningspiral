@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { IdeaNetworkLoader } from "@/app/components/idea-network-loader";
 
 type Mode = "idle" | "text" | "image" | "voice";
 
@@ -343,9 +344,17 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 </button>
 
                 <div className="capture-image-footer">
-                  <p className="status capture-image-helper" style={{ margin: 0 }}>
-                    {isAnalyzing ? "AI tulkitsee kuvaa..." : "Pelkka kuvan lataus riittaa."}
-                  </p>
+                  {isAnalyzing ? (
+                    <IdeaNetworkLoader
+                      variant="panel"
+                      label="AI muodostaa yhteyksia kuvasta"
+                      detail="Luemme sisallon, tunnistamme ydinkohdat ja rakennamme yhteenvetoa."
+                    />
+                  ) : (
+                    <p className="status capture-image-helper" style={{ margin: 0 }}>
+                      Pelkka kuvan lataus riittaa.
+                    </p>
+                  )}
                   <button type="button" className="capture-image-cancel" onClick={cancelCapture}>
                     Peruuta
                   </button>
@@ -462,7 +471,13 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 </div>
 
                 {isRecording ? <p className="status capture-voice-helper">Nauhoitus kaynnissa selaimessa...</p> : null}
-                {isAnalyzing ? <p className="status capture-voice-helper">AI litteroi ja jasentaa aanta...</p> : null}
+                {isAnalyzing ? (
+                  <IdeaNetworkLoader
+                    variant="panel"
+                    label="AI yhdistaa puheesta ajatuksia"
+                    detail="Litteroimme aanen, poimimme merkitykset ja muotoilemme niista tiiviin rungon."
+                  />
+                ) : null}
                 {audioPreviewUrl ? (
                   <div className="capture-voice-preview-shell">
                     <div className="capture-voice-preview-meta">
