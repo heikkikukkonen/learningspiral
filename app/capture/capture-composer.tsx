@@ -332,20 +332,9 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                   <span>PNG, JPG tai screenshot. Avataan tiedostovalitsin heti.</span>
                 </button>
 
-                <label className="form-row capture-image-note-field">
-                  <span>Konteksti kuvasta</span>
-                  <textarea
-                    value={noteValue}
-                    placeholder="Mita kuvassa kannattaa erityisesti huomioida?"
-                    onChange={(event) => setNoteValue(event.target.value)}
-                  />
-                </label>
-
                 <div className="capture-image-footer">
                   <p className="status capture-image-helper" style={{ margin: 0 }}>
-                    {isAnalyzing
-                      ? "AI tulkitsee kuvaa..."
-                      : "Voit lisata lyhyen huomion ennen analyysia tai jattaa kentan tyhjaksi."}
+                    {isAnalyzing ? "AI tulkitsee kuvaa..." : "Pelkka kuvan lataus riittaa."}
                   </p>
                   <button type="button" className="capture-image-cancel" onClick={() => resetDraft("text")}>
                     Peruuta
