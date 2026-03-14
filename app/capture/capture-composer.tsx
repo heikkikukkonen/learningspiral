@@ -221,6 +221,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
   const textCharacterCount = textValue.trim().length;
   const imageSummaryCharacterCount = summaryValue.trim().length;
+  const voiceRawCharacterCount = rawInputValue.trim().length;
+  const voiceSummaryCharacterCount = summaryValue.trim().length;
 
   return (
     <div className="grid">
@@ -406,62 +408,141 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       ) : null}
 
       {mode === "voice" ? (
-        <article className="card capture-flow-card">
-          <div className="actions" style={{ justifyContent: "space-between", alignItems: "center" }}>
-            <h2 style={{ margin: 0 }}>Sanele ajatus</h2>
-            <div className="actions">
-              <button type="button" className="secondary" onClick={() => audioFileInputRef.current?.click()}>
-                Valitse tiedosto
-              </button>
-              {!isRecording ? (
-                <button type="button" className="primary" onClick={startRecording}>
-                  Aloita nauhoitus
-                </button>
-              ) : (
-                <button type="button" className="danger" onClick={stopRecording}>
-                  Lopeta nauhoitus
-                </button>
-              )}
-            </div>
-          </div>
-
-          {isRecording ? <p className="status">Nauhoitus kaynnissa selaimessa...</p> : null}
-          {isAnalyzing ? <p className="status">AI litteroi ja jäsentää aanta...</p> : null}
-          {audioPreviewUrl ? <audio controls className="capture-audio-player" src={audioPreviewUrl} /> : null}
-
-          {!asset && !isRecording ? (
-            <div className="actions">
-              <button type="button" className="secondary" onClick={() => resetDraft("text")}>
-                Peruuta
-              </button>
-            </div>
-          ) : null}
-
-          {asset ? (
-            <div className="grid">
-              <label className="form-row">
-                <span>Raakana tallennettu teksti</span>
-                <textarea value={rawInputValue} onChange={(event) => setRawInputValue(event.target.value)} />
-              </label>
-              <label className="form-row">
-                <span>AI:n kirjoittama yhteenveto</span>
-                <textarea value={summaryValue} onChange={(event) => setSummaryValue(event.target.value)} />
-              </label>
-              <div className="actions" style={{ justifyContent: "space-between", alignItems: "center" }}>
-                <button type="button" className="secondary" onClick={() => resetDraft("text")}>
-                  Peruuta
-                </button>
-                <button
-                  type="button"
-                  className="primary"
-                  disabled={!rawInputValue.trim() || !summaryValue.trim() || isSaving}
-                  onClick={() => void saveCapture("audio")}
-                >
-                  {isSaving ? "Tallennetaan..." : "Tallenna"}
-                </button>
+        <article className="card capture-flow-card capture-voice-card">
+          <div className="capture-voice-shell">
+            <div className="capture-voice-header">
+              <div className="capture-voice-copy">
+                <h2 style={{ margin: 0 }}>Sanele ajatus</h2>
+                <p className="status capture-voice-status">
+                  Nauhoita suoraan selaimessa tai tuo valmis aanitiedosto. AI litteroi sisallon ja
+                  auttaa viimeistelemaan yhteenvedon ennen tallennusta.
+                </p>
               </div>
             </div>
-          ) : null}
+
+            {!asset ? (
+              <div className="capture-voice-intake">
+                <div className="capture-voice-recorder">
+                  <div className="capture-voice-recorder-copy">
+                    <span className="pill" data-variant={isRecording ? "primary" : undefined}>
+                      {isRecording ? "Nauhoitus kaynnissa" : "Valmis nauhoitukseen"}
+                    </span>
+                    <strong>{isRecording ? "Puhu rauhassa, tallennus on paalla." : "Tallenna puhe suoraan selaimessa."}</strong>
+                    <span>
+                      {isRecording
+                        ? "Lopeta kun ajatus on kasassa. Litterointi alkaa heti nauhoituksen jalkeen."
+                        : "Sopii nopeaan ideaan, selitykseen tai ajatuksen purkamiseen ilman kirjoittamista."}
+                    </span>
+                  </div>
+
+                  <div className="capture-voice-recorder-actions">
+                    <button
+                      type="button"
+                      className={isRecording ? "danger capture-voice-record-stop" : "primary capture-voice-record-start"}
+                      onClick={isRecording ? stopRecording : startRecording}
+                    >
+                      {isRecording ? "Lopeta nauhoitus" : "Aloita nauhoitus"}
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary capture-voice-file-button"
+                      onClick={() => audioFileInputRef.current?.click()}
+                    >
+                      Valitse tiedosto
+                    </button>
+                  </div>
+                </div>
+
+                {isRecording ? <p className="status capture-voice-helper">Nauhoitus kaynnissa selaimessa...</p> : null}
+                {isAnalyzing ? <p className="status capture-voice-helper">AI litteroi ja jasentaa aanta...</p> : null}
+                {audioPreviewUrl ? (
+                  <div className="capture-voice-preview-shell">
+                    <div className="capture-voice-preview-meta">
+                      <span className="pill" data-variant="primary">
+                        Esikuuntelu
+                      </span>
+                      <span className="status">Tarkista aani ennen tallennusta.</span>
+                    </div>
+                    <audio controls className="capture-audio-player capture-voice-player" src={audioPreviewUrl} />
+                  </div>
+                ) : null}
+
+                {!isRecording ? (
+                  <div className="capture-voice-footer">
+                    <p className="status capture-voice-helper">
+                      {isAnalyzing
+                        ? "Kasittelemme tiedostoa juuri nyt."
+                        : "Voit joko nauhoittaa suoraan tai tuoda valmiin M4A-, MP3- tai WebM-tiedoston."}
+                    </p>
+                    <button type="button" className="capture-voice-cancel" onClick={() => resetDraft("text")}>
+                      Peruuta
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <div className="capture-voice-result">
+                <div className="capture-voice-preview-shell">
+                  <div className="capture-voice-preview-meta">
+                    <span className="pill" data-variant="primary">
+                      Aani analysoitu
+                    </span>
+                    <button
+                      type="button"
+                      className="secondary capture-voice-file-button"
+                      onClick={() => audioFileInputRef.current?.click()}
+                    >
+                      Valitse toinen tiedosto
+                    </button>
+                  </div>
+                  {audioPreviewUrl ? (
+                    <audio controls className="capture-audio-player capture-voice-player" src={audioPreviewUrl} />
+                  ) : null}
+                </div>
+
+                <label className="form-row capture-voice-transcript-field">
+                  <span>Litteroitu raakateksti</span>
+                  <textarea value={rawInputValue} onChange={(event) => setRawInputValue(event.target.value)} />
+                </label>
+
+                <label className="form-row capture-voice-summary-field">
+                  <span>AI:n kirjoittama yhteenveto</span>
+                  <textarea value={summaryValue} onChange={(event) => setSummaryValue(event.target.value)} />
+                </label>
+
+                <div className="capture-voice-actions">
+                  <button type="button" className="secondary" onClick={() => resetDraft("text")}>
+                    Peruuta
+                  </button>
+                  <div className="capture-voice-save-group">
+                    <p className="status capture-voice-helper" style={{ margin: 0 }}>
+                      {voiceRawCharacterCount > 0 && voiceSummaryCharacterCount > 0
+                        ? `${voiceRawCharacterCount} merkkia litteroituna, ${voiceSummaryCharacterCount} merkkia yhteenvedossa.`
+                        : "Varmista, etta litterointi ja yhteenveto tuntuvat oikeilta ennen tallennusta."}
+                    </p>
+                    <button
+                      type="button"
+                      className="primary capture-voice-save"
+                      disabled={!rawInputValue.trim() || !summaryValue.trim() || isSaving}
+                      onClick={() => void saveCapture("audio")}
+                    >
+                      {isSaving ? "Tallennetaan..." : "Tallenna"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="capture-voice-visual" aria-hidden="true">
+            <div className="capture-voice-wave capture-voice-wave-a" />
+            <div className="capture-voice-wave capture-voice-wave-b" />
+            <div className="capture-voice-wave capture-voice-wave-c" />
+            <div className="capture-voice-orbit capture-voice-orbit-a" />
+            <div className="capture-voice-orbit capture-voice-orbit-b" />
+            <div className="capture-voice-core" />
+            <div className="capture-voice-glow capture-voice-glow-a" />
+            <div className="capture-voice-glow capture-voice-glow-b" />
+          </div>
         </article>
       ) : null}
 
