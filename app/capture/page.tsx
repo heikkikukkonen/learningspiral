@@ -53,11 +53,6 @@ export default async function CapturePage({
 
   return (
     <section className="grid">
-      <div className="page-header">
-        <h1>Capture</h1>
-        <p className="muted">Save the idea first. Structure and review can come after.</p>
-      </div>
-
       {!sourceId ? (
         <CaptureComposer initialMode={requestedMode} />
       ) : (
