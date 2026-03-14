@@ -82,6 +82,11 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     }
   }
 
+  function cancelImageCapture() {
+    resetDraft("text");
+    router.push("/");
+  }
+
   async function saveCapture(
     inputModality: "text" | "image" | "audio",
     overrides?: {
@@ -338,7 +343,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                   <p className="status capture-image-helper" style={{ margin: 0 }}>
                     {isAnalyzing ? "AI tulkitsee kuvaa..." : "Pelkka kuvan lataus riittaa."}
                   </p>
-                  <button type="button" className="capture-image-cancel" onClick={() => resetDraft("text")}>
+                  <button type="button" className="capture-image-cancel" onClick={cancelImageCapture}>
                     Peruuta
                   </button>
                 </div>
@@ -374,7 +379,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 </label>
 
                 <div className="capture-image-actions">
-                  <button type="button" className="secondary" onClick={() => resetDraft("text")}>
+                  <button type="button" className="secondary" onClick={cancelImageCapture}>
                     Peruuta
                   </button>
                   <div className="capture-image-save-group">
