@@ -45,7 +45,7 @@ export default async function SourcesPage() {
       </div>
 
       <div className="actions" style={{ marginBottom: "1rem" }}>
-        <Link href="/capture" className="button-link primary">
+        <Link href="/" className="button-link primary">
           New capture
         </Link>
         <Link href="/progress" className="button-link secondary">
