@@ -90,10 +90,11 @@ export async function saveSourceDraftAction(formData: FormData) {
         });
 
   let ideaStatus: IdeaStatus = "draft";
-  if (saveMode === "save") {
-    ideaStatus = (await sourceHasCards(sourceId))
-      ? "refined_with_cards"
-      : "refined_without_cards";
+  if (saveMode === "complete") {
+    if (!(await sourceHasCards(sourceId))) {
+      throw new Error("Luo kortit ensin ennen kuin tallennat idean valmiina.");
+    }
+    ideaStatus = "refined_with_cards";
   }
 
   await updateSource({
@@ -112,10 +113,6 @@ export async function saveSourceDraftAction(formData: FormData) {
   revalidatePath(`/capture?sourceId=${sourceId}`);
   revalidatePath("/sources");
   revalidatePath("/progress");
-
-  if (saveMode === "later") {
-    redirect("/sources");
-  }
 }
 
 export async function refineSourceDraftAction(formData: FormData) {

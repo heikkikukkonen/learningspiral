@@ -1,16 +1,15 @@
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SubmitButton } from "@/app/components/submit-button";
 import {
   acceptAllSuggestedAction,
   deleteCardAction,
-  deleteSourceAction,
   generateCardsAction,
   saveCardAction,
   setCardStatusAction
 } from "@/app/sources/actions";
 import { SourceEditorForm } from "@/app/sources/[id]/source-editor-form";
+import { SourcePageActions } from "@/app/sources/[id]/source-page-actions";
 import { getSourceWithDetails } from "@/lib/db";
 import { parseSourceSummaryContent, suggestSourceTags } from "@/lib/source-editor";
 import { CardType, IdeaStatus, SourceType } from "@/lib/types";
@@ -60,9 +59,9 @@ function assetUrl(mimeType: string, base64Data: string): string {
 function ideaStatusLabel(status: IdeaStatus): string {
   switch (status) {
     case "refined_with_cards":
-      return "jalostettu idea kortit luotu";
+      return "valmis idea";
     case "refined_without_cards":
-      return "jalostettu idea ei kortteja";
+      return "jalostettu idea ilman kortteja";
     default:
       return "keskenerainen idea";
   }
@@ -131,8 +130,8 @@ export default async function SourceDetailsPage({
       <div className="page-header source-workspace-header">
         <h1>Idean jalostaminen</h1>
         <p className="muted">
-          Muokkaa ideasta selkeä otsikko, ydinajatus, analyysi ja tagit ennen korttien luontia.
-          {" "}Voit myös vain tallentaa tiedot ja jalostaa idean valmiiksi myöhemmin.
+          Muokkaa ideasta selkea otsikko, ydinajatus, analyysi ja tagit ennen korttien luontia.
+          {" "}Voit myos vain tallentaa tiedot ja jalostaa idean valmiiksi myohemmin.
         </p>
       </div>
 
@@ -158,7 +157,7 @@ export default async function SourceDetailsPage({
 
           <div className="source-origin-panel">
             <details className="capture-details source-capture-details">
-              <summary>Näytä alkuperäinen capture</summary>
+              <summary>Nayta alkuperainen capture</summary>
 
               <div className="source-capture-details-body">
                 <div className="source-meta">
@@ -307,7 +306,7 @@ export default async function SourceDetailsPage({
                   <SubmitButton
                     className="danger"
                     pendingText="Deleting..."
-                    confirmMessage="Poistetaanko kortti pysyvästi?"
+                    confirmMessage="Poistetaanko kortti pysyvasti?"
                   >
                     Delete
                   </SubmitButton>
@@ -316,46 +315,13 @@ export default async function SourceDetailsPage({
             </article>
           ))}
         </div>
-
-        <div className="source-edit-footer source-page-actions">
-          <SubmitButton
-            className="secondary source-edit-later"
-            pendingText="Tallennetaan..."
-            form="source-editor-form"
-            name="saveMode"
-            value="later"
-          >
-            Jalosta myohemmin
-          </SubmitButton>
-          <div className="source-edit-save-group">
-            <p className="status" style={{ margin: 0 }}>
-              {lastSavedLabel}
-            </p>
-            <SubmitButton
-              className="primary source-edit-save"
-              pendingText="Tallennetaan..."
-              form="source-editor-form"
-              name="saveMode"
-              value="save"
-            >
-              Tallenna
-            </SubmitButton>
-          </div>
-        </div>
       </article>
 
-      <div className="actions">
-        <form action={deleteSourceAction}>
-          <input type="hidden" name="sourceId" value={source.id} />
-          <SubmitButton
-            className="danger"
-            pendingText="Deleting idea..."
-            confirmMessage="Poistetaanko idea pysyvästi? Tämä poistaa myös siihen liittyvät kortit."
-          >
-            Poista idea
-          </SubmitButton>
-        </form>
-      </div>
+      <SourcePageActions
+        sourceId={source.id}
+        hasCards={cards.length > 0}
+        lastSavedLabel={lastSavedLabel}
+      />
     </section>
   );
 }

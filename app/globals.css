@@ -805,6 +805,37 @@ button.danger {
   border-top: 1px solid rgba(223, 228, 236, 0.95);
 }
 
+.source-page-actions-panel {
+  border-radius: 22px;
+  padding: 1rem 1.1rem;
+}
+
+.source-page-actions-panel .source-page-actions {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.source-page-save-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex: 1 1 520px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.source-page-delete {
+  min-width: 130px;
+  min-height: 52px;
+  border-radius: 14px;
+}
+
+.source-page-actions-error {
+  margin: 0.75rem 0 0;
+  color: var(--danger);
+}
+
 .review-shell {
   max-width: 680px;
 }
@@ -1936,6 +1967,7 @@ button.danger {
   .source-tag-add,
   .source-edit-footer,
   .source-edit-save-group,
+  .source-page-save-actions,
   .source-editor-topbar,
   .source-origin-header {
     align-items: stretch;
@@ -1944,6 +1976,7 @@ button.danger {
 
   .source-edit-save,
   .source-tag-add button,
+  .source-page-delete,
   .source-edit-later {
     width: 100%;
   }
