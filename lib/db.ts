@@ -122,6 +122,12 @@ export interface UserSettingsRow extends UserSettings {
 
 const CARD_GENERATION_MODEL = "rule-v1";
 
+function isMissingIdeaStatusColumnError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const message = "message" in error && typeof error.message === "string" ? error.message : "";
+  return message.includes("idea_status");
+}
+
 function toIsoDate(value: Date): string {
   return value.toISOString().slice(0, 10);
 }
@@ -254,25 +260,33 @@ export async function createSource(input: {
   captureMode?: string;
 }) {
   const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
+  const baseInsert = {
+    user_id: appUserId(),
+    type: input.type,
+    title: input.title,
+    author: input.author || null,
+    origin: input.origin || null,
+    published_at: input.publishedAt || null,
+    url: input.url || null,
+    tags: input.tags?.length ? input.tags : [],
+    capture_mode: input.captureMode ?? "manual"
+  };
+
+  let result = await supabase
     .from("sources")
     .insert({
-      user_id: appUserId(),
-      type: input.type,
-      title: input.title,
-      author: input.author || null,
-      origin: input.origin || null,
-      published_at: input.publishedAt || null,
-      url: input.url || null,
-      tags: input.tags?.length ? input.tags : [],
-      capture_mode: input.captureMode ?? "manual",
+      ...baseInsert,
       idea_status: "draft"
     })
     .select("*")
     .single();
 
-  if (error) throw error;
-  return data as SourceRow;
+  if (result.error && isMissingIdeaStatusColumnError(result.error)) {
+    result = await supabase.from("sources").insert(baseInsert).select("*").single();
+  }
+
+  if (result.error) throw result.error;
+  return result.data as SourceRow;
 }
 
 export async function updateSource(input: {
@@ -284,11 +298,15 @@ export async function updateSource(input: {
   const supabase = getSupabaseAdmin();
   const userId = appUserId();
 
-  const { data, error } = await supabase
+  const baseUpdate = {
+    title: input.title,
+    tags: input.tags?.length ? input.tags : []
+  };
+
+  let result = await supabase
     .from("sources")
     .update({
-      title: input.title,
-      tags: input.tags?.length ? input.tags : [],
+      ...baseUpdate,
       ...(input.ideaStatus ? { idea_status: input.ideaStatus } : {})
     })
     .eq("id", input.sourceId)
@@ -296,8 +314,18 @@ export async function updateSource(input: {
     .select("*")
     .single();
 
-  if (error) throw error;
-  return data as SourceRow;
+  if (result.error && input.ideaStatus && isMissingIdeaStatusColumnError(result.error)) {
+    result = await supabase
+      .from("sources")
+      .update(baseUpdate)
+      .eq("id", input.sourceId)
+      .eq("user_id", userId)
+      .select("*")
+      .single();
+  }
+
+  if (result.error) throw result.error;
+  return result.data as SourceRow;
 }
 
 export async function sourceHasCards(sourceId: string) {

@@ -38,6 +38,7 @@ npm install
 
 - `supabase/migrations/20260228103000_mvp_01_schema.sql`
 - `supabase/migrations/20260301102000_mvp_02_capture_metrics.sql`
+- `supabase/migrations/20260315100000_add_idea_status_to_sources.sql`
 
 4. Start dev server:
 

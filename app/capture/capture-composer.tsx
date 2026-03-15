@@ -27,10 +27,36 @@ type CaptureComposerProps = {
 type TextSaveStage = "idle" | "analyzing" | "saving";
 
 async function parseJson<T>(response: Response): Promise<T> {
-  const json = (await response.json()) as T & { error?: string };
-  if (!response.ok) {
-    throw new Error(json.error || "Request failed.");
+  const responseText = await response.text();
+  let json: (T & { error?: string; message?: string }) | null = null;
+
+  if (responseText) {
+    try {
+      json = JSON.parse(responseText) as T & { error?: string; message?: string };
+    } catch {
+      if (!response.ok) {
+        throw new Error(
+          `Pyynto epaonnistui (${response.status}). ${
+            responseText.slice(0, 200) || "Palvelin ei palauttanut luettavaa virheviestia."
+          }`
+        );
+      }
+      throw new Error("Palvelin palautti virheellisen vastauksen.");
+    }
   }
+
+  if (!response.ok) {
+    throw new Error(
+      json?.error ||
+        json?.message ||
+        `Pyynto epaonnistui (${response.status}).`
+    );
+  }
+
+  if (!json) {
+    throw new Error("Palvelin palautti tyhjan vastauksen.");
+  }
+
   return json;
 }
 
@@ -127,7 +153,9 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       router.refresh();
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Save failed.");
+      setError(
+        err instanceof Error ? err.message : "Tallennus epaonnistui. Tarkista palvelinlokit."
+      );
       return false;
     } finally {
       setIsSaving(false);
