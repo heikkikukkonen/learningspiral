@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listSources } from "@/lib/db";
-import { SourceType } from "@/lib/types";
+import { IdeaStatus, SourceType } from "@/lib/types";
 
 type SourceListItem = {
   id: string;
@@ -9,8 +9,20 @@ type SourceListItem = {
   author: string | null;
   tags: string[] | null;
   capture_mode: string;
+  idea_status: IdeaStatus;
   created_at: string;
 };
+
+function ideaStatusLabel(status: IdeaStatus): string {
+  switch (status) {
+    case "refined_with_cards":
+      return "jalostettu idea kortit luotu";
+    case "refined_without_cards":
+      return "jalostettu idea ei kortteja";
+    default:
+      return "keskenerainen idea";
+  }
+}
 
 export default async function SourcesPage() {
   let sources: SourceListItem[] = [];
@@ -61,6 +73,7 @@ export default async function SourcesPage() {
               <div className="source-meta">
                 <span className="pill">{source.type}</span>
                 <span className="pill">{source.capture_mode}</span>
+                <span className="pill">{ideaStatusLabel(source.idea_status)}</span>
                 {source.author ? <span>{source.author}</span> : null}
                 {source.tags?.map((tag) => (
                   <span className="pill" key={tag}>

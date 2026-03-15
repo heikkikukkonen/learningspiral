@@ -809,6 +809,31 @@ button.danger {
   max-width: 680px;
 }
 
+.settings-form {
+  gap: 1rem;
+}
+
+.settings-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.settings-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.settings-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settings-grid textarea {
+  min-height: 180px;
+}
+
 .capture-entry-card {
   padding: 1.25rem;
 }
@@ -977,10 +1002,6 @@ button.danger {
   justify-items: center;
   gap: 0.8rem;
   padding-top: 0.1rem;
-}
-
-.capture-text-footer .idea-network-loader-panel {
-  width: min(100%, 520px);
 }
 
 .capture-text-save {
@@ -1929,6 +1950,10 @@ button.danger {
 
   .source-analysis-actions {
     flex-direction: column;
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr;
   }
 
   .capture-text-card {

@@ -13,6 +13,7 @@ export type InputModality = "text" | "image" | "audio" | "mixed";
 export type CaptureRole = "user" | "assistant" | "system";
 export type CaptureMode = "text" | "image" | "voice" | "url";
 export type CaptureAssetKind = "image" | "audio";
+export type IdeaStatus = "draft" | "refined_without_cards" | "refined_with_cards";
 
 export interface Source {
   id: string;

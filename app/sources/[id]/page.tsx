@@ -13,7 +13,7 @@ import {
 import { SourceEditorForm } from "@/app/sources/[id]/source-editor-form";
 import { getSourceWithDetails } from "@/lib/db";
 import { parseSourceSummaryContent, suggestSourceTags } from "@/lib/source-editor";
-import { CardType, SourceType } from "@/lib/types";
+import { CardType, IdeaStatus, SourceType } from "@/lib/types";
 
 type SourceDetails = {
   id: string;
@@ -24,6 +24,7 @@ type SourceDetails = {
   url: string | null;
   tags: string[] | null;
   capture_mode: string;
+  idea_status: IdeaStatus;
 };
 
 type SummaryDetails = {
@@ -54,6 +55,17 @@ type CaptureAsset = {
 
 function assetUrl(mimeType: string, base64Data: string): string {
   return `data:${mimeType};base64,${base64Data}`;
+}
+
+function ideaStatusLabel(status: IdeaStatus): string {
+  switch (status) {
+    case "refined_with_cards":
+      return "jalostettu idea kortit luotu";
+    case "refined_without_cards":
+      return "jalostettu idea ei kortteja";
+    default:
+      return "keskenerainen idea";
+  }
 }
 
 export default async function SourceDetailsPage({
@@ -130,6 +142,7 @@ export default async function SourceDetailsPage({
             <div className="source-meta">
               <span className="pill">{source.type}</span>
               <span className="pill">{source.capture_mode}</span>
+              <span className="pill">{ideaStatusLabel(source.idea_status)}</span>
             </div>
           </div>
 
@@ -305,9 +318,15 @@ export default async function SourceDetailsPage({
         </div>
 
         <div className="source-edit-footer source-page-actions">
-          <Link href="/sources" className="button-link secondary source-edit-later">
+          <SubmitButton
+            className="secondary source-edit-later"
+            pendingText="Tallennetaan..."
+            form="source-editor-form"
+            name="saveMode"
+            value="later"
+          >
             Jalosta myohemmin
-          </Link>
+          </SubmitButton>
           <div className="source-edit-save-group">
             <p className="status" style={{ margin: 0 }}>
               {lastSavedLabel}
@@ -316,8 +335,10 @@ export default async function SourceDetailsPage({
               className="primary source-edit-save"
               pendingText="Tallennetaan..."
               form="source-editor-form"
+              name="saveMode"
+              value="save"
             >
-              Tallenna ja luo kortit
+              Tallenna
             </SubmitButton>
           </div>
         </div>

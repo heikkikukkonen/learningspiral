@@ -88,7 +88,6 @@ export function SourceEditorForm({
         <input type="hidden" name="rawInput" value={rawInput} />
         <input type="hidden" name="inputModality" value={inputModality} />
         <input type="hidden" name="tags" value={tags.join(",")} />
-        <input type="hidden" name="generateCardsOnSave" value="true" />
 
         <label className="form-row source-edit-field">
           <span>Otsikko</span>

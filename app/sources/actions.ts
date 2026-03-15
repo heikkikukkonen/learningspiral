@@ -9,11 +9,13 @@ import {
   deleteSource,
   createSource,
   generateSuggestedCards,
+  getUserSettings,
+  sourceHasCards,
   updateSource,
   updateCard,
   upsertSummary
 } from "@/lib/db";
-import { CardType, InputModality, SourceType } from "@/lib/types";
+import { CardType, IdeaStatus, InputModality, SourceType } from "@/lib/types";
 import { buildSourceSummaryContent, suggestSourceTags } from "@/lib/source-editor";
 import { refineSourceDraft } from "@/lib/llm";
 
@@ -72,7 +74,7 @@ export async function saveSourceDraftAction(formData: FormData) {
   const analysis = asString(formData.get("analysis"));
   const rawInput = asString(formData.get("rawInput")) || null;
   const inputModality = asString(formData.get("inputModality")) as InputModality;
-  const generateCardsOnSave = asString(formData.get("generateCardsOnSave")) === "true";
+  const saveMode = asString(formData.get("saveMode"));
   const tags = asString(formData.get("tags"))
     .split(",")
     .map((item) => item.trim())
@@ -87,10 +89,18 @@ export async function saveSourceDraftAction(formData: FormData) {
           rawInput
         });
 
+  let ideaStatus: IdeaStatus = "draft";
+  if (saveMode === "save") {
+    ideaStatus = (await sourceHasCards(sourceId))
+      ? "refined_with_cards"
+      : "refined_without_cards";
+  }
+
   await updateSource({
     sourceId,
     title,
-    tags: resolvedTags
+    tags: resolvedTags,
+    ideaStatus
   });
 
   await upsertSummary(sourceId, buildSourceSummaryContent({ idea, analysis }), {
@@ -98,14 +108,14 @@ export async function saveSourceDraftAction(formData: FormData) {
     inputModality: inputModality || "text"
   });
 
-  if (generateCardsOnSave) {
-    await generateSuggestedCards({ sourceId });
-  }
-
   revalidatePath(`/sources/${sourceId}`);
   revalidatePath(`/capture?sourceId=${sourceId}`);
   revalidatePath("/sources");
   revalidatePath("/progress");
+
+  if (saveMode === "later") {
+    redirect("/sources");
+  }
 }
 
 export async function refineSourceDraftAction(formData: FormData) {
@@ -123,6 +133,7 @@ export async function refineSourceDraftAction(formData: FormData) {
     modeValue === "deepen" || modeValue === "summarize" || modeValue === "refresh"
       ? modeValue
       : "refresh";
+  const settings = await getUserSettings();
 
   const refined = await refineSourceDraft({
     mode,
@@ -130,7 +141,8 @@ export async function refineSourceDraftAction(formData: FormData) {
     idea,
     analysis,
     rawInput,
-    tags
+    tags,
+    settings
   });
 
   return {

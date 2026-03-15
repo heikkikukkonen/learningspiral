@@ -31,7 +31,7 @@ export function SiteNav() {
   const pathname = usePathname();
   const isCapturePage = pathname.startsWith("/capture");
   const sourcesActive = pathname === "/sources" || pathname.startsWith("/sources/");
-  const settingsActive = pathname === "/login" || pathname === "/progress";
+  const settingsActive = pathname === "/settings" || pathname === "/login";
   const primaryHref = isCapturePage ? "/" : "/sources";
   const primaryLabel = isCapturePage ? "Etusivu" : "Haku ja ideat";
 
@@ -50,7 +50,7 @@ export function SiteNav() {
           </svg>
         )}
       </HeaderIcon>
-      <HeaderIcon href="/login" label="Asetukset" active={settingsActive}>
+      <HeaderIcon href="/settings" label="Asetukset" active={settingsActive}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path
             d="M12 3.5l1.3 2.4 2.7.5-.9 2.6 1.9 2-1.9 2 .9 2.6-2.7.5L12 20.5l-1.3-2.4-2.7-.5.9-2.6-1.9-2 1.9-2-.9-2.6 2.7-.5L12 3.5z"

@@ -1,5 +1,6 @@
 import { CardType } from "@/lib/types";
 import { normalizeBlock, normalizeCaptureSummary, suggestSourceTags } from "@/lib/source-editor";
+import { buildLanguageInstruction, UserSettings } from "@/lib/user-settings";
 
 interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -27,6 +28,12 @@ export interface RefinedSourceDraft {
 
 interface RefinedAnalysisPayload {
   analysis: string;
+}
+
+function appendOptionalInstruction(lines: string[], instruction?: string) {
+  const normalized = (instruction || "").trim();
+  if (!normalized) return lines;
+  return [...lines, normalized];
 }
 
 function getModel(): string {
@@ -291,14 +298,16 @@ function fallbackRefinedSourceDraft(input: {
 
 export async function generateCaptureSummaryReply(input: {
   messages: Array<{ role: "user" | "assistant"; content: string }>;
+  settings?: UserSettings;
 }): Promise<LlmResult<string>> {
   if (!isLlmConfigured()) {
     return { ok: false, data: "" };
   }
 
-  const systemPrompt = [
+  const systemPrompt = appendOptionalInstruction([
     "You are a learning capture assistant.",
-    "Write in concise Finnish.",
+    buildLanguageInstruction(input.settings?.responseLanguage || "Finnish"),
+    "Keep the writing concise.",
     "Goal: produce a practical summary draft the user can edit.",
     "Always include this structure:",
     "<2-5 concise sentences>",
@@ -309,7 +318,7 @@ export async function generateCaptureSummaryReply(input: {
     "- bullet 3",
     "",
     "Focus on concrete decisions, actions, and why this matters now."
-  ].join("\n");
+  ]).join("\n");
 
   const recentMessages = input.messages.slice(-10);
   const reply = await callResponsesApi([
@@ -411,13 +420,15 @@ export async function transcribeCaptureAudio(input: {
 export async function generateReviewCardsFromSummary(input: {
   summary: string;
   rawInput: string;
+  settings?: UserSettings;
 }): Promise<LlmResult<GeneratedCard[]>> {
   if (!isLlmConfigured()) {
     return { ok: false, data: [] };
   }
 
-  const systemPrompt = [
-    "You generate learning review cards in Finnish.",
+  const systemPrompt = appendOptionalInstruction([
+    "You generate learning review cards.",
+    buildLanguageInstruction(input.settings?.responseLanguage || "Finnish"),
     "Return ONLY valid JSON.",
     "Schema:",
     "{",
@@ -425,9 +436,8 @@ export async function generateReviewCardsFromSummary(input: {
     '    {"cardType":"recall|apply|reflect|decision","prompt":"...","answer":"..."}',
     "  ]",
     "}",
-    "Generate exactly 4 cards, one per type: recall, apply, reflect, decision.",
-    "Make prompts concrete and actionable for a founder/leader context."
-  ].join("\n");
+    "Generate exactly 4 cards, one per type: recall, apply, reflect, decision."
+  ], input.settings?.cardGenerationPrompt).join("\n");
 
   const reply = await callResponsesApi([
     { role: "system", content: systemPrompt },
@@ -481,6 +491,7 @@ export async function refineSourceDraft(input: {
   analysis: string;
   rawInput: string;
   tags: string[];
+  settings?: UserSettings;
 }): Promise<LlmResult<RefinedSourceDraft>> {
   if (!isLlmConfigured()) {
     return {
@@ -498,9 +509,16 @@ export async function refineSourceDraft(input: {
       "Tighten and summarize the analysis so it stays concise without losing the core message."
   } as const;
 
-  const systemPrompt = [
+  const customInstructionByMode = {
+    refresh: input.settings?.analysisPromptRefresh || "",
+    deepen: input.settings?.analysisPromptDeepen || "",
+    summarize: input.settings?.analysisPromptSummarize || ""
+  } as const;
+
+  const systemPrompt = appendOptionalInstruction([
     "You are a learning capture editor.",
-    "Write in concise Finnish.",
+    buildLanguageInstruction(input.settings?.responseLanguage || "Finnish"),
+    "Keep the writing concise.",
     "Return ONLY valid JSON.",
     "Schema:",
     "{",
@@ -509,7 +527,7 @@ export async function refineSourceDraft(input: {
     "Do not rewrite the title, idea, or tags.",
     "Keep analysis directly editable by the user.",
     "Preserve the user's intent and wording where possible."
-  ].join("\n");
+  ], customInstructionByMode[input.mode]).join("\n");
 
   const reply = await callResponsesApi([
     { role: "system", content: systemPrompt },

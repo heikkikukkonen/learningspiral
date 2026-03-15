@@ -1,5 +1,12 @@
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import { CaptureAssetKind, CaptureRole, CardType, InputModality, SourceType } from "@/lib/types";
+import {
+  CaptureAssetKind,
+  CaptureRole,
+  CardType,
+  IdeaStatus,
+  InputModality,
+  SourceType
+} from "@/lib/types";
 import {
   extractTextFromCaptureImage,
   generateCaptureSummaryReply,
@@ -8,6 +15,7 @@ import {
   transcribeCaptureAudio
 } from "@/lib/llm";
 import { normalizeCaptureSummary } from "@/lib/source-editor";
+import { DEFAULT_USER_SETTINGS, sanitizeUserSettings, UserSettings } from "@/lib/user-settings";
 
 function appUserId(): string {
   return process.env.APP_USER_ID ?? "11111111-1111-1111-1111-111111111111";
@@ -24,6 +32,7 @@ export interface SourceRow {
   url: string | null;
   tags: string[] | null;
   capture_mode: string;
+  idea_status: IdeaStatus;
   created_at: string;
 }
 
@@ -105,6 +114,12 @@ export interface ProgressSnapshot {
   lmsTrend90: ProgressPoint[];
 }
 
+export interface UserSettingsRow extends UserSettings {
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
 const CARD_GENERATION_MODEL = "rule-v1";
 
 function toIsoDate(value: Date): string {
@@ -165,6 +180,57 @@ export async function logLearningEvent(input: {
   if (error) throw error;
 }
 
+export async function getUserSettings(userId = appUserId()): Promise<UserSettings> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("user_settings")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return DEFAULT_USER_SETTINGS;
+
+  return sanitizeUserSettings({
+    responseLanguage: data.response_language,
+    analysisPromptRefresh: data.analysis_prompt_refresh,
+    analysisPromptDeepen: data.analysis_prompt_deepen,
+    analysisPromptSummarize: data.analysis_prompt_summarize,
+    cardGenerationPrompt: data.card_generation_prompt
+  });
+}
+
+export async function upsertUserSettings(input: UserSettings, userId = appUserId()) {
+  const supabase = getSupabaseAdmin();
+  const settings = sanitizeUserSettings(input);
+
+  const { data, error } = await supabase
+    .from("user_settings")
+    .upsert({
+      user_id: userId,
+      response_language: settings.responseLanguage,
+      analysis_prompt_refresh: settings.analysisPromptRefresh,
+      analysis_prompt_deepen: settings.analysisPromptDeepen,
+      analysis_prompt_summarize: settings.analysisPromptSummarize,
+      card_generation_prompt: settings.cardGenerationPrompt
+    })
+    .select("*")
+    .single();
+
+  if (error) throw error;
+
+  return {
+    user_id: data.user_id,
+    responseLanguage: data.response_language,
+    analysisPromptRefresh: data.analysis_prompt_refresh ?? "",
+    analysisPromptDeepen: data.analysis_prompt_deepen ?? "",
+    analysisPromptSummarize: data.analysis_prompt_summarize ?? "",
+    cardGenerationPrompt: data.card_generation_prompt ?? "",
+    created_at: data.created_at,
+    updated_at: data.updated_at
+  } as UserSettingsRow;
+}
+
 export async function listSources() {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
@@ -199,7 +265,8 @@ export async function createSource(input: {
       published_at: input.publishedAt || null,
       url: input.url || null,
       tags: input.tags?.length ? input.tags : [],
-      capture_mode: input.captureMode ?? "manual"
+      capture_mode: input.captureMode ?? "manual",
+      idea_status: "draft"
     })
     .select("*")
     .single();
@@ -212,6 +279,7 @@ export async function updateSource(input: {
   sourceId: string;
   title: string;
   tags?: string[];
+  ideaStatus?: IdeaStatus;
 }) {
   const supabase = getSupabaseAdmin();
   const userId = appUserId();
@@ -220,7 +288,8 @@ export async function updateSource(input: {
     .from("sources")
     .update({
       title: input.title,
-      tags: input.tags?.length ? input.tags : []
+      tags: input.tags?.length ? input.tags : [],
+      ...(input.ideaStatus ? { idea_status: input.ideaStatus } : {})
     })
     .eq("id", input.sourceId)
     .eq("user_id", userId)
@@ -229,6 +298,18 @@ export async function updateSource(input: {
 
   if (error) throw error;
   return data as SourceRow;
+}
+
+export async function sourceHasCards(sourceId: string) {
+  const supabase = getSupabaseAdmin();
+  const { count, error } = await supabase
+    .from("cards")
+    .select("id", { count: "exact", head: true })
+    .eq("source_id", sourceId)
+    .eq("user_id", appUserId());
+
+  if (error) throw error;
+  return (count ?? 0) > 0;
 }
 
 export async function deleteSource(sourceId: string) {
@@ -540,7 +621,9 @@ export async function respondInCapture(sourceId: string, userMessage: string) {
   await appendCaptureMessage({ sourceId, role: "user", content: userMessage });
 
   const messageHistory = await listCaptureMessages(sourceId);
+  const settings = await getUserSettings();
   const llmReply = await generateCaptureSummaryReply({
+    settings,
     messages: messageHistory.map((item) => ({
       role: item.role === "assistant" ? "assistant" : "user",
       content: item.content
@@ -668,6 +751,7 @@ export async function generateSuggestedCards(params: {
 }) {
   const supabase = getSupabaseAdmin();
   const userId = appUserId();
+  const settings = await getUserSettings(userId);
   const { data: summary, error: summaryError } = await supabase
     .from("summaries")
     .select("id, content, raw_input")
@@ -750,6 +834,7 @@ export async function generateSuggestedCards(params: {
   ];
 
   const llmCards = await generateReviewCardsFromSummary({
+    settings,
     summary: trimmed,
     rawInput
   }).catch((error) => {
