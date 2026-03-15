@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IdeaNetworkLoader } from "@/app/components/idea-network-loader";
-import { normalizeCaptureSummary } from "@/lib/source-editor";
 
 type Mode = "idle" | "text" | "image" | "voice";
 
@@ -18,7 +17,6 @@ type AssetPayload = {
 
 type AnalysisResult = {
   rawInput: string;
-  summary: string;
   asset?: AssetPayload;
 };
 
@@ -45,9 +43,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
   const [mode, setMode] = useState<Mode>(initialMode);
   const [textValue, setTextValue] = useState("");
-  const [noteValue, setNoteValue] = useState("");
   const [titleValue, setTitleValue] = useState("");
-  const [summaryValue, setSummaryValue] = useState("");
   const [rawInputValue, setRawInputValue] = useState("");
   const [asset, setAsset] = useState<AssetPayload | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -72,9 +68,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   function resetDraft(nextMode: Mode) {
     setMode(nextMode);
     setTextValue("");
-    setNoteValue("");
     setTitleValue("");
-    setSummaryValue("");
     setRawInputValue("");
     setAsset(null);
     setError("");
@@ -104,7 +98,6 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       const payload = {
         title: overrides?.title ?? titleValue,
         rawInput: overrides?.rawInput ?? rawInputValue,
-        summary: overrides?.summary ?? summaryValue,
         inputModality,
         asset: overrides?.asset ?? asset
       };
@@ -134,7 +127,6 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     try {
       const formData = new FormData();
       formData.append("imageFile", file);
-      formData.append("note", noteValue);
 
       const response = await fetch("/api/capture/analyze-image", {
         method: "POST",
@@ -144,7 +136,6 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       const json = await parseJson<AnalysisResult>(response);
       setAsset(json.asset ?? null);
       setRawInputValue(json.rawInput);
-      setSummaryValue(normalizeCaptureSummary(json.summary));
       setTitleValue((current) => current || file.name.replace(/\.[^.]+$/, ""));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Image analysis failed.");
@@ -160,7 +151,6 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     try {
       const formData = new FormData();
       formData.append("audioFile", file);
-      formData.append("note", noteValue);
 
       const response = await fetch("/api/capture/analyze-audio", {
         method: "POST",
@@ -170,7 +160,6 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       const json = await parseJson<AnalysisResult>(response);
       setAsset(json.asset ?? null);
       setRawInputValue(json.rawInput);
-      setSummaryValue(normalizeCaptureSummary(json.summary));
       setTitleValue((current) => current || "Voice capture");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Audio analysis failed.");
@@ -193,7 +182,6 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
       const json = await parseJson<AnalysisResult>(response);
       setRawInputValue(json.rawInput);
-      setSummaryValue(normalizeCaptureSummary(json.summary));
       setTitleValue((current) => current || json.rawInput.split(/\r?\n/).find(Boolean)?.slice(0, 90) || "Idea");
       return json;
     } catch (err) {
@@ -250,15 +238,13 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
     await saveCapture("text", {
       title: titleValue || analyzed.rawInput.split(/\r?\n/).find(Boolean)?.slice(0, 90),
-      rawInput: analyzed.rawInput,
-      summary: analyzed.summary
+      rawInput: analyzed.rawInput
     });
   }
 
   const textCharacterCount = textValue.trim().length;
-  const imageSummaryCharacterCount = summaryValue.trim().length;
+  const imageTranscriptCharacterCount = rawInputValue.trim().length;
   const voiceRawCharacterCount = rawInputValue.trim().length;
-  const voiceSummaryCharacterCount = summaryValue.trim().length;
 
   return (
     <div className="grid">
@@ -295,7 +281,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               <div className="capture-text-copy">
                 <h2 style={{ margin: 0 }}>Kirjoita ajatus</h2>
                 <p className="status capture-text-status">
-                  Tallenna idea heti. Voit palata hiomaan sita myohemmin.
+                  Tallenna alkuperainen teksti sellaisenaan. Jalostus tapahtuu vasta sources-nakymassa.
                 </p>
               </div>
             </div>
@@ -325,8 +311,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               >
                 {isAnalyzing ? (
                   <span className="submit-button-content">
-                    <IdeaNetworkLoader label="AI analysoi ideaa" />
-                    AI analysoi...
+                    <IdeaNetworkLoader label="Valmistellaan capturea" />
+                    Valmistellaan...
                   </span>
                 ) : isSaving ? (
                   "Tallennetaan..."
@@ -337,8 +323,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               {isAnalyzing ? (
                 <IdeaNetworkLoader
                   variant="panel"
-                  label="AI rakentaa assistant-pohdintaa"
-                  detail="Muodostamme tekstista yhteenvedon ja avainkohdat ennen kuin keskustelu avataan."
+                  label="Valmistellaan teksti talteen"
+                  detail="Kayttajan kirjoittama sisalto tallennetaan sellaisenaan ilman lisaanalyysia."
                 />
               ) : null}
               <p className="status capture-text-helper" style={{ margin: 0 }}>
@@ -369,8 +355,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               <div className="capture-image-copy">
                 <h2 style={{ margin: 0 }}>Lisaa kuva</h2>
                 <p className="status capture-image-status">
-                  Tuo screenshot, muistiinpano tai kuva. Muutamme sen ensin tekstiksi ja viimeistelet
-                  yhteenvedon ennen tallennusta.
+                  Tuo screenshot, muistiinpano tai kuva. AI tulkitsee sen tekstiksi, jota voit korjata ennen tallennusta.
                 </p>
               </div>
             </div>
@@ -381,8 +366,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                   <div className="capture-image-dropzone capture-image-dropzone-processing">
                     <IdeaNetworkLoader
                       variant="panel"
-                      label="AI muodostaa yhteyksia kuvasta"
-                      detail="Luemme sisallon, tunnistamme ydinkohdat ja rakennamme yhteenvetoa."
+                      label="AI lukee kuvan tekstiksi"
+                      detail="Teemme kuvasta muokattavan litteroinnin ilman lisajalostusta."
                     />
                   </div>
                 ) : (
@@ -402,7 +387,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 <div className="capture-image-footer">
                   {!isAnalyzing ? (
                     <p className="status capture-image-helper" style={{ margin: 0 }}>
-                      Pelkka kuvan lataus riittaa.
+                      Pelkka kuvan lataus riittaa. Tarkistat tekstin ennen tallennusta.
                     </p>
                   ) : null}
                   <button type="button" className="capture-image-cancel" onClick={cancelCapture}>
@@ -423,7 +408,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                   />
                   <div className="capture-image-preview-meta">
                     <span className="pill" data-variant="primary">
-                      Kuva analysoitu
+                      Kuva litteroitu
                     </span>
                     <button
                       type="button"
@@ -436,8 +421,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 </div>
 
                 <label className="form-row capture-image-summary-field">
-                  <span>AI:n kirjoittama yhteenveto</span>
-                  <textarea value={summaryValue} onChange={(event) => setSummaryValue(event.target.value)} />
+                  <span>Litteroitu teksti</span>
+                  <textarea value={rawInputValue} onChange={(event) => setRawInputValue(event.target.value)} />
                 </label>
 
                 <div className="capture-image-actions">
@@ -446,14 +431,14 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                   </button>
                   <div className="capture-image-save-group">
                     <p className="status capture-image-helper" style={{ margin: 0 }}>
-                      {imageSummaryCharacterCount > 0
-                        ? `${imageSummaryCharacterCount} merkkia valmiina tallennettavaksi.`
-                        : "Muokkaa yhteenvetoa tarvittaessa ennen tallennusta."}
+                      {imageTranscriptCharacterCount > 0
+                        ? `${imageTranscriptCharacterCount} merkkia valmiina tallennettavaksi.`
+                        : "Muokkaa litterointia tarvittaessa ennen tallennusta."}
                     </p>
                     <button
                       type="button"
                       className="primary capture-image-save"
-                      disabled={!summaryValue.trim() || isSaving}
+                      disabled={!rawInputValue.trim() || isSaving}
                       onClick={() => void saveCapture("image")}
                     >
                       {isSaving ? "Tallennetaan..." : "Tallenna"}
@@ -481,8 +466,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               <div className="capture-voice-copy">
                 <h2 style={{ margin: 0 }}>Sanele ajatus</h2>
                 <p className="status capture-voice-status">
-                  Nauhoita suoraan selaimessa tai tuo valmis aanitiedosto. AI litteroi sisallon ja
-                  auttaa viimeistelemaan yhteenvedon ennen tallennusta.
+                  Nauhoita suoraan selaimessa tai tuo valmis aanitiedosto. AI litteroi puheen tekstiksi, jota voit korjata ennen tallennusta.
                 </p>
               </div>
             </div>
@@ -524,8 +508,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 {isAnalyzing ? (
                   <IdeaNetworkLoader
                     variant="panel"
-                    label="AI yhdistaa puheesta ajatuksia"
-                    detail="Litteroimme aanen, poimimme merkitykset ja muotoilemme niista tiiviin rungon."
+                    label="AI litteroi puheen tekstiksi"
+                    detail="Tallennamme puheen muokattavaksi tekstiksi ilman lisaanalyysia."
                   />
                 ) : null}
                 {audioPreviewUrl ? (
@@ -558,7 +542,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 <div className="capture-voice-preview-shell">
                   <div className="capture-voice-preview-meta">
                     <span className="pill" data-variant="primary">
-                      Aani analysoitu
+                      Aani litteroitu
                     </span>
                     <button
                       type="button"
@@ -578,25 +562,20 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                   <textarea value={rawInputValue} onChange={(event) => setRawInputValue(event.target.value)} />
                 </label>
 
-                <label className="form-row capture-voice-summary-field">
-                  <span>AI:n kirjoittama yhteenveto</span>
-                  <textarea value={summaryValue} onChange={(event) => setSummaryValue(event.target.value)} />
-                </label>
-
                 <div className="capture-voice-actions">
                   <button type="button" className="secondary" onClick={cancelCapture}>
                     Peruuta
                   </button>
                   <div className="capture-voice-save-group">
                     <p className="status capture-voice-helper" style={{ margin: 0 }}>
-                      {voiceRawCharacterCount > 0 && voiceSummaryCharacterCount > 0
-                        ? `${voiceRawCharacterCount} merkkia litteroituna, ${voiceSummaryCharacterCount} merkkia yhteenvedossa.`
-                        : "Varmista, etta litterointi ja yhteenveto tuntuvat oikeilta ennen tallennusta."}
+                      {voiceRawCharacterCount > 0
+                        ? `${voiceRawCharacterCount} merkkia litteroituna ja valmiina tallennettavaksi.`
+                        : "Varmista, etta litterointi tuntuu oikealta ennen tallennusta."}
                     </p>
                     <button
                       type="button"
                       className="primary capture-voice-save"
-                      disabled={!rawInputValue.trim() || !summaryValue.trim() || isSaving}
+                      disabled={!rawInputValue.trim() || isSaving}
                       onClick={() => void saveCapture("audio")}
                     >
                       {isSaving ? "Tallennetaan..." : "Tallenna"}

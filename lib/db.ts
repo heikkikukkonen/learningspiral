@@ -306,36 +306,10 @@ export async function createSourceFromCapture(input: {
     content: input.rawInput
   });
 
-  const llmReply = await generateCaptureSummaryReply({
-    messages: [{ role: "user", content: input.rawInput }]
-  }).catch((error) => {
-    logLlmError("createSourceFromCapture.generateCaptureSummaryReply", error, {
-      sourceId: source.id
-    });
-    return { ok: false, data: "" };
-  });
-
-  if (!llmReply.ok && isLlmConfigured()) {
-    logLlmWarning("createSourceFromCapture.fallback_to_rule_summary", {
-      sourceId: source.id
-    });
-  }
-
-  const assistantSummary =
-    llmReply.ok && llmReply.data
-      ? llmReply.data
-      : buildFallbackAssistantSummary(input.rawInput);
-
-  await appendCaptureMessage({
-    sourceId: source.id,
-    role: "assistant",
-    content: assistantSummary
-  });
-
-  await upsertSummary(source.id, assistantSummary, {
+  await upsertSummary(source.id, input.rawInput, {
     rawInput: input.rawInput,
     inputModality: input.inputModality,
-    source: "chatgpt"
+    source: "manual"
   });
 
   await logLearningEvent({
@@ -464,34 +438,10 @@ export async function createSourceFromMultimodalCapture(input: {
     content: rawInput
   });
 
-  const llmReply = await generateCaptureSummaryReply({
-    messages: [{ role: "user", content: rawInput }]
-  }).catch((error) => {
-    logLlmError("createSourceFromMultimodalCapture.generateCaptureSummaryReply", error, {
-      sourceId: source.id
-    });
-    return { ok: false, data: "" };
-  });
-
-  if (!llmReply.ok && isLlmConfigured()) {
-    logLlmWarning("createSourceFromMultimodalCapture.fallback_to_rule_summary", {
-      sourceId: source.id
-    });
-  }
-
-  const assistantSummary =
-    llmReply.ok && llmReply.data ? llmReply.data : buildFallbackAssistantSummary(rawInput);
-
-  await appendCaptureMessage({
-    sourceId: source.id,
-    role: "assistant",
-    content: assistantSummary
-  });
-
-  await upsertSummary(source.id, assistantSummary, {
+  await upsertSummary(source.id, rawInput, {
     rawInput,
     inputModality: input.inputModality,
-    source: "chatgpt"
+    source: "manual"
   });
 
   await logLearningEvent({
@@ -512,7 +462,6 @@ export async function createSourceFromPreparedCapture(input: {
   title: string;
   type: SourceType;
   rawInput: string;
-  summary: string;
   inputModality: InputModality;
   origin?: string;
   url?: string;
@@ -526,7 +475,6 @@ export async function createSourceFromPreparedCapture(input: {
   const supabase = getSupabaseAdmin();
   const userId = appUserId();
   const rawInput = input.rawInput.trim();
-  const summary = normalizeCaptureSummary(input.summary) || rawInput;
 
   const source = await createSource({
     type: input.type,
@@ -555,16 +503,10 @@ export async function createSourceFromPreparedCapture(input: {
     content: rawInput
   });
 
-  await appendCaptureMessage({
-    sourceId: source.id,
-    role: "assistant",
-    content: summary
-  });
-
-  await upsertSummary(source.id, summary, {
+  await upsertSummary(source.id, rawInput, {
     rawInput,
     inputModality: input.inputModality,
-    source: "chatgpt"
+    source: "manual"
   });
 
   await logLearningEvent({

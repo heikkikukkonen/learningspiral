@@ -1,18 +1,10 @@
 import { NextResponse } from "next/server";
-import { extractTextFromCaptureImage, generateCaptureSummaryReply } from "@/lib/llm";
-import { normalizeCaptureSummary } from "@/lib/source-editor";
-
-function fallbackSummary(text: string): string {
-  const normalized = text.replace(/\s+/g, " ").trim();
-  if (!normalized) return "";
-  return normalized.slice(0, 420);
-}
+import { extractTextFromCaptureImage } from "@/lib/llm";
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get("imageFile");
-    const note = typeof formData.get("note") === "string" ? String(formData.get("note")).trim() : "";
 
     if (!(file instanceof File) || file.size === 0) {
       return NextResponse.json({ error: "Image file is required." }, { status: 400 });
@@ -24,26 +16,13 @@ export async function POST(request: Request) {
     const extracted = await extractTextFromCaptureImage({
       mimeType: file.type || "image/png",
       base64Data,
-      userContext: note
+      userContext: typeof formData.get("note") === "string" ? String(formData.get("note")).trim() : ""
     });
 
-    const rawInput = [
-      note ? `User note:\n${note}` : "",
-      extracted.data.trim() ? `Image interpretation:\n${extracted.data.trim()}` : ""
-    ]
-      .filter(Boolean)
-      .join("\n\n")
-      .trim();
-
-    const summaryReply = rawInput
-      ? await generateCaptureSummaryReply({
-          messages: [{ role: "user", content: rawInput }]
-        })
-      : { ok: false, data: "" };
+    const rawInput = extracted.data.trim();
 
     return NextResponse.json({
       rawInput,
-      summary: normalizeCaptureSummary(summaryReply.data) || fallbackSummary(rawInput),
       asset: {
         kind: "image",
         fileName: file.name,

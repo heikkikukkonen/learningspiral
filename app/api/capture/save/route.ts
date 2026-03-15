@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createSourceFromPreparedCapture } from "@/lib/db";
-import { normalizeCaptureSummary } from "@/lib/source-editor";
 import { CaptureAssetKind, InputModality, SourceType } from "@/lib/types";
 
 function inferTitle(rawInput: string): string {
@@ -16,7 +15,6 @@ export async function POST(request: Request) {
     const body = (await request.json()) as {
       title?: string;
       rawInput?: string;
-      summary?: string;
       sourceType?: SourceType;
       inputModality?: InputModality;
       origin?: string;
@@ -30,7 +28,6 @@ export async function POST(request: Request) {
     };
 
     const rawInput = (body.rawInput || "").trim();
-    const summary = normalizeCaptureSummary(body.summary || "") || rawInput;
 
     if (!rawInput) {
       return NextResponse.json({ error: "Raw input is required." }, { status: 400 });
@@ -40,7 +37,6 @@ export async function POST(request: Request) {
       title: (body.title || "").trim() || inferTitle(rawInput),
       type: body.sourceType || "other",
       rawInput,
-      summary,
       inputModality: body.inputModality || "text",
       origin: body.origin?.trim() || undefined,
       url: body.url?.trim() || undefined,

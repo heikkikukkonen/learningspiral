@@ -345,9 +345,11 @@ export async function extractTextFromCaptureImage(input: {
           text: [
             "You are a learning capture assistant.",
             "Write in concise Finnish.",
-            "Extract the useful content from the image for later learning.",
-            "If there is text in the image, transcribe it.",
-            "If there is a diagram, UI, or visual concept, describe it briefly.",
+            "Convert the image into editable plain text for later source refinement.",
+            "If there is text in the image, transcribe it as faithfully as possible.",
+            "Correct only obvious OCR mistakes or broken words when confidence is high.",
+            "If there is a diagram, UI, or visual concept with little text, describe only what is explicitly visible.",
+            "Do not summarize, infer hidden intent, or add recommendations.",
             "Return plain text only."
           ].join("\n")
         }

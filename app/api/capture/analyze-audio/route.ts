@@ -1,12 +1,5 @@
 import { NextResponse } from "next/server";
-import { generateCaptureSummaryReply, transcribeCaptureAudio } from "@/lib/llm";
-import { normalizeCaptureSummary } from "@/lib/source-editor";
-
-function fallbackSummary(text: string): string {
-  const normalized = text.replace(/\s+/g, " ").trim();
-  if (!normalized) return "";
-  return normalized.slice(0, 420);
-}
+import { transcribeCaptureAudio } from "@/lib/llm";
 
 export async function POST(request: Request) {
   try {
@@ -26,15 +19,8 @@ export async function POST(request: Request) {
 
     const rawInput = transcribed.data.trim();
 
-    const summaryReply = rawInput
-      ? await generateCaptureSummaryReply({
-          messages: [{ role: "user", content: rawInput }]
-        })
-      : { ok: false, data: "" };
-
     return NextResponse.json({
       rawInput,
-      summary: normalizeCaptureSummary(summaryReply.data) || fallbackSummary(rawInput),
       asset: {
         kind: "audio",
         fileName: file.name || "capture-audio.webm",
