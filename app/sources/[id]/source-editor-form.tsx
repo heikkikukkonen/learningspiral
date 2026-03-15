@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { SubmitButton } from "@/app/components/submit-button";
 import { refineSourceDraftAction, saveSourceDraftAction } from "@/app/sources/actions";
 
 type SourceEditorFormProps = {
@@ -13,7 +11,6 @@ type SourceEditorFormProps = {
   initialTags: string[];
   rawInput: string;
   inputModality: string;
-  lastSavedLabel: string;
 };
 
 const refineModes = [
@@ -29,8 +26,7 @@ export function SourceEditorForm({
   initialAnalysis,
   initialTags,
   rawInput,
-  inputModality,
-  lastSavedLabel
+  inputModality
 }: SourceEditorFormProps) {
   const [title, setTitle] = useState(initialTitle);
   const [idea, setIdea] = useState(initialIdea);
@@ -87,7 +83,7 @@ export function SourceEditorForm({
 
   return (
     <div className="source-editor-stack">
-      <form className="form source-edit-form" action={saveSourceDraftAction}>
+      <form id="source-editor-form" className="form source-edit-form" action={saveSourceDraftAction}>
         <input type="hidden" name="sourceId" value={sourceId} />
         <input type="hidden" name="rawInput" value={rawInput} />
         <input type="hidden" name="inputModality" value={inputModality} />
@@ -186,20 +182,6 @@ export function SourceEditorForm({
                 Lisaa
               </button>
             </div>
-          </div>
-        </div>
-
-        <div className="source-edit-footer">
-          <Link href="/sources" className="button-link secondary source-edit-later">
-            Jalosta myohemmin
-          </Link>
-          <div className="source-edit-save-group">
-            <p className="status" style={{ margin: 0 }}>
-              {lastSavedLabel}
-            </p>
-            <SubmitButton className="primary source-edit-save" pendingText="Tallennetaan...">
-              Tallenna ja luo kortit
-            </SubmitButton>
           </div>
         </div>
       </form>

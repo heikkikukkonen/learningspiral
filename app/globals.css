@@ -772,6 +772,16 @@ button.danger {
   border-top: 1px solid rgba(223, 228, 236, 0.95);
 }
 
+.source-capture-details {
+  background: rgba(240, 243, 250, 0.7);
+}
+
+.source-capture-details-body {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 0.9rem;
+}
+
 .source-origin-assets {
   display: grid;
   gap: 0.75rem;
@@ -782,6 +792,17 @@ button.danger {
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(220, 226, 235, 0.95);
+}
+
+.source-capture-raw-text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.source-page-actions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(223, 228, 236, 0.95);
 }
 
 .review-shell {

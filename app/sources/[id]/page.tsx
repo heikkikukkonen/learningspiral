@@ -1,7 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SubmitButton } from "@/app/components/submit-button";
-import { getSourceWithDetails } from "@/lib/db";
 import {
   acceptAllSuggestedAction,
   deleteCardAction,
@@ -10,10 +10,10 @@ import {
   saveCardAction,
   setCardStatusAction
 } from "@/app/sources/actions";
-import { CardType, SourceType } from "@/lib/types";
-import { parseSourceSummaryContent, suggestSourceTags } from "@/lib/source-editor";
 import { SourceEditorForm } from "@/app/sources/[id]/source-editor-form";
-import Image from "next/image";
+import { getSourceWithDetails } from "@/lib/db";
+import { parseSourceSummaryContent, suggestSourceTags } from "@/lib/source-editor";
+import { CardType, SourceType } from "@/lib/types";
 
 type SourceDetails = {
   id: string;
@@ -127,9 +127,6 @@ export default async function SourceDetailsPage({
       <div className="source-workspace-layout">
         <article className="card source-editor-card">
           <div className="source-editor-topbar">
-            <Link href="/sources" className="source-back-link">
-              {"<"} Takaisin
-            </Link>
             <div className="source-meta">
               <span className="pill">{source.type}</span>
               <span className="pill">{source.capture_mode}</span>
@@ -144,58 +141,59 @@ export default async function SourceDetailsPage({
             initialTags={resolvedTags}
             rawInput={summary?.raw_input ?? ""}
             inputModality={summary?.input_modality ?? "text"}
-            lastSavedLabel={lastSavedLabel}
           />
 
           <div className="source-origin-panel">
-            <div className="source-origin-header">
-              <h2 style={{ margin: 0 }}>Alkuperäinen capture</h2>
-              <div className="source-meta">
-                {source.author ? <span>{source.author}</span> : null}
-                {source.origin ? <span>{source.origin}</span> : null}
-                {source.url ? (
-                  <a href={source.url} target="_blank" rel="noreferrer">
-                    Avaa linkki
-                  </a>
+            <details className="capture-details source-capture-details">
+              <summary>Näytä alkuperäinen capture</summary>
+
+              <div className="source-capture-details-body">
+                <div className="source-meta">
+                  {source.author ? <span>{source.author}</span> : null}
+                  {source.origin ? <span>{source.origin}</span> : null}
+                  {source.url ? (
+                    <a href={source.url} target="_blank" rel="noreferrer">
+                      Avaa linkki
+                    </a>
+                  ) : null}
+                </div>
+
+                {captureAssets.length > 0 ? (
+                  <div className="source-origin-assets">
+                    {captureAssets.map((asset) => (
+                      <article key={asset.id} className="source-origin-asset">
+                        <div className="source-meta" style={{ marginBottom: "0.6rem" }}>
+                          <span className="pill" data-variant="primary">
+                            {asset.kind}
+                          </span>
+                          <span>{asset.file_name}</span>
+                        </div>
+                        {asset.kind === "image" ? (
+                          <Image
+                            src={assetUrl(asset.mime_type, asset.base64_data)}
+                            alt={asset.file_name}
+                            className="capture-asset-preview"
+                            width={1200}
+                            height={900}
+                            unoptimized
+                          />
+                        ) : (
+                          <audio
+                            controls
+                            className="capture-audio-player"
+                            src={assetUrl(asset.mime_type, asset.base64_data)}
+                          />
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                ) : null}
+
+                {summary?.raw_input ? (
+                  <p className="source-capture-raw-text">{summary.raw_input}</p>
                 ) : null}
               </div>
-            </div>
-
-            {captureAssets.length > 0 ? (
-              <div className="source-origin-assets">
-                {captureAssets.map((asset) => (
-                  <article key={asset.id} className="source-origin-asset">
-                    <div className="source-meta" style={{ marginBottom: "0.6rem" }}>
-                      <span className="pill" data-variant="primary">
-                        {asset.kind}
-                      </span>
-                      <span>{asset.file_name}</span>
-                    </div>
-                    {asset.kind === "image" ? (
-                      <Image
-                        src={assetUrl(asset.mime_type, asset.base64_data)}
-                        alt={asset.file_name}
-                        className="capture-asset-preview"
-                        width={1200}
-                        height={900}
-                        unoptimized
-                      />
-                    ) : (
-                      <audio controls className="capture-audio-player" src={assetUrl(asset.mime_type, asset.base64_data)} />
-                    )}
-                  </article>
-                ))}
-              </div>
-            ) : null}
-
-            {summary?.raw_input ? (
-              <details className="capture-details" open>
-                <summary>Näytä alkuperäinen raakateksti</summary>
-                <p style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>
-                  {summary.raw_input}
-                </p>
-              </details>
-            ) : null}
+            </details>
           </div>
         </article>
       </div>
@@ -304,6 +302,24 @@ export default async function SourceDetailsPage({
               </div>
             </article>
           ))}
+        </div>
+
+        <div className="source-edit-footer source-page-actions">
+          <Link href="/sources" className="button-link secondary source-edit-later">
+            Jalosta myohemmin
+          </Link>
+          <div className="source-edit-save-group">
+            <p className="status" style={{ margin: 0 }}>
+              {lastSavedLabel}
+            </p>
+            <SubmitButton
+              className="primary source-edit-save"
+              pendingText="Tallennetaan..."
+              form="source-editor-form"
+            >
+              Tallenna ja luo kortit
+            </SubmitButton>
+          </div>
         </div>
       </article>
 

@@ -9,6 +9,7 @@ type SubmitButtonProps = {
   className?: string;
   pendingText?: string;
   disabled?: boolean;
+  form?: string;
   name?: string;
   value?: string;
   confirmMessage?: string;
@@ -20,6 +21,7 @@ export function SubmitButton({
   className,
   pendingText = "Loading...",
   disabled,
+  form,
   name,
   value,
   confirmMessage,
@@ -32,6 +34,7 @@ export function SubmitButton({
       type="submit"
       className={className}
       disabled={pending || disabled}
+      form={form}
       name={name}
       value={value}
       onClick={(event) => {
