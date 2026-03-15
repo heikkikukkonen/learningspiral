@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { upsertUserSettings } from "@/lib/db";
 import { sanitizeUserSettings } from "@/lib/user-settings";
 
@@ -23,4 +24,5 @@ export async function saveUserSettingsAction(formData: FormData) {
   revalidatePath("/login");
   revalidatePath("/capture");
   revalidatePath("/sources");
+  redirect("/settings?saved=1");
 }

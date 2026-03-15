@@ -1,10 +1,16 @@
+import { SubmitButton } from "@/app/components/submit-button";
 import { getUserSettings } from "@/lib/db";
 import { saveUserSettingsAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams
+}: {
+  searchParams?: { saved?: string };
+}) {
   const settings = await getUserSettings();
+  const saved = searchParams?.saved === "1";
 
   return (
     <section className="review-shell">
@@ -14,6 +20,11 @@ export default async function SettingsPage() {
           Maarita oma kieli ja AI-ohjaus, jota kaytetaan analyysin paivityksessa,
           syvennyksessa, tiivistyksessa ja korttien luonnissa.
         </p>
+        {saved ? (
+          <p className="status" style={{ margin: "0.5rem 0 0", color: "var(--success)" }}>
+            Asetukset tallennettu onnistuneesti.
+          </p>
+        ) : null}
       </div>
 
       <form action={saveUserSettingsAction} className="form settings-form">
@@ -93,7 +104,9 @@ export default async function SettingsPage() {
         </article>
 
         <div className="actions">
-          <button type="submit">Tallenna asetukset</button>
+          <SubmitButton pendingText="Tallennetaan asetuksia...">
+            Tallenna asetukset
+          </SubmitButton>
         </div>
       </form>
     </section>
