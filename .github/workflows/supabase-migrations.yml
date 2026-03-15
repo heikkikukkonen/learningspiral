@@ -15,6 +15,7 @@ jobs:
     permissions:
       contents: read
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
@@ -24,26 +25,48 @@ jobs:
 
       - name: Validate secrets
         run: |
+          set -euo pipefail
           for var in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_PROJECT_REF; do
             if [ -z "${!var}" ]; then
               echo "::error::Missing GitHub secret: $var"
               exit 1
             fi
           done
+          echo "Secrets are present."
+          echo "Supabase project ref: $SUPABASE_PROJECT_REF"
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
           version: latest
 
+      - name: Log Supabase CLI context
+        run: |
+          set -euo pipefail
+          echo "Node runtime forced to Node 24: ${FORCE_JAVASCRIPT_ACTIONS_TO_NODE24}"
+          supabase --version
+          echo "Repository migration files:"
+          ls -1 supabase/migrations || true
+
       - name: Init Supabase config (if missing)
         run: |
+          set -euo pipefail
           if [ ! -f supabase/config.toml ]; then
+            echo "supabase/config.toml missing, initializing temporary local config."
             supabase init
+          else
+            echo "Using existing supabase/config.toml."
           fi
 
       - name: Link Supabase project
-        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+        run: |
+          set -euo pipefail
+          echo "Linking Supabase project $SUPABASE_PROJECT_REF"
+          supabase link --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Push migrations
-        run: yes | supabase db push
+        run: |
+          set -euo pipefail
+          echo "Starting supabase db push"
+          yes | supabase db push
+          echo "Supabase migrations pushed successfully."
