@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IdeaNetworkLoader } from "@/app/components/idea-network-loader";
+import { normalizeCaptureSummary } from "@/lib/source-editor";
 
 type Mode = "idle" | "text" | "image" | "voice";
 
@@ -143,7 +144,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       const json = await parseJson<AnalysisResult>(response);
       setAsset(json.asset ?? null);
       setRawInputValue(json.rawInput);
-      setSummaryValue(json.summary);
+      setSummaryValue(normalizeCaptureSummary(json.summary));
       setTitleValue((current) => current || file.name.replace(/\.[^.]+$/, ""));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Image analysis failed.");
@@ -169,7 +170,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       const json = await parseJson<AnalysisResult>(response);
       setAsset(json.asset ?? null);
       setRawInputValue(json.rawInput);
-      setSummaryValue(json.summary);
+      setSummaryValue(normalizeCaptureSummary(json.summary));
       setTitleValue((current) => current || "Voice capture");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Audio analysis failed.");
@@ -192,7 +193,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
       const json = await parseJson<AnalysisResult>(response);
       setRawInputValue(json.rawInput);
-      setSummaryValue(json.summary);
+      setSummaryValue(normalizeCaptureSummary(json.summary));
       setTitleValue((current) => current || json.rawInput.split(/\r?\n/).find(Boolean)?.slice(0, 90) || "Idea");
       return json;
     } catch (err) {

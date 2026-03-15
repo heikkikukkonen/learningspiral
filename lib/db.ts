@@ -7,6 +7,7 @@ import {
   isLlmConfigured,
   transcribeCaptureAudio
 } from "@/lib/llm";
+import { normalizeCaptureSummary } from "@/lib/source-editor";
 
 function appUserId(): string {
   return process.env.APP_USER_ID ?? "11111111-1111-1111-1111-111111111111";
@@ -125,7 +126,6 @@ function buildFallbackAssistantSummary(text: string): string {
   }
   const preview = normalized.slice(0, 420);
   return [
-    "Summary draft:",
     preview,
     "",
     "Key points:",
@@ -526,7 +526,7 @@ export async function createSourceFromPreparedCapture(input: {
   const supabase = getSupabaseAdmin();
   const userId = appUserId();
   const rawInput = input.rawInput.trim();
-  const summary = input.summary.trim() || rawInput;
+  const summary = normalizeCaptureSummary(input.summary) || rawInput;
 
   const source = await createSource({
     type: input.type,
@@ -709,6 +709,7 @@ export async function upsertSummary(
 ) {
   const supabase = getSupabaseAdmin();
   const userId = appUserId();
+  const normalizedContent = normalizeCaptureSummary(content);
 
   const { data, error } = await supabase
     .from("summaries")
@@ -716,7 +717,7 @@ export async function upsertSummary(
       {
         user_id: userId,
         source_id: sourceId,
-        content,
+        content: normalizedContent,
         source: opts?.source ?? "manual",
         raw_input: opts?.rawInput ?? null,
         input_modality: opts?.inputModality ?? "text"

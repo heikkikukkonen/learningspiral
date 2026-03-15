@@ -1,4 +1,5 @@
 import { CardType } from "@/lib/types";
+import { normalizeBlock, normalizeCaptureSummary, suggestSourceTags } from "@/lib/source-editor";
 
 interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -15,6 +16,13 @@ export interface LlmResult<T> {
   ok: boolean;
   data: T;
   model?: string;
+}
+
+export interface RefinedSourceDraft {
+  title: string;
+  idea: string;
+  analysis: string;
+  tags: string[];
 }
 
 function getModel(): string {
@@ -167,6 +175,104 @@ function sanitizeCard(input: Partial<GeneratedCard>): GeneratedCard | null {
   };
 }
 
+function sanitizeRefinedSourceDraft(input: Partial<RefinedSourceDraft>): RefinedSourceDraft | null {
+  const title = normalizeBlock(input.title || "");
+  const idea = normalizeBlock(input.idea || "");
+  const analysis = normalizeBlock(input.analysis || "");
+  const tags = Array.isArray(input.tags)
+    ? input.tags
+        .map((tag) => normalizeBlock(typeof tag === "string" ? tag : ""))
+        .filter(Boolean)
+        .slice(0, 6)
+    : [];
+
+  if (!title || !idea || !analysis) {
+    return null;
+  }
+
+  return {
+    title: title.slice(0, 120),
+    idea: idea.slice(0, 2000),
+    analysis: analysis.slice(0, 5000),
+    tags
+  };
+}
+
+function sentenceSplit(value: string): string[] {
+  return normalizeBlock(value)
+    .split(/(?<=[.!?])\s+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function fallbackRefinedSourceDraft(input: {
+  mode: "refresh" | "deepen" | "summarize";
+  title: string;
+  idea: string;
+  analysis: string;
+  rawInput: string;
+  tags: string[];
+}): RefinedSourceDraft {
+  const title = normalizeBlock(input.title) || "Untitled idea";
+  const idea = normalizeBlock(input.idea) || normalizeBlock(input.rawInput) || title;
+  const analysis = normalizeBlock(input.analysis) || idea;
+  const ideaSentences = sentenceSplit(idea);
+  const analysisSentences = sentenceSplit(analysis);
+
+  let nextAnalysis = analysis;
+  if (input.mode === "refresh") {
+    nextAnalysis = [
+      analysis,
+      "",
+      "Paivitetty nakokulma:",
+      `- Ydinajatus: ${ideaSentences[0] || idea}`,
+      "- Seuraava hyoty syntyy, kun viet taman yhteen oikeaan keskusteluun tai paatokseen.",
+      "- Pida viesti napakkana, mutta nimea myos mahdollinen epavarmuus suoraan."
+    ]
+      .join("\n")
+      .trim();
+  }
+
+  if (input.mode === "deepen") {
+    nextAnalysis = [
+      analysis,
+      "",
+      "Syvennys:",
+      "- Mita ongelmaa tama ratkaisee kaytannossa?",
+      "- Missa tilanteessa taman idean soveltaminen on vaikeinta?",
+      "- Mita konkreettista sanot tai teet seuraavaksi, jotta idea muuttuu toiminnaksi?"
+    ]
+      .join("\n")
+      .trim();
+  }
+
+  if (input.mode === "summarize") {
+    nextAnalysis = analysisSentences.slice(0, 3).join(" ");
+    if (!nextAnalysis) {
+      nextAnalysis = ideaSentences.slice(0, 2).join(" ") || idea;
+    }
+  }
+
+  const nextTags = Array.from(
+    new Set([
+      ...input.tags,
+      ...suggestSourceTags({
+        title,
+        idea,
+        analysis: nextAnalysis,
+        rawInput: input.rawInput
+      })
+    ])
+  ).slice(0, 6);
+
+  return {
+    title,
+    idea,
+    analysis: nextAnalysis,
+    tags: nextTags
+  };
+}
+
 export async function generateCaptureSummaryReply(input: {
   messages: Array<{ role: "user" | "assistant"; content: string }>;
 }): Promise<LlmResult<string>> {
@@ -179,7 +285,6 @@ export async function generateCaptureSummaryReply(input: {
     "Write in concise Finnish.",
     "Goal: produce a practical summary draft the user can edit.",
     "Always include this structure:",
-    "Summary draft:",
     "<2-5 concise sentences>",
     "",
     "Key points:",
@@ -199,7 +304,11 @@ export async function generateCaptureSummaryReply(input: {
     }))
   ]);
 
-  return { ok: Boolean(reply.text), data: reply.text, model: reply.model };
+  return {
+    ok: Boolean(reply.text),
+    data: normalizeCaptureSummary(reply.text),
+    model: reply.model
+  };
 }
 
 export async function extractTextFromCaptureImage(input: {
@@ -345,4 +454,106 @@ export async function generateReviewCardsFromSummary(input: {
   }
 
   return { ok: true, data: ordered, model: reply.model };
+}
+
+export async function refineSourceDraft(input: {
+  mode: "refresh" | "deepen" | "summarize";
+  title: string;
+  idea: string;
+  analysis: string;
+  rawInput: string;
+  tags: string[];
+}): Promise<LlmResult<RefinedSourceDraft>> {
+  if (!isLlmConfigured()) {
+    return {
+      ok: true,
+      data: fallbackRefinedSourceDraft(input)
+    };
+  }
+
+  const instructionByMode = {
+    refresh:
+      "Refresh the analysis so it better reflects the current title, idea, and original capture.",
+    deepen:
+      "Deepen the analysis with sharper reasoning, implications, examples, and next actions.",
+    summarize:
+      "Tighten and summarize the analysis so it stays concise without losing the core message."
+  } as const;
+
+  const systemPrompt = [
+    "You are a learning capture editor.",
+    "Write in concise Finnish.",
+    "Return ONLY valid JSON.",
+    "Schema:",
+    "{",
+    '  "title": "short title suggestion",',
+    '  "idea": "1 short paragraph with the core idea",',
+    '  "analysis": "editable analysis text",',
+    '  "tags": ["tag1", "tag2", "tag3"]',
+    "}",
+    "Keep title under 80 characters.",
+    "Keep idea concrete and human, not generic.",
+    "Keep analysis directly editable by the user.",
+    "Tags must be short topic words in Finnish.",
+    "Return 3-6 tags."
+  ].join("\n");
+
+  const reply = await callResponsesApi([
+    { role: "system", content: systemPrompt },
+    {
+      role: "user",
+      content: [
+        instructionByMode[input.mode],
+        "",
+        `Title:\n${normalizeBlock(input.title) || "(empty)"}`,
+        "",
+        `Idea:\n${normalizeBlock(input.idea) || "(empty)"}`,
+        "",
+        `Analysis:\n${normalizeBlock(input.analysis) || "(empty)"}`,
+        "",
+        `Original capture:\n${normalizeBlock(input.rawInput) || "(empty)"}`,
+        "",
+        `Existing tags:\n${input.tags.join(", ") || "(none)"}`
+      ].join("\n")
+    }
+  ]);
+
+  let parsed: Partial<RefinedSourceDraft> = {};
+  try {
+    parsed = JSON.parse(reply.text);
+  } catch {
+    return {
+      ok: true,
+      data: fallbackRefinedSourceDraft(input),
+      model: reply.model
+    };
+  }
+
+  const sanitized = sanitizeRefinedSourceDraft(parsed);
+  if (!sanitized) {
+    return {
+      ok: true,
+      data: fallbackRefinedSourceDraft(input),
+      model: reply.model
+    };
+  }
+
+  return {
+    ok: true,
+    data: {
+      ...sanitized,
+      tags: Array.from(
+        new Set([
+          ...sanitized.tags,
+          ...suggestSourceTags({
+            title: sanitized.title,
+            idea: sanitized.idea,
+            analysis: sanitized.analysis,
+            rawInput: input.rawInput
+          })
+        ])
+      ).slice(0, 6)
+    },
+    model: reply.model
+  };
 }
