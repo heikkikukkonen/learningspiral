@@ -904,6 +904,34 @@ button.danger {
   box-shadow: 0 24px 60px rgba(180, 196, 216, 0.24);
 }
 
+.capture-text-card.is-processing .capture-text-shell {
+  filter: blur(2px);
+  transform: scale(0.995);
+  opacity: 0.42;
+  pointer-events: none;
+  user-select: none;
+}
+
+.capture-text-processing {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.25rem;
+  background: linear-gradient(180deg, rgba(248, 251, 255, 0.58), rgba(244, 249, 255, 0.84));
+  backdrop-filter: blur(6px);
+}
+
+.capture-text-processing .idea-network-loader-panel {
+  width: min(100%, 540px);
+  padding: 1.15rem 1.25rem;
+  border-radius: 24px;
+  box-shadow:
+    0 24px 60px rgba(163, 183, 207, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
 .capture-text-copy h2 {
   font-size: clamp(2rem, 4vw, 2.45rem);
   line-height: 1.08;

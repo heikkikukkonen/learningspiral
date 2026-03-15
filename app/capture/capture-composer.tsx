@@ -24,6 +24,8 @@ type CaptureComposerProps = {
   initialMode?: Mode;
 };
 
+type TextSaveStage = "idle" | "analyzing" | "saving";
+
 async function parseJson<T>(response: Response): Promise<T> {
   const json = (await response.json()) as T & { error?: string };
   if (!response.ok) {
@@ -56,6 +58,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   const [asset, setAsset] = useState<AssetPayload | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [textSaveStage, setTextSaveStage] = useState<TextSaveStage>("idle");
   const [error, setError] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [audioPreviewUrl, setAudioPreviewUrl] = useState("");
@@ -79,6 +82,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     setTitleValue("");
     setRawInputValue("");
     setAsset(null);
+    setTextSaveStage("idle");
     setError("");
     if (audioPreviewUrl) {
       URL.revokeObjectURL(audioPreviewUrl);
@@ -99,7 +103,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       summary?: string;
       asset?: AssetPayload | null;
     }
-  ) {
+  ): Promise<boolean> {
     setIsSaving(true);
     setError("");
     try {
@@ -121,8 +125,10 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       const json = await parseJson<{ sourceId: string }>(response);
       router.push(`/sources/${json.sourceId}`);
       router.refresh();
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed.");
+      return false;
     } finally {
       setIsSaving(false);
     }
@@ -241,18 +247,34 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     const trimmedText = textValue.trim();
     if (!trimmedText || isSaving || isAnalyzing) return;
 
+    setTextSaveStage("analyzing");
     const analyzed = await analyzeText(trimmedText);
-    if (!analyzed) return;
+    if (!analyzed) {
+      setTextSaveStage("idle");
+      return;
+    }
 
-    await saveCapture("text", {
+    setTextSaveStage("saving");
+    const saved = await saveCapture("text", {
       title: titleValue || inferTitleFromText(analyzed.rawInput, "Idea"),
       rawInput: analyzed.rawInput
     });
+
+    if (!saved) {
+      setTextSaveStage("idle");
+    }
   }
 
   const textCharacterCount = textValue.trim().length;
   const imageTranscriptCharacterCount = rawInputValue.trim().length;
   const voiceRawCharacterCount = rawInputValue.trim().length;
+  const isTextProcessing = textSaveStage !== "idle";
+  const textProcessingLabel =
+    textSaveStage === "saving" ? "Tallennetaan ideaa" : "AI kasittelee kirjoittamaasi ajatusta";
+  const textProcessingDetail =
+    textSaveStage === "saving"
+      ? "Luomme idealle uuden merkinnan ja siirramme sinut seuraavaksi muokkausnakymaan."
+      : "Tarkistamme tekstin talteen sopivaan muotoon ennen kuin idea tallennetaan.";
 
   return (
     <div className="grid">
@@ -283,7 +305,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       />
 
       {mode === "text" ? (
-        <article className="card capture-flow-card capture-text-card">
+        <article className={`card capture-flow-card capture-text-card${isTextProcessing ? " is-processing" : ""}`}>
           <div className="capture-text-shell">
             <div className="capture-text-header">
               <div className="capture-text-copy">
@@ -301,6 +323,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 value={textValue}
                 placeholder="Kirjoita ajatuksesi tahan..."
                 onChange={(event) => setTextValue(event.target.value)}
+                disabled={isTextProcessing}
+                aria-busy={isTextProcessing}
                 onKeyDown={(event) => {
                   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
                     event.preventDefault();
@@ -317,26 +341,19 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 disabled={!textValue.trim() || isSaving || isAnalyzing}
                 onClick={() => void saveTextCapture()}
               >
-                {isAnalyzing ? (
+                {isTextProcessing ? (
                   <span className="submit-button-content">
-                    <IdeaNetworkLoader label="Valmistellaan capturea" />
-                    Valmistellaan...
+                    <IdeaNetworkLoader label={textProcessingLabel} />
+                    {textSaveStage === "saving" ? "Tallennetaan..." : "AI kasittelee..."}
                   </span>
-                ) : isSaving ? (
-                  "Tallennetaan..."
                 ) : (
                   "Tallenna"
                 )}
               </button>
-              {isAnalyzing ? (
-                <IdeaNetworkLoader
-                  variant="panel"
-                  label="Valmistellaan teksti talteen"
-                  detail="Kayttajan kirjoittama sisalto tallennetaan sellaisenaan ilman lisaanalyysia."
-                />
-              ) : null}
               <p className="status capture-text-helper" style={{ margin: 0 }}>
-                {textCharacterCount > 0
+                {isTextProcessing
+                  ? "Kasittely kaynnissa. Hetken paasta siirryt suoraan idean muokkaukseen."
+                  : textCharacterCount > 0
                   ? `${textCharacterCount} merkkia valmiina tallennettavaksi.`
                   : "Aloita yhdesta lauseesta. Pikanappi toimii myos Ctrl+Enterilla."}
               </p>
@@ -345,6 +362,11 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               </button>
             </div>
           </div>
+          {isTextProcessing ? (
+            <div className="capture-text-processing" aria-live="polite">
+              <IdeaNetworkLoader variant="panel" label={textProcessingLabel} detail={textProcessingDetail} />
+            </div>
+          ) : null}
           <div className="capture-text-visual" aria-hidden="true">
             <div className="capture-text-brain" />
             <div className="capture-text-spiral" />
