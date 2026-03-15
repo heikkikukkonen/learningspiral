@@ -119,14 +119,10 @@ export default async function SourceDetailsPage({
   return (
     <section className="grid source-workspace">
       <div className="page-header source-workspace-header">
-        <p className="source-stepper" aria-label="Vaiheet">
-          <span>1. Syötä idea</span>
-          <span className="is-active">2. Jalosta idea</span>
-          <span>3. Luo kortteja tai tehtävä</span>
-        </p>
-        <h1>{source.title}</h1>
+        <h1>Idean jalostaminen</h1>
         <p className="muted">
           Muokkaa ideasta selkeä otsikko, ydinajatus, analyysi ja tagit ennen korttien luontia.
+          {" "}Voit myös vain tallentaa tiedot ja jalostaa idean valmiiksi myöhemmin.
         </p>
       </div>
 
