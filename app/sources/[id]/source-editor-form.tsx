@@ -70,14 +70,11 @@ export function SourceEditorForm({
         formData.set("mode", mode);
 
         const result = await refineSourceDraftAction(formData);
-        setTitle(result.title);
-        setIdea(result.idea);
         setAnalysis(result.analysis);
-        setTags(result.tags);
         setAiNote(
           result.model
-            ? `AI paivitti luonnoksen tilassa "${result.mode}". Muista tallentaa, jos haluat sailyttaa muutokset.`
-            : `Luonnos paivitettiin tilassa "${result.mode}". Muista tallentaa muutokset.`
+            ? `AI paivitti analyysin tilassa "${result.mode}". Muista tallentaa, jos haluat sailyttaa muutokset.`
+            : `Analyysi paivitettiin tilassa "${result.mode}". Muista tallentaa muutokset.`
         );
       } catch (error) {
         setAiNote(error instanceof Error ? error.message : "Analyysin paivitys epaonnistui.");

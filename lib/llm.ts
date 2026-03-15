@@ -25,6 +25,10 @@ export interface RefinedSourceDraft {
   tags: string[];
 }
 
+interface RefinedAnalysisPayload {
+  analysis: string;
+}
+
 function getModel(): string {
   return process.env.OPENAI_MODEL || "gpt-4.1-mini";
 }
@@ -195,6 +199,18 @@ function sanitizeRefinedSourceDraft(input: Partial<RefinedSourceDraft>): Refined
     idea: idea.slice(0, 2000),
     analysis: analysis.slice(0, 5000),
     tags
+  };
+}
+
+function sanitizeRefinedAnalysis(input: Partial<RefinedAnalysisPayload>): RefinedAnalysisPayload | null {
+  const analysis = normalizeBlock(input.analysis || "");
+
+  if (!analysis) {
+    return null;
+  }
+
+  return {
+    analysis: analysis.slice(0, 5000)
   };
 }
 
@@ -486,16 +502,11 @@ export async function refineSourceDraft(input: {
     "Return ONLY valid JSON.",
     "Schema:",
     "{",
-    '  "title": "short title suggestion",',
-    '  "idea": "1 short paragraph with the core idea",',
-    '  "analysis": "editable analysis text",',
-    '  "tags": ["tag1", "tag2", "tag3"]',
+    '  "analysis": "editable analysis text"',
     "}",
-    "Keep title under 80 characters.",
-    "Keep idea concrete and human, not generic.",
+    "Do not rewrite the title, idea, or tags.",
     "Keep analysis directly editable by the user.",
-    "Tags must be short topic words in Finnish.",
-    "Return 3-6 tags."
+    "Preserve the user's intent and wording where possible."
   ].join("\n");
 
   const reply = await callResponsesApi([
@@ -518,7 +529,7 @@ export async function refineSourceDraft(input: {
     }
   ]);
 
-  let parsed: Partial<RefinedSourceDraft> = {};
+  let parsed: Partial<RefinedAnalysisPayload> = {};
   try {
     parsed = JSON.parse(reply.text);
   } catch {
@@ -529,7 +540,7 @@ export async function refineSourceDraft(input: {
     };
   }
 
-  const sanitized = sanitizeRefinedSourceDraft(parsed);
+  const sanitized = sanitizeRefinedAnalysis(parsed);
   if (!sanitized) {
     return {
       ok: true,
@@ -541,18 +552,10 @@ export async function refineSourceDraft(input: {
   return {
     ok: true,
     data: {
-      ...sanitized,
-      tags: Array.from(
-        new Set([
-          ...sanitized.tags,
-          ...suggestSourceTags({
-            title: sanitized.title,
-            idea: sanitized.idea,
-            analysis: sanitized.analysis,
-            rawInput: input.rawInput
-          })
-        ])
-      ).slice(0, 6)
+      title: normalizeBlock(input.title) || "Untitled idea",
+      idea: normalizeBlock(input.idea) || normalizeBlock(input.rawInput) || normalizeBlock(input.title) || "Untitled idea",
+      analysis: sanitized.analysis,
+      tags: input.tags
     },
     model: reply.model
   };
