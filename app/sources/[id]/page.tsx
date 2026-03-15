@@ -5,6 +5,7 @@ import { getSourceWithDetails } from "@/lib/db";
 import {
   acceptAllSuggestedAction,
   deleteCardAction,
+  deleteSourceAction,
   generateCardsAction,
   saveCardAction,
   setCardStatusAction
@@ -307,15 +308,16 @@ export default async function SourceDetailsPage({
       </article>
 
       <div className="actions">
-        <Link href="/sources" className="button-link secondary">
-          Back to Sources
-        </Link>
-        <Link href="/review" className="button-link secondary">
-          Go to Daily Review
-        </Link>
-        <Link href="/progress" className="button-link primary">
-          Open Progress
-        </Link>
+        <form action={deleteSourceAction}>
+          <input type="hidden" name="sourceId" value={source.id} />
+          <SubmitButton
+            className="danger"
+            pendingText="Deleting idea..."
+            confirmMessage="Poistetaanko idea pysyvästi? Tämä poistaa myös siihen liittyvät kortit."
+          >
+            Poista idea
+          </SubmitButton>
+        </form>
       </div>
     </section>
   );

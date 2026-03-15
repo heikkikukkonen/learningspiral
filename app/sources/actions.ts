@@ -6,6 +6,7 @@ import {
   acceptAllSuggested,
   completeReview,
   deleteCard,
+  deleteSource,
   createSource,
   generateSuggestedCards,
   updateSource,
@@ -192,4 +193,13 @@ export async function acceptAllSuggestedAction(formData: FormData) {
   revalidatePath(`/sources/${sourceId}`);
   revalidatePath("/review");
   revalidatePath("/progress");
+}
+
+export async function deleteSourceAction(formData: FormData) {
+  const sourceId = asString(formData.get("sourceId"));
+  await deleteSource(sourceId);
+  revalidatePath("/sources");
+  revalidatePath("/review");
+  revalidatePath("/progress");
+  redirect("/sources");
 }
