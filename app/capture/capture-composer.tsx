@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IdeaNetworkLoader } from "@/app/components/idea-network-loader";
+import { inferCaptureTitle } from "@/lib/source-editor";
 
 type Mode = "idle" | "text" | "image" | "voice";
 
@@ -25,7 +26,6 @@ type CaptureComposerProps = {
 };
 
 type TextSaveStage = "idle" | "analyzing" | "saving";
-
 async function parseJson<T>(response: Response): Promise<T> {
   const responseText = await response.text();
   let json: (T & { error?: string; message?: string }) | null = null;
@@ -60,12 +60,24 @@ async function parseJson<T>(response: Response): Promise<T> {
   return json;
 }
 
-function inferTitleFromText(text: string, fallback: string): string {
-  return text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .find(Boolean)
-    ?.slice(0, 90) || fallback;
+function extractImageFileFromDataTransfer(dataTransfer: DataTransfer | null): File | null {
+  if (!dataTransfer) return null;
+
+  for (const item of Array.from(dataTransfer.items)) {
+    if (item.kind !== "file") continue;
+    const file = item.getAsFile();
+    if (file && file.type.startsWith("image/")) {
+      return file;
+    }
+  }
+
+  for (const file of Array.from(dataTransfer.files)) {
+    if (file.type.startsWith("image/")) {
+      return file;
+    }
+  }
+
+  return null;
 }
 
 export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) {
@@ -88,6 +100,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   const [error, setError] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [audioPreviewUrl, setAudioPreviewUrl] = useState("");
+  const [isImageDragActive, setIsImageDragActive] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -102,6 +115,22 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     }
   }, [mode]);
 
+  useEffect(() => {
+    if (mode !== "image" || asset || isAnalyzing) {
+      return;
+    }
+
+    function handlePaste(event: ClipboardEvent) {
+      const imageFile = extractImageFileFromDataTransfer(event.clipboardData);
+      if (!imageFile) return;
+      event.preventDefault();
+      void analyzeImage(imageFile);
+    }
+
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, [asset, isAnalyzing, mode]);
+
   function resetDraft(nextMode: Mode) {
     setMode(nextMode);
     setTextValue("");
@@ -114,6 +143,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       URL.revokeObjectURL(audioPreviewUrl);
       setAudioPreviewUrl("");
     }
+    setIsImageDragActive(false);
   }
 
   function cancelCapture() {
@@ -163,6 +193,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   }
 
   async function analyzeImage(file: File) {
+    setIsImageDragActive(false);
     setIsAnalyzing(true);
     setError("");
     setMode("image");
@@ -178,7 +209,9 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       const json = await parseJson<AnalysisResult>(response);
       setAsset(json.asset ?? null);
       setRawInputValue(json.rawInput);
-      setTitleValue((current) => current || file.name.replace(/\.[^.]+$/, ""));
+      setTitleValue((current) =>
+        current || inferCaptureTitle(json.rawInput, file.name.replace(/\.[^.]+$/, "") || "Kuvakaappaus")
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Image analysis failed.");
     } finally {
@@ -202,7 +235,9 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       const json = await parseJson<AnalysisResult>(response);
       setAsset(json.asset ?? null);
       setRawInputValue(json.rawInput);
-      setTitleValue((current) => current || inferTitleFromText(json.rawInput, file.name.replace(/\.[^.]+$/, "")));
+      setTitleValue((current) =>
+        current || inferCaptureTitle(json.rawInput, file.name.replace(/\.[^.]+$/, "") || "Aanitallenne")
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Audio analysis failed.");
     } finally {
@@ -224,7 +259,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
       const json = await parseJson<AnalysisResult>(response);
       setRawInputValue(json.rawInput);
-      setTitleValue((current) => current || inferTitleFromText(json.rawInput, "Idea"));
+      setTitleValue((current) => current || inferCaptureTitle(json.rawInput, "Idea"));
       return json;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Text analysis failed.");
@@ -284,7 +319,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
     setTextSaveStage("saving");
     const saved = await saveCapture("text", {
-      title: titleValue || inferTitleFromText(analyzed.rawInput, "Idea"),
+      title: titleValue || inferCaptureTitle(analyzed.rawInput, "Idea"),
       rawInput: analyzed.rawInput
     });
 
@@ -297,6 +332,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   const imageTranscriptCharacterCount = rawInputValue.trim().length;
   const voiceRawCharacterCount = rawInputValue.trim().length;
   const isTextProcessing = textSaveStage !== "idle";
+  const imageDropzoneLabel = isImageDragActive ? "Pudota kuva tahan" : "Raahaa tai liita kuva";
   const textProcessingLabel =
     textSaveStage === "saving" ? "Tallennetaan ideaa" : "AI kasittelee kirjoittamaasi ajatusta";
   const textProcessingDetail =
@@ -431,14 +467,51 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 ) : (
                   <button
                     type="button"
-                    className="capture-image-dropzone"
+                    className={`capture-image-dropzone${isImageDragActive ? " is-drag-active" : ""}`}
                     onClick={() => imageInputRef.current?.click()}
+                    onDragEnter={(event) => {
+                      if (extractImageFileFromDataTransfer(event.dataTransfer)) {
+                        event.preventDefault();
+                        setIsImageDragActive(true);
+                      }
+                    }}
+                    onDragOver={(event) => {
+                      if (extractImageFileFromDataTransfer(event.dataTransfer)) {
+                        event.preventDefault();
+                        event.dataTransfer.dropEffect = "copy";
+                        setIsImageDragActive(true);
+                      }
+                    }}
+                    onDragLeave={(event) => {
+                      if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+                      setIsImageDragActive(false);
+                    }}
+                    onDrop={(event) => {
+                      const file = extractImageFileFromDataTransfer(event.dataTransfer);
+                      event.preventDefault();
+                      setIsImageDragActive(false);
+                      if (file) void analyzeImage(file);
+                    }}
+                    onPaste={(event) => {
+                      const file = extractImageFileFromDataTransfer(event.clipboardData);
+                      if (!file) return;
+                      event.preventDefault();
+                      void analyzeImage(file);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        imageInputRef.current?.click();
+                      }
+                    }}
+                    aria-label="Raahaa, liita tai valitse kuva"
+                    tabIndex={0}
                   >
                     <span className="capture-image-dropzone-icon" aria-hidden="true">
-                      +
+                      {isImageDragActive ? "\u2193" : "+"}
                     </span>
-                    <strong>Valitse kuva</strong>
-                    <span>PNG, JPG tai screenshot. Avataan tiedostovalitsin heti.</span>
+                    <strong>{imageDropzoneLabel}</strong>
+                    <span>PNG, JPG tai screenshot. Klikkaa mobiilissa, raahaa desktopissa tai liita leikepoydalta.</span>
                   </button>
                 )}
 
@@ -497,7 +570,11 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                       type="button"
                       className="primary capture-image-save"
                       disabled={!rawInputValue.trim() || isSaving}
-                      onClick={() => void saveCapture("image")}
+                      onClick={() =>
+                        void saveCapture("image", {
+                          title: inferCaptureTitle(rawInputValue, asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus")
+                        })
+                      }
                     >
                       {isSaving ? "Tallennetaan..." : "Tallenna"}
                     </button>

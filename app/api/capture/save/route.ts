@@ -1,14 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSourceFromPreparedCapture } from "@/lib/db";
 import { CaptureAssetKind, InputModality, SourceType } from "@/lib/types";
-
-function inferTitle(rawInput: string): string {
-  const firstLine = rawInput
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .find(Boolean);
-  return (firstLine || "Untitled capture").slice(0, 90);
-}
+import { inferCaptureTitle } from "@/lib/source-editor";
 
 export async function POST(request: Request) {
   try {
@@ -34,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     const source = await createSourceFromPreparedCapture({
-      title: (body.title || "").trim() || inferTitle(rawInput),
+      title: (body.title || "").trim() || inferCaptureTitle(rawInput),
       type: body.sourceType || "other",
       rawInput,
       inputModality: body.inputModality || "text",

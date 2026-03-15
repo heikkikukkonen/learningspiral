@@ -20,6 +20,15 @@ export function normalizeCaptureSummary(value: string): string {
   return normalized.replace(/^Summary draft:\s*/i, "").trim();
 }
 
+export function inferCaptureTitle(rawInput: string, fallback = "Untitled capture"): string {
+  const firstLine = normalizeBlock(rawInput)
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find(Boolean);
+
+  return (firstLine || fallback).slice(0, 90);
+}
+
 export function buildSourceSummaryContent(draft: SourceEditorDraft): string {
   const idea = normalizeBlock(draft.idea);
   const analysis = normalizeBlock(draft.analysis);
