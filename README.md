@@ -51,7 +51,6 @@ New tables:
 
 - `capture_messages`
 - `learning_events`
-- `applied_insights`
 - `learning_daily_metrics`
 
 Changed tables:

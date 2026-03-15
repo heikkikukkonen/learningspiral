@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import {
   acceptAllSuggested,
   completeReview,
-  createAppliedInsight,
   deleteCard,
   createSource,
   generateSuggestedCards,
@@ -47,17 +46,6 @@ export async function completeReviewAction(formData: FormData) {
   const userAnswer = asString(formData.get("userAnswer"));
   await completeReview(cardId, rating, userAnswer);
   revalidatePath("/review");
-  revalidatePath("/progress");
-}
-
-export async function logInsightAction(formData: FormData) {
-  const sourceId = asString(formData.get("sourceId")) || null;
-  const cardId = asString(formData.get("cardId")) || null;
-  const note = asString(formData.get("note"));
-
-  await createAppliedInsight({ note, sourceId, cardId });
-
-  if (sourceId) revalidatePath(`/sources/${sourceId}`);
   revalidatePath("/progress");
 }
 

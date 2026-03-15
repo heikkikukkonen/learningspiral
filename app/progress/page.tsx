@@ -19,13 +19,12 @@ export default async function ProgressPage() {
   const lmsValues = snapshot.lmsTrend90.map((item) => item.lmsScore);
   const acceptedValues = snapshot.lmsTrend90.map((item) => item.acceptedCount);
   const reviewValues = snapshot.lmsTrend90.map((item) => item.reviewsCount);
-  const insightValues = snapshot.lmsTrend90.map((item) => item.appliedCount);
 
   return (
     <section className="grid">
       <div className="page-header">
         <h1>Progress</h1>
-        <p className="muted">Learning Momentum Score (LMS) and 30-day activity metrics.</p>
+        <p className="muted">Learning Momentum Score (LMS) plus 30-day review activity.</p>
       </div>
 
       <div className="grid grid-cols-2">
@@ -36,10 +35,6 @@ export default async function ProgressPage() {
         <article className="card">
           <h3 style={{ marginTop: 0 }}>Cards Accepted (30d)</h3>
           <p style={{ fontSize: "1.8rem", margin: "0.3rem 0" }}>{snapshot.cardsAccepted30}</p>
-        </article>
-        <article className="card">
-          <h3 style={{ marginTop: 0 }}>Applied Insights (30d)</h3>
-          <p style={{ fontSize: "1.8rem", margin: "0.3rem 0" }}>{snapshot.appliedInsights30}</p>
         </article>
         <article className="card">
           <h3 style={{ marginTop: 0 }}>Today Delta</h3>
@@ -68,12 +63,6 @@ export default async function ProgressPage() {
           <h3 style={{ marginTop: 0 }}>Cards accepted</h3>
           <svg viewBox="0 0 1000 150" width="100%" height="150">
             <path d={sparklinePath(acceptedValues, 1000, 150)} stroke="#067647" strokeWidth="3" fill="none" />
-          </svg>
-        </article>
-        <article className="card">
-          <h3 style={{ marginTop: 0 }}>Applied insights</h3>
-          <svg viewBox="0 0 1000 150" width="100%" height="150">
-            <path d={sparklinePath(insightValues, 1000, 150)} stroke="#b42318" strokeWidth="3" fill="none" />
           </svg>
         </article>
       </div>

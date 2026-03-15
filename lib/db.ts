@@ -95,14 +95,12 @@ export interface ProgressPoint {
   date: string;
   reviewsCount: number;
   acceptedCount: number;
-  appliedCount: number;
   lmsScore: number;
 }
 
 export interface ProgressSnapshot {
   activeReviewDays30: number;
   cardsAccepted30: number;
-  appliedInsights30: number;
   todayDelta: number;
   lmsTrend90: ProgressPoint[];
 }
@@ -260,21 +258,7 @@ export async function deleteSource(sourceId: string) {
       .eq("user_id", userId)
       .in("entity_id", cardIds);
     if (cardEventsError) throw cardEventsError;
-
-    const { error: cardInsightsError } = await supabase
-      .from("applied_insights")
-      .delete()
-      .eq("user_id", userId)
-      .in("card_id", cardIds);
-    if (cardInsightsError) throw cardInsightsError;
   }
-
-  const { error: sourceInsightsError } = await supabase
-    .from("applied_insights")
-    .delete()
-    .eq("user_id", userId)
-    .eq("source_id", sourceId);
-  if (sourceInsightsError) throw sourceInsightsError;
 
   const { error: sourceError } = await supabase
     .from("sources")
@@ -1012,48 +996,6 @@ export async function completeReview(cardId: string, rating: number, userAnswer?
   });
 }
 
-export async function createAppliedInsight(input: {
-  note: string;
-  sourceId?: string | null;
-  cardId?: string | null;
-}) {
-  const supabase = getSupabaseAdmin();
-  const trimmedNote = input.note.trim();
-  if (!trimmedNote) return;
-
-  const { data, error } = await supabase
-    .from("applied_insights")
-    .insert({
-      user_id: appUserId(),
-      source_id: input.sourceId ?? null,
-      card_id: input.cardId ?? null,
-      note: trimmedNote
-    })
-    .select("id")
-    .single();
-  if (error) throw error;
-
-  await logLearningEvent({
-    eventType: "insight_logged",
-    entityId: data.id,
-    payload: { source_id: input.sourceId ?? null, card_id: input.cardId ?? null }
-  });
-}
-
-export async function listAppliedInsights(sourceId: string) {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("applied_insights")
-    .select("*")
-    .eq("user_id", appUserId())
-    .eq("source_id", sourceId)
-    .order("created_at", { ascending: false })
-    .limit(20);
-
-  if (error) throw error;
-  return data ?? [];
-}
-
 function normalize(value: number, cap: number): number {
   return Math.min(1, value / cap);
 }
@@ -1081,7 +1023,6 @@ export async function getProgressSnapshot(): Promise<ProgressSnapshot> {
       date,
       reviewsCount: 0,
       acceptedCount: 0,
-      appliedCount: 0,
       lmsScore: 0
     });
   }
@@ -1092,14 +1033,12 @@ export async function getProgressSnapshot(): Promise<ProgressSnapshot> {
     if (!point) continue;
     if (event.event_type === "review_completed") point.reviewsCount += 1;
     if (event.event_type === "card_accepted") point.acceptedCount += 1;
-    if (event.event_type === "insight_logged") point.appliedCount += 1;
   }
 
   for (const point of daily.values()) {
     const score =
       0.5 * normalize(point.reviewsCount, 10) +
-      0.3 * normalize(point.acceptedCount, 5) +
-      0.2 * normalize(point.appliedCount, 3);
+      0.5 * normalize(point.acceptedCount, 5);
     point.lmsScore = Number(score.toFixed(4));
   }
 
@@ -1107,14 +1046,12 @@ export async function getProgressSnapshot(): Promise<ProgressSnapshot> {
   const trend30 = trend.filter((point) => point.date >= from30.slice(0, 10));
   const activeDays = trend30.filter((point) => point.reviewsCount > 0).length;
   const accepted30 = trend30.reduce((sum, point) => sum + point.acceptedCount, 0);
-  const applied30 = trend30.reduce((sum, point) => sum + point.appliedCount, 0);
   const todayKey = toIsoDate(now);
   const todayDelta = trend.find((point) => point.date === todayKey)?.lmsScore ?? 0;
 
   return {
     activeReviewDays30: activeDays,
     cardsAccepted30: accepted30,
-    appliedInsights30: applied30,
     todayDelta,
     lmsTrend90: trend
   };
