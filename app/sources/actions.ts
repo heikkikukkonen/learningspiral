@@ -14,7 +14,8 @@ import {
   upsertSummary
 } from "@/lib/db";
 import { CardType, InputModality, SourceType } from "@/lib/types";
-import { buildSourceSummaryContent } from "@/lib/source-editor";
+import { buildSourceSummaryContent, suggestSourceTags } from "@/lib/source-editor";
+import { refineSourceDraft } from "@/lib/llm";
 
 function asString(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
@@ -82,15 +83,25 @@ export async function saveSourceDraftAction(formData: FormData) {
   const analysis = asString(formData.get("analysis"));
   const rawInput = asString(formData.get("rawInput")) || null;
   const inputModality = asString(formData.get("inputModality")) as InputModality;
+  const generateCardsOnSave = asString(formData.get("generateCardsOnSave")) === "true";
   const tags = asString(formData.get("tags"))
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+  const resolvedTags =
+    tags.length > 0
+      ? tags
+      : suggestSourceTags({
+          title,
+          idea,
+          analysis,
+          rawInput
+        });
 
   await updateSource({
     sourceId,
     title,
-    tags
+    tags: resolvedTags
   });
 
   await upsertSummary(sourceId, buildSourceSummaryContent({ idea, analysis }), {
@@ -98,10 +109,49 @@ export async function saveSourceDraftAction(formData: FormData) {
     inputModality: inputModality || "text"
   });
 
+  if (generateCardsOnSave) {
+    await generateSuggestedCards({ sourceId });
+  }
+
   revalidatePath(`/sources/${sourceId}`);
   revalidatePath(`/capture?sourceId=${sourceId}`);
   revalidatePath("/sources");
   revalidatePath("/progress");
+}
+
+export async function refineSourceDraftAction(formData: FormData) {
+  const title = asString(formData.get("title")).trim() || "Untitled idea";
+  const idea = asString(formData.get("idea"));
+  const analysis = asString(formData.get("analysis"));
+  const rawInput = asString(formData.get("rawInput"));
+  const modeValue = asString(formData.get("mode"));
+  const tags = asString(formData.get("tags"))
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const mode =
+    modeValue === "deepen" || modeValue === "summarize" || modeValue === "refresh"
+      ? modeValue
+      : "refresh";
+
+  const refined = await refineSourceDraft({
+    mode,
+    title,
+    idea,
+    analysis,
+    rawInput,
+    tags
+  });
+
+  return {
+    title: refined.data.title,
+    idea: refined.data.idea,
+    analysis: refined.data.analysis,
+    tags: refined.data.tags,
+    mode,
+    model: refined.model ?? null
+  };
 }
 
 export async function generateCardsAction(formData: FormData) {

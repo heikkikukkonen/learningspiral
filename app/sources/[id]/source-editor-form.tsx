@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { SubmitButton } from "@/app/components/submit-button";
-import { saveSourceDraftAction } from "@/app/sources/actions";
+import { refineSourceDraftAction, saveSourceDraftAction } from "@/app/sources/actions";
 
 type SourceEditorFormProps = {
   sourceId: string;
@@ -15,6 +16,12 @@ type SourceEditorFormProps = {
   lastSavedLabel: string;
 };
 
+const refineModes = [
+  { id: "refresh", label: "Paivita analyysi" },
+  { id: "deepen", label: "Syvenna analyysia" },
+  { id: "summarize", label: "Tiivista" }
+] as const;
+
 export function SourceEditorForm({
   sourceId,
   initialTitle,
@@ -25,8 +32,14 @@ export function SourceEditorForm({
   inputModality,
   lastSavedLabel
 }: SourceEditorFormProps) {
+  const [title, setTitle] = useState(initialTitle);
+  const [idea, setIdea] = useState(initialIdea);
+  const [analysis, setAnalysis] = useState(initialAnalysis);
   const [tags, setTags] = useState(initialTags);
   const [tagInput, setTagInput] = useState("");
+  const [aiNote, setAiNote] = useState("AI voi paivittaa, syventaa tai tiivistaa analyysin nykyisten kenttien pohjalta.");
+  const [activeMode, setActiveMode] = useState<(typeof refineModes)[number]["id"] | null>(null);
+  const [isRefining, setIsRefining] = useState(false);
 
   function addTag() {
     const next = tagInput.trim();
@@ -43,85 +56,156 @@ export function SourceEditorForm({
     setTags((current) => current.filter((tag) => tag !== tagToRemove));
   }
 
+  function handleAiAction(mode: (typeof refineModes)[number]["id"]) {
+    setActiveMode(mode);
+    setIsRefining(true);
+    void (async () => {
+      try {
+        const formData = new FormData();
+        formData.set("title", title);
+        formData.set("idea", idea);
+        formData.set("analysis", analysis);
+        formData.set("rawInput", rawInput);
+        formData.set("tags", tags.join(","));
+        formData.set("mode", mode);
+
+        const result = await refineSourceDraftAction(formData);
+        setTitle(result.title);
+        setIdea(result.idea);
+        setAnalysis(result.analysis);
+        setTags(result.tags);
+        setAiNote(
+          result.model
+            ? `AI paivitti luonnoksen tilassa "${result.mode}". Muista tallentaa, jos haluat sailyttaa muutokset.`
+            : `Luonnos paivitettiin tilassa "${result.mode}". Muista tallentaa muutokset.`
+        );
+      } catch (error) {
+        setAiNote(error instanceof Error ? error.message : "Analyysin paivitys epaonnistui.");
+      } finally {
+        setActiveMode(null);
+        setIsRefining(false);
+      }
+    })();
+  }
+
   return (
-    <form className="form source-edit-form" action={saveSourceDraftAction}>
-      <input type="hidden" name="sourceId" value={sourceId} />
-      <input type="hidden" name="rawInput" value={rawInput} />
-      <input type="hidden" name="inputModality" value={inputModality} />
-      <input type="hidden" name="tags" value={tags.join(",")} />
+    <div className="source-editor-stack">
+      <form className="form source-edit-form" action={saveSourceDraftAction}>
+        <input type="hidden" name="sourceId" value={sourceId} />
+        <input type="hidden" name="rawInput" value={rawInput} />
+        <input type="hidden" name="inputModality" value={inputModality} />
+        <input type="hidden" name="tags" value={tags.join(",")} />
+        <input type="hidden" name="generateCardsOnSave" value="true" />
 
-      <label className="form-row source-edit-field">
-        <span>Otsikko</span>
-        <input name="title" defaultValue={initialTitle} placeholder="Anna muistiinpanolle selkea otsikko" required />
-      </label>
+        <label className="form-row source-edit-field">
+          <span>Otsikko</span>
+          <input
+            name="title"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="Anna muistiinpanolle selkea otsikko"
+            required
+          />
+        </label>
 
-      <label className="form-row source-edit-field">
-        <span>Idea</span>
-        <textarea
-          name="idea"
-          defaultValue={initialIdea}
-          placeholder="Kirjoita ytimekas paaoivallus tai varsinainen ajatus."
-          required
-        />
-      </label>
+        <label className="form-row source-edit-field">
+          <span>Idea</span>
+          <textarea
+            name="idea"
+            value={idea}
+            onChange={(event) => setIdea(event.target.value)}
+            placeholder="Kirjoita ytimekas paaoivallus tai varsinainen ajatus."
+            required
+          />
+        </label>
 
-      <label className="form-row source-edit-field source-edit-field-analysis">
-        <span>Analyysi</span>
-        <textarea
-          name="analysis"
-          defaultValue={initialAnalysis}
-          placeholder="Jalosta ideaa pidemmalle: miksi tama on tarkea, mihin se liittyy, mita haluat muistaa."
-          required
-        />
-      </label>
-
-      <div className="form-row source-edit-field">
-        <span>Tagit</span>
-        <div className="source-tag-editor">
-          <div className="source-tag-list">
-            {tags.length > 0 ? (
-              tags.map((tag) => (
-                <button
-                  key={tag}
-                  className="source-tag-chip"
-                  onClick={() => removeTag(tag)}
-                  type="button"
-                >
-                  {tag} <span aria-hidden="true">x</span>
-                </button>
-              ))
-            ) : (
-              <span className="status">Ei tageja viela. Lisaa ainakin muutama avainsana.</span>
-            )}
+        <div className="form-row source-edit-field source-analysis-shell">
+          <div className="source-analysis-header">
+            <span>Analyysi</span>
+            <p className="status" style={{ margin: 0 }}>
+              Generoi analyysia nykyisen otsikon, idean ja alkuperaisen capturen pohjalta.
+            </p>
           </div>
 
-          <div className="source-tag-add">
-            <input
-              value={tagInput}
-              onChange={(event) => setTagInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  addTag();
-                }
-              }}
-              placeholder="Lisää tagi"
-            />
-            <button type="button" className="secondary" onClick={addTag}>
-              Lisää
-            </button>
+          <div className="source-analysis-actions" role="group" aria-label="AI-jalostus">
+            {refineModes.map((mode) => (
+              <button
+                key={mode.id}
+                className="secondary source-analysis-action"
+                disabled={isRefining}
+                onClick={() => handleAiAction(mode.id)}
+                type="button"
+              >
+                {isRefining && activeMode === mode.id ? "Kasitellaan..." : mode.label}
+              </button>
+            ))}
+          </div>
+
+          <p className="status source-analysis-note">{aiNote}</p>
+
+          <textarea
+            name="analysis"
+            value={analysis}
+            onChange={(event) => setAnalysis(event.target.value)}
+            className="source-analysis-textarea"
+            placeholder="Jalosta ideaa pidemmalle: miksi tama on tarkea, mihin se liittyy, mita haluat muistaa."
+            required
+          />
+        </div>
+
+        <div className="form-row source-edit-field">
+          <span>Tagit</span>
+          <div className="source-tag-editor">
+            <div className="source-tag-list">
+              {tags.length > 0 ? (
+                tags.map((tag) => (
+                  <button
+                    key={tag}
+                    className="source-tag-chip"
+                    onClick={() => removeTag(tag)}
+                    type="button"
+                  >
+                    {tag} <span aria-hidden="true">x</span>
+                  </button>
+                ))
+              ) : (
+                <span className="status">AI ehdottaa tageja, mutta voit lisata ne myos itse.</span>
+              )}
+            </div>
+
+            <div className="source-tag-add">
+              <input
+                value={tagInput}
+                onChange={(event) => setTagInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    addTag();
+                  }
+                }}
+                placeholder="Lisaa tagi"
+              />
+              <button type="button" className="secondary" onClick={addTag}>
+                Lisaa
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="source-edit-footer">
-        <p className="status" style={{ margin: 0 }}>
-          {lastSavedLabel}
-        </p>
-        <SubmitButton className="primary source-edit-save" pendingText="Tallennetaan...">
-          Tallenna ja jatka
-        </SubmitButton>
-      </div>
-    </form>
+        <div className="source-edit-footer">
+          <Link href="/sources" className="button-link secondary source-edit-later">
+            Jalosta myohemmin
+          </Link>
+          <div className="source-edit-save-group">
+            <p className="status" style={{ margin: 0 }}>
+              {lastSavedLabel}
+            </p>
+            <SubmitButton className="primary source-edit-save" pendingText="Tallennetaan...">
+              Tallenna ja luo kortit
+            </SubmitButton>
+          </div>
+        </div>
+      </form>
+    </div>
   );
 }

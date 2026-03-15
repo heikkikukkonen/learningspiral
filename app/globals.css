@@ -596,14 +596,10 @@ button.danger {
 }
 
 .source-workspace-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.9fr);
-  gap: 1rem;
-  align-items: start;
+  display: block;
 }
 
-.source-editor-card,
-.source-ai-card {
+.source-editor-card {
   border-radius: 28px;
   border-color: rgba(219, 225, 234, 0.95);
   box-shadow: 0 18px 40px rgba(190, 201, 217, 0.18);
@@ -620,19 +616,7 @@ button.danger {
     linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(249, 251, 255, 0.98));
 }
 
-.source-ai-card {
-  position: sticky;
-  top: 64px;
-  display: grid;
-  gap: 1rem;
-  padding: 1rem;
-  background:
-    radial-gradient(circle at 16% 12%, rgba(210, 235, 255, 0.28) 0%, rgba(255, 255, 255, 0) 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 255, 0.98));
-}
-
 .source-editor-topbar,
-.source-ai-header,
 .source-origin-header,
 .source-edit-footer {
   display: flex;
@@ -651,6 +635,11 @@ button.danger {
   gap: 1rem;
 }
 
+.source-editor-stack {
+  display: grid;
+  gap: 1rem;
+}
+
 .source-edit-field span {
   font-weight: 650;
   color: #51657d;
@@ -658,7 +647,6 @@ button.danger {
 
 .source-edit-field input,
 .source-edit-field textarea,
-.source-ai-form textarea,
 .source-tag-add input {
   border-radius: 16px;
   border-color: rgba(209, 219, 231, 0.95);
@@ -676,6 +664,41 @@ button.danger {
 
 .source-edit-field-analysis textarea {
   min-height: 210px;
+}
+
+.source-analysis-shell {
+  gap: 0.7rem;
+  padding: 1rem;
+  border-radius: 24px;
+  border: 1px solid rgba(215, 223, 233, 0.95);
+  background:
+    radial-gradient(circle at 92% 12%, rgba(255, 220, 150, 0.22) 0%, rgba(255, 255, 255, 0) 22%),
+    linear-gradient(180deg, rgba(247, 250, 255, 0.98), rgba(255, 255, 255, 0.98));
+}
+
+.source-analysis-header {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.source-analysis-actions {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.source-analysis-action {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(205, 216, 229, 0.95) !important;
+}
+
+.source-analysis-note {
+  min-height: 1.25rem;
+}
+
+.source-analysis-textarea {
+  min-height: 230px;
 }
 
 .source-tag-editor {
@@ -727,6 +750,20 @@ button.danger {
     0 10px 24px rgba(166, 194, 102, 0.34);
 }
 
+.source-edit-later {
+  min-width: 170px;
+  min-height: 52px;
+  border-radius: 999px;
+}
+
+.source-edit-save-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .source-origin-panel {
   display: grid;
   gap: 0.9rem;
@@ -745,38 +782,6 @@ button.danger {
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(220, 226, 235, 0.95);
-}
-
-.source-ai-thread {
-  display: grid;
-  gap: 0.75rem;
-  max-height: 60vh;
-  overflow: auto;
-  padding-right: 0.2rem;
-}
-
-.source-chat-bubble {
-  display: grid;
-  gap: 0.5rem;
-  padding: 0.9rem;
-  border-radius: 20px;
-  border: 1px solid rgba(220, 226, 235, 0.95);
-  background: rgba(255, 255, 255, 0.88);
-}
-
-.source-chat-bubble.is-assistant {
-  background:
-    radial-gradient(circle at 90% 10%, rgba(255, 212, 110, 0.12) 0%, rgba(255, 255, 255, 0) 26%),
-    rgba(241, 249, 255, 0.96);
-}
-
-.source-chat-bubble.is-user {
-  background: rgba(255, 255, 255, 0.96);
-}
-
-.source-ai-form {
-  padding-top: 0.25rem;
-  border-top: 1px solid rgba(223, 228, 236, 0.95);
 }
 
 .review-shell {
@@ -1854,30 +1859,27 @@ button.danger {
     grid-template-columns: 1fr;
   }
 
-  .source-workspace-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .source-ai-card {
-    position: static;
-  }
-
   .source-stepper {
     font-size: 0.8rem;
   }
 
   .source-tag-add,
   .source-edit-footer,
+  .source-edit-save-group,
   .source-editor-topbar,
-  .source-ai-header,
   .source-origin-header {
     align-items: stretch;
     flex-direction: column;
   }
 
   .source-edit-save,
-  .source-tag-add button {
+  .source-tag-add button,
+  .source-edit-later {
     width: 100%;
+  }
+
+  .source-analysis-actions {
+    flex-direction: column;
   }
 
   .capture-text-card {

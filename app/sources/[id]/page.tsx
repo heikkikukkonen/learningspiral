@@ -10,9 +10,8 @@ import {
   saveCardAction,
   setCardStatusAction
 } from "@/app/sources/actions";
-import { CardType, CaptureRole, SourceType } from "@/lib/types";
-import { sendCaptureMessageAction } from "@/app/capture/actions";
-import { parseSourceSummaryContent } from "@/lib/source-editor";
+import { CardType, SourceType } from "@/lib/types";
+import { parseSourceSummaryContent, suggestSourceTags } from "@/lib/source-editor";
 import { SourceEditorForm } from "@/app/sources/[id]/source-editor-form";
 import Image from "next/image";
 
@@ -43,13 +42,6 @@ type CardDetails = {
   answer: string;
 };
 
-type CaptureMessage = {
-  id: string;
-  role: CaptureRole;
-  content: string;
-  created_at: string;
-};
-
 type CaptureAsset = {
   id: string;
   kind: "image" | "audio";
@@ -72,7 +64,6 @@ export default async function SourceDetailsPage({
   let source: SourceDetails | null = null;
   let summary: SummaryDetails | null = null;
   let cards: CardDetails[] = [];
-  let captureMessages: CaptureMessage[] = [];
   let captureAssets: CaptureAsset[] = [];
   let insights: Array<{ id: string; note: string; created_at: string }> = [];
   let loadError = "";
@@ -82,7 +73,6 @@ export default async function SourceDetailsPage({
     source = result.source;
     summary = result.summary;
     cards = result.cards;
-    captureMessages = result.captureMessages;
     captureAssets = result.captureAssets;
     insights = await listAppliedInsights(params.id);
   } catch (error) {
@@ -112,9 +102,16 @@ export default async function SourceDetailsPage({
     notFound();
   }
 
-  const parsedSummary = parseSourceSummaryContent(summary?.content);
-  const latestAssistantMessage = [...captureMessages].reverse().find((message) => message.role === "assistant");
-  const rawTextMessage = captureMessages.find((message) => message.role === "user");
+  const parsedSummary = parseSourceSummaryContent(summary?.content, summary?.raw_input);
+  const resolvedTags =
+    source.tags && source.tags.length > 0
+      ? source.tags
+      : suggestSourceTags({
+          title: source.title,
+          idea: parsedSummary.idea,
+          analysis: parsedSummary.analysis,
+          rawInput: summary?.raw_input
+        });
   const lastSavedLabel = summary?.updated_at
     ? `Viimeksi tallennettu ${new Date(summary.updated_at).toLocaleString("fi-FI")}`
     : "Ei tallennettu viela";
@@ -129,7 +126,7 @@ export default async function SourceDetailsPage({
         </p>
         <h1>{source.title}</h1>
         <p className="muted">
-          Yhdistetty capture- ja source-näkymä, jossa voit muokata idean lopulliseen muotoon ja jutella AI:n kanssa.
+          Muokkaa ideasta selkeä otsikko, ydinajatus, analyysi ja tagit ennen korttien luontia.
         </p>
       </div>
 
@@ -150,7 +147,7 @@ export default async function SourceDetailsPage({
             initialTitle={source.title}
             initialIdea={parsedSummary.idea}
             initialAnalysis={parsedSummary.analysis}
-            initialTags={source.tags ?? []}
+            initialTags={resolvedTags}
             rawInput={summary?.raw_input ?? ""}
             inputModality={summary?.input_modality ?? "text"}
             lastSavedLabel={lastSavedLabel}
@@ -197,67 +194,16 @@ export default async function SourceDetailsPage({
               </div>
             ) : null}
 
-            {summary?.raw_input || rawTextMessage ? (
+            {summary?.raw_input ? (
               <details className="capture-details" open>
                 <summary>Näytä alkuperäinen raakateksti</summary>
                 <p style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>
-                  {summary?.raw_input || rawTextMessage?.content}
+                  {summary.raw_input}
                 </p>
               </details>
             ) : null}
           </div>
         </article>
-
-        <aside className="card source-ai-card">
-          <div className="source-ai-header">
-            <div>
-              <h2 style={{ margin: 0 }}>AI-analyysi</h2>
-              <p className="status" style={{ marginBottom: 0 }}>
-                Pyydä vaihtoehtoisia näkökulmia, tiivistä ideaa tai ehdota uusia tageja.
-              </p>
-            </div>
-            {latestAssistantMessage ? <span className="pill" data-variant="primary">AI</span> : null}
-          </div>
-
-          <div className="source-ai-thread">
-            {captureMessages.length === 0 ? (
-              <p className="muted">Keskustelua ei vielä ole. Lähetä viesti AI:lle oikealta.</p>
-            ) : (
-              captureMessages.map((message) => (
-                <article
-                  className={`source-chat-bubble ${message.role === "assistant" ? "is-assistant" : "is-user"}`}
-                  key={message.id}
-                >
-                  <div className="source-meta">
-                    <span
-                      className="pill"
-                      data-variant={message.role === "assistant" ? "primary" : undefined}
-                    >
-                      {message.role === "assistant" ? "AI" : "Sinä"}
-                    </span>
-                    <span>{new Date(message.created_at).toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" })}</span>
-                  </div>
-                  <p style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>{message.content}</p>
-                </article>
-              ))
-            )}
-          </div>
-
-          <form className="form source-ai-form" action={sendCaptureMessageAction}>
-            <input type="hidden" name="sourceId" value={source.id} />
-            <label className="form-row">
-              <span>Kysy AI:lta seuraava jalostus</span>
-              <textarea
-                name="message"
-                placeholder="Esim. tee tästä terävämpi idea, anna eri näkökulma, ehdota parempaa otsikkoa tai 5 tagia."
-                required
-              />
-            </label>
-            <SubmitButton className="primary" pendingText="AI vastaa..." loadingVariant="idea-network">
-              Lähetä
-            </SubmitButton>
-          </form>
-        </aside>
       </div>
 
       <article className="card">
