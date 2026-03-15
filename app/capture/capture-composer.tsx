@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IdeaNetworkLoader } from "@/app/components/idea-network-loader";
@@ -529,13 +528,10 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
             ) : (
               <div className="capture-image-result">
                 <div className="capture-image-preview-shell">
-                  <Image
+                  <img
                     src={`data:${asset.mimeType};base64,${asset.base64Data}`}
                     alt={asset.fileName}
-                    width={1200}
-                    height={900}
                     className="capture-asset-preview capture-image-preview"
-                    unoptimized
                   />
                   <div className="capture-image-preview-meta">
                     <span className="pill" data-variant="primary">

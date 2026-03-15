@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { SubmitButton } from "@/app/components/submit-button";
 import {
@@ -181,13 +180,10 @@ export default async function SourceDetailsPage({
                           <span>{asset.file_name}</span>
                         </div>
                         {asset.kind === "image" ? (
-                          <Image
+                          <img
                             src={assetUrl(asset.mime_type, asset.base64_data)}
                             alt={asset.file_name}
                             className="capture-asset-preview"
-                            width={1200}
-                            height={900}
-                            unoptimized
                           />
                         ) : (
                           <audio
