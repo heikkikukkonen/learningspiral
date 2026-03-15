@@ -32,6 +32,14 @@ async function parseJson<T>(response: Response): Promise<T> {
   return json;
 }
 
+function inferTitleFromText(text: string, fallback: string): string {
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find(Boolean)
+    ?.slice(0, 90) || fallback;
+}
+
 export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) {
   const router = useRouter();
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -160,7 +168,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       const json = await parseJson<AnalysisResult>(response);
       setAsset(json.asset ?? null);
       setRawInputValue(json.rawInput);
-      setTitleValue((current) => current || "Voice capture");
+      setTitleValue((current) => current || inferTitleFromText(json.rawInput, file.name.replace(/\.[^.]+$/, "")));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Audio analysis failed.");
     } finally {
@@ -182,7 +190,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
       const json = await parseJson<AnalysisResult>(response);
       setRawInputValue(json.rawInput);
-      setTitleValue((current) => current || json.rawInput.split(/\r?\n/).find(Boolean)?.slice(0, 90) || "Idea");
+      setTitleValue((current) => current || inferTitleFromText(json.rawInput, "Idea"));
       return json;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Text analysis failed.");
@@ -237,7 +245,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     if (!analyzed) return;
 
     await saveCapture("text", {
-      title: titleValue || analyzed.rawInput.split(/\r?\n/).find(Boolean)?.slice(0, 90),
+      title: titleValue || inferTitleFromText(analyzed.rawInput, "Idea"),
       rawInput: analyzed.rawInput
     });
   }
