@@ -2,7 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { deleteSourceAction, saveSourceDraftAction } from "@/app/sources/actions";
+import {
+  deleteSourceAction,
+  saveSourceDraftAndReturnAction
+} from "@/app/sources/actions";
 
 type SourcePageActionsProps = {
   sourceId: string;
@@ -44,7 +47,8 @@ export function SourcePageActions({
       try {
         const formData = readEditorFormData();
         formData.set("saveMode", mode);
-        await saveSourceDraftAction(formData);
+        const result = await saveSourceDraftAndReturnAction(formData);
+        router.push(result.redirectTo);
         router.refresh();
       } catch (error) {
         const message =
