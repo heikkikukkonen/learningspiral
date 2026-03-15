@@ -69,7 +69,11 @@ export default async function SourcesPage() {
                 ))}
               </div>
               <p className="status" style={{ marginBottom: 0 }}>
-                Created: {new Date(source.created_at).toLocaleDateString("fi-FI")}
+                Created:{" "}
+                {new Date(source.created_at).toLocaleString("fi-FI", {
+                  dateStyle: "short",
+                  timeStyle: "short"
+                })}
               </p>
             </div>
             <Link href={`/sources/${source.id}`} className="button-link secondary">
