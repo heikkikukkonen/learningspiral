@@ -68,5 +68,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "Starting supabase db push"
-          yes | supabase db push
+          supabase db push <<'EOF'
+          y
+          EOF
           echo "Supabase migrations pushed successfully."
