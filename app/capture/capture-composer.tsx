@@ -65,18 +65,31 @@ function extractImageFileFromDataTransfer(dataTransfer: DataTransfer | null): Fi
   for (const item of Array.from(dataTransfer.items)) {
     if (item.kind !== "file") continue;
     const file = item.getAsFile();
-    if (file && file.type.startsWith("image/")) {
+    if (isSupportedImageFile(file)) {
       return file;
     }
   }
 
   for (const file of Array.from(dataTransfer.files)) {
-    if (file.type.startsWith("image/")) {
+    if (isSupportedImageFile(file)) {
       return file;
     }
   }
 
   return null;
+}
+
+function isSupportedImageFile(file: File | null): file is File {
+  if (!file) return false;
+  if (file.type.startsWith("image/")) return true;
+  return /\.(png|jpe?g|gif|webp|bmp|svg|heic|heif|avif)$/i.test(file.name);
+}
+
+function hasFileInDataTransfer(dataTransfer: DataTransfer | null): boolean {
+  if (!dataTransfer) return false;
+  if (Array.from(dataTransfer.types).includes("Files")) return true;
+  if (dataTransfer.files.length > 0) return true;
+  return Array.from(dataTransfer.items).some((item) => item.kind === "file");
 }
 
 export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) {
@@ -469,13 +482,13 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     className={`capture-image-dropzone${isImageDragActive ? " is-drag-active" : ""}`}
                     onClick={() => imageInputRef.current?.click()}
                     onDragEnter={(event) => {
-                      if (extractImageFileFromDataTransfer(event.dataTransfer)) {
+                      if (hasFileInDataTransfer(event.dataTransfer)) {
                         event.preventDefault();
                         setIsImageDragActive(true);
                       }
                     }}
                     onDragOver={(event) => {
-                      if (extractImageFileFromDataTransfer(event.dataTransfer)) {
+                      if (hasFileInDataTransfer(event.dataTransfer)) {
                         event.preventDefault();
                         event.dataTransfer.dropEffect = "copy";
                         setIsImageDragActive(true);
@@ -489,7 +502,11 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                       const file = extractImageFileFromDataTransfer(event.dataTransfer);
                       event.preventDefault();
                       setIsImageDragActive(false);
-                      if (file) void analyzeImage(file);
+                      if (file) {
+                        void analyzeImage(file);
+                        return;
+                      }
+                      setError("Pudotettu tiedosto ei ollut tuettu kuva. Kayta PNG-, JPG- tai muuta kuvatiedostoa.");
                     }}
                     onPaste={(event) => {
                       const file = extractImageFileFromDataTransfer(event.clipboardData);
