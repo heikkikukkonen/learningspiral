@@ -1,4 +1,4 @@
-# LearningSpiral MVP 0.2 (Interim Release)
+# LearningSpiral 0.3.0
 
 This release includes:
 
@@ -46,7 +46,7 @@ npm install
 npm run dev
 ```
 
-## Database Changes in MVP 0.2
+## Database Changes in 0.3.0
 
 New tables:
 

@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "LearningSpiral",
-  description: "MVP 0.2 UI for capture chat, summary, cards, review and progress.",
+  description: "LearningSpiral 0.3.0 UI for capture, summary, cards, review and progress.",
   manifest: "/manifest.webmanifest",
   other: {
     "mobile-web-app-capable": "yes"
