@@ -132,8 +132,16 @@ export function parseSourceSummaryContent(
   rawInput?: string | null
 ): SourceEditorDraft {
   const normalized = normalizeCaptureSummary(content ?? "");
+  const normalizedRawInput = normalizeBlock(rawInput ?? "");
   if (!normalized) {
-    return { idea: normalizeBlock(rawInput ?? ""), analysis: "" };
+    return { idea: normalizedRawInput, analysis: "" };
+  }
+
+  if (normalizedRawInput && normalized === normalizedRawInput) {
+    return {
+      idea: normalizedRawInput,
+      analysis: ""
+    };
   }
 
   const summaryDraftMatch = normalized.match(
@@ -156,8 +164,7 @@ export function parseSourceSummaryContent(
     };
   }
 
-  const paragraphs = normalized.split(/\n{2,}/).map((part) => part.trim()).filter(Boolean);
-  const fallbackIdea = paragraphs[0] ?? normalizeBlock(rawInput ?? "");
+  const fallbackIdea = normalizedRawInput || normalized;
   return {
     idea: fallbackIdea,
     analysis: normalized
