@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
-  acceptAllSuggested,
   completeReview,
   deleteCard,
   deleteSource,
@@ -196,14 +195,6 @@ export async function deleteCardAction(formData: FormData) {
     cardId: asString(formData.get("cardId")),
     sourceId
   });
-  revalidatePath(`/sources/${sourceId}`);
-  revalidatePath("/review");
-  revalidatePath("/progress");
-}
-
-export async function acceptAllSuggestedAction(formData: FormData) {
-  const sourceId = asString(formData.get("sourceId"));
-  await acceptAllSuggested(sourceId);
   revalidatePath(`/sources/${sourceId}`);
   revalidatePath("/review");
   revalidatePath("/progress");

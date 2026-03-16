@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { SubmitButton } from "@/app/components/submit-button";
 import {
-  acceptAllSuggestedAction,
   deleteCardAction,
   generateCardsAction,
   saveCardAction,
@@ -209,25 +208,16 @@ export default async function SourceDetailsPage({
       <article className="card">
         <div className="actions" style={{ justifyContent: "space-between" }}>
           <h2 style={{ margin: 0 }}>Suggested cards</h2>
-          <div className="actions">
-            <form action={generateCardsAction}>
-              <input type="hidden" name="sourceId" value={source.id} />
-              <SubmitButton
-                className="secondary"
-                pendingText="Generating..."
-                loadingVariant="idea-network"
-              >
-                Generate cards from summary
-              </SubmitButton>
-            </form>
-
-            <form action={acceptAllSuggestedAction}>
-              <input type="hidden" name="sourceId" value={source.id} />
-              <SubmitButton className="secondary" pendingText="Accepting...">
-                Accept all suggested
-              </SubmitButton>
-            </form>
-          </div>
+          <form action={generateCardsAction}>
+            <input type="hidden" name="sourceId" value={source.id} />
+            <SubmitButton
+              className="secondary"
+              pendingText="Generating..."
+              loadingVariant="idea-network"
+            >
+              Generate cards from summary
+            </SubmitButton>
+          </form>
         </div>
 
         <div className="list" style={{ marginTop: "0.8rem" }}>
@@ -272,29 +262,19 @@ export default async function SourceDetailsPage({
               </form>
 
               <div className="actions" style={{ marginTop: "0.75rem" }}>
-                <form action={setCardStatusAction}>
-                  <input type="hidden" name="sourceId" value={source.id} />
-                  <input type="hidden" name="cardId" value={card.id} />
-                  <input type="hidden" name="prompt" value={card.prompt} />
-                  <input type="hidden" name="answer" value={card.answer} />
-                  <input type="hidden" name="cardType" value={card.card_type} />
-                  <input type="hidden" name="status" value="active" />
-                  <SubmitButton className="success" pendingText="Accepting...">
-                    Accept
-                  </SubmitButton>
-                </form>
-
-                <form action={setCardStatusAction}>
-                  <input type="hidden" name="sourceId" value={source.id} />
-                  <input type="hidden" name="cardId" value={card.id} />
-                  <input type="hidden" name="prompt" value={card.prompt} />
-                  <input type="hidden" name="answer" value={card.answer} />
-                  <input type="hidden" name="cardType" value={card.card_type} />
-                  <input type="hidden" name="status" value="rejected" />
-                  <SubmitButton className="danger" pendingText="Rejecting...">
-                    Reject
-                  </SubmitButton>
-                </form>
+                {card.status === "suggested" ? (
+                  <form action={setCardStatusAction}>
+                    <input type="hidden" name="sourceId" value={source.id} />
+                    <input type="hidden" name="cardId" value={card.id} />
+                    <input type="hidden" name="prompt" value={card.prompt} />
+                    <input type="hidden" name="answer" value={card.answer} />
+                    <input type="hidden" name="cardType" value={card.card_type} />
+                    <input type="hidden" name="status" value="active" />
+                    <SubmitButton className="success" pendingText="Accepting...">
+                      Accept
+                    </SubmitButton>
+                  </form>
+                ) : null}
 
                 <form action={deleteCardAction}>
                   <input type="hidden" name="sourceId" value={source.id} />
