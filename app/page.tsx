@@ -124,34 +124,35 @@ export default function HomePage() {
       <div className="home-phone-card">
         <div className="home-hero">
           <div className="home-visual home-visual-main" aria-hidden="true" />
+          <div className="home-hero-overlay">
+            <div className="home-list">
+              {homeActions.map((action) => (
+                <Link
+                  key={action.title}
+                  href={action.href}
+                  className="home-list-card"
+                  data-accent={action.accent}
+                >
+                  <span className="home-list-icon" aria-hidden="true">
+                    <ActionIcon icon={action.icon} />
+                  </span>
+                  <span className="home-list-copy">
+                    <strong>{action.title}</strong>
+                  </span>
+                  <span className="home-list-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    </svg>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <p className="status" style={{ margin: "0 0 1rem" }}>
+        <p className="status home-status">
           Asenna Androidilla kotinaytolle, niin voit jakaa kuvia suoraan Learningspiraliin.
         </p>
-
-        <div className="home-list">
-          {homeActions.map((action) => (
-            <Link
-              key={action.title}
-              href={action.href}
-              className="home-list-card"
-              data-accent={action.accent}
-            >
-              <span className="home-list-icon" aria-hidden="true">
-                <ActionIcon icon={action.icon} />
-              </span>
-              <span className="home-list-copy">
-                <strong>{action.title}</strong>
-              </span>
-              <span className="home-list-arrow" aria-hidden="true">
-                <svg viewBox="0 0 24 24">
-                  <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
-              </span>
-            </Link>
-          ))}
-        </div>
       </div>
     </section>
   );
