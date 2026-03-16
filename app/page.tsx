@@ -27,6 +27,29 @@ const homeActions = [
   }
 ] as const;
 
+const crawlSections = [
+  {
+    lead: "Learningspiral ei ole vain paikka tallettaa muistiinpanoja.",
+    body:
+      "Se on yritys rakentaa ihmiselle oma oppimisen kierre, jossa ideat eivat katoa vaan palaavat oikeaan aikaan takaisin ajatteluun."
+  },
+  {
+    lead: "Kun oivallus kirjasta, keskustelusta tai omasta havainnosta saadaan talteen helposti, AI voi jalostaa sen muistettavaksi ja kayttoon sopivaksi.",
+    body:
+      "Silloin uusi tieto ei korvaa vanhaa, vaan tarttuu siihen kiinni ja kasvattaa ymmarrysta kerros kerrokselta."
+  },
+  {
+    lead: "Paivittainen kertaus tekee oppimisesta aktiivista.",
+    body:
+      "Palvelu auttaa palaamaan aiempiin ajatuksiin, muodostamaan yhteyksia niiden valille ja muuttamaan lukemisen, kuulemisen ja kokemisen todelliseksi osaamiseksi."
+  },
+  {
+    lead: "Iso idea on yksinkertainen:",
+    body:
+      "jos jokaisella olisi oma jatkuvasti vahvistuva oppimishistoria, me emme vain muistaisi enemman. Me ajattelisimme paremmin, soveltaisimme rohkeammin ja ottaisimme seuraavan askeleen nopeammin."
+  }
+] as const;
+
 function ActionIcon({ icon }: { icon: (typeof homeActions)[number]["icon"] }) {
   if (icon === "pen") {
     return (
@@ -147,6 +170,29 @@ export default function HomePage() {
                 </Link>
               ))}
             </div>
+            <details className="home-story" name="home-story">
+              <summary className="home-story-toggle">
+                <span>Mika on Learningspiral?</span>
+                <span className="home-story-toggle-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                  </svg>
+                </span>
+              </summary>
+              <div className="home-story-panel">
+                <div className="home-story-space" aria-hidden="true" />
+                <div className="home-story-glow" aria-hidden="true" />
+                <div className="home-story-crawl">
+                  <p className="home-story-kicker">Learning Spiral</p>
+                  <h2>Oman ajattelun kasvava rata</h2>
+                  {crawlSections.map((section) => (
+                    <p key={section.lead}>
+                      <strong>{section.lead}</strong> {section.body}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </details>
           </div>
         </div>
       </div>
