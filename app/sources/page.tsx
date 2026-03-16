@@ -15,6 +15,14 @@ type SourceListItem = {
   created_at: string;
 };
 
+function sourceTypeLabel(type: SourceType): string | null {
+  return type === "other" ? null : type;
+}
+
+function captureModeLabel(captureMode: string): string | null {
+  return captureMode === "chat" ? null : captureMode;
+}
+
 function ideaStatusLabel(status: IdeaStatus): string {
   switch (status) {
     case "refined_with_cards":
@@ -73,8 +81,12 @@ export default async function SourcesPage() {
             <div>
               <h3 style={{ margin: "0 0 0.4rem" }}>{source.title}</h3>
               <div className="source-meta">
-                <span className="pill">{source.type}</span>
-                <span className="pill">{source.capture_mode}</span>
+                {sourceTypeLabel(source.type) ? (
+                  <span className="pill">{sourceTypeLabel(source.type)}</span>
+                ) : null}
+                {captureModeLabel(source.capture_mode) ? (
+                  <span className="pill">{captureModeLabel(source.capture_mode)}</span>
+                ) : null}
                 <span className="pill">{ideaStatusLabel(source.idea_status)}</span>
                 {source.author ? <span>{source.author}</span> : null}
                 {source.tags?.map((tag) => (

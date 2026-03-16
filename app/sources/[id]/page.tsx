@@ -50,6 +50,14 @@ type CaptureAsset = {
   created_at: string;
 };
 
+function sourceTypeLabel(type: SourceType): string | null {
+  return type === "other" ? null : type;
+}
+
+function captureModeLabel(captureMode: string): string | null {
+  return captureMode === "chat" ? null : captureMode;
+}
+
 function assetUrl(mimeType: string, base64Data: string): string {
   return `data:${mimeType};base64,${base64Data}`;
 }
@@ -137,8 +145,12 @@ export default async function SourceDetailsPage({
         <article className="card source-editor-card">
           <div className="source-editor-topbar">
             <div className="source-meta">
-              <span className="pill">{source.type}</span>
-              <span className="pill">{source.capture_mode}</span>
+              {sourceTypeLabel(source.type) ? (
+                <span className="pill">{sourceTypeLabel(source.type)}</span>
+              ) : null}
+              {captureModeLabel(source.capture_mode) ? (
+                <span className="pill">{captureModeLabel(source.capture_mode)}</span>
+              ) : null}
               <span className="pill">{ideaStatusLabel(source.idea_status)}</span>
             </div>
           </div>
