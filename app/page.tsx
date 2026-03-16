@@ -181,6 +181,17 @@ export default function HomePage() {
               </summary>
               <div className="home-story-panel">
                 <div className="home-story-space" aria-hidden="true" />
+                <div className="home-story-network" aria-hidden="true">
+                  <span className="home-story-orbit home-story-orbit-a" />
+                  <span className="home-story-orbit home-story-orbit-b" />
+                  <span className="home-story-orbit home-story-orbit-c" />
+                  <span className="home-story-node home-story-node-a" />
+                  <span className="home-story-node home-story-node-b" />
+                  <span className="home-story-node home-story-node-c" />
+                  <span className="home-story-node home-story-node-d" />
+                  <span className="home-story-node home-story-node-e" />
+                  <span className="home-story-core" />
+                </div>
                 <div className="home-story-glow" aria-hidden="true" />
                 <div className="home-story-crawl">
                   <p className="home-story-kicker">Learning Spiral</p>
