@@ -1,5 +1,6 @@
 import { SubmitButton } from "@/app/components/submit-button";
 import { getUserSettings } from "@/lib/db";
+import { getPushPublicKey, isPushConfigured } from "@/lib/push";
 import { saveUserSettingsAction } from "./actions";
 import { NotificationTester } from "./notification-tester";
 
@@ -12,6 +13,8 @@ export default async function SettingsPage({
 }) {
   const settings = await getUserSettings();
   const saved = searchParams?.saved === "1";
+  const pushConfigured = isPushConfigured();
+  const pushPublicKey = pushConfigured ? getPushPublicKey() : "";
 
   return (
     <section className="review-shell">
@@ -111,7 +114,7 @@ export default async function SettingsPage({
         </div>
       </form>
 
-      <NotificationTester />
+      <NotificationTester pushConfigured={pushConfigured} pushPublicKey={pushPublicKey} />
     </section>
   );
 }

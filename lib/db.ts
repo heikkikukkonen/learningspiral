@@ -120,6 +120,16 @@ export interface UserSettingsRow extends UserSettings {
   updated_at: string;
 }
 
+export interface PushSubscriptionRow {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  subscription_json: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+  last_sent_at: string | null;
+}
+
 const CARD_GENERATION_MODEL = "rule-v1";
 
 function isMissingIdeaStatusColumnError(error: unknown): boolean {
@@ -235,6 +245,64 @@ export async function upsertUserSettings(input: UserSettings, userId = appUserId
     created_at: data.created_at,
     updated_at: data.updated_at
   } as UserSettingsRow;
+}
+
+export async function listPushSubscriptions(userId = appUserId()) {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("push_subscriptions")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as PushSubscriptionRow[];
+}
+
+export async function upsertPushSubscription(input: {
+  endpoint: string;
+  subscription: Record<string, unknown>;
+  userId?: string;
+}) {
+  const supabase = getSupabaseAdmin();
+  const userId = input.userId ?? appUserId();
+  const { data, error } = await supabase
+    .from("push_subscriptions")
+    .upsert(
+      {
+        user_id: userId,
+        endpoint: input.endpoint,
+        subscription_json: input.subscription
+      },
+      { onConflict: "endpoint" }
+    )
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return data as PushSubscriptionRow;
+}
+
+export async function deletePushSubscription(endpoint: string, userId = appUserId()) {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from("push_subscriptions")
+    .delete()
+    .eq("user_id", userId)
+    .eq("endpoint", endpoint);
+
+  if (error) throw error;
+}
+
+export async function markPushSubscriptionSent(endpoint: string, userId = appUserId()) {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from("push_subscriptions")
+    .update({ last_sent_at: new Date().toISOString() })
+    .eq("user_id", userId)
+    .eq("endpoint", endpoint);
+
+  if (error) throw error;
 }
 
 export async function listSources() {
