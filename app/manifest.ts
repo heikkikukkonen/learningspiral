@@ -13,6 +13,18 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "fi",
     icons: [
       {
+        src: "/pwa-icon/192",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable"
+      },
+      {
+        src: "/pwa-icon/512",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable"
+      },
+      {
         src: "/icon.svg",
         sizes: "any",
         type: "image/svg+xml",
