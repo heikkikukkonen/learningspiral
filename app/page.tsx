@@ -149,10 +149,6 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-
-        <p className="status home-status">
-          Asenna Androidilla kotinaytolle, niin voit jakaa kuvia suoraan Learningspiraliin.
-        </p>
       </div>
     </section>
   );
