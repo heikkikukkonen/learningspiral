@@ -34,6 +34,7 @@ export interface SourceRow {
   capture_mode: string;
   idea_status: IdeaStatus;
   created_at: string;
+  has_cards?: boolean;
 }
 
 export interface SummaryRow {
@@ -307,14 +308,25 @@ export async function markPushSubscriptionSent(endpoint: string, userId = appUse
 
 export async function listSources() {
   const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("sources")
-    .select("*")
-    .eq("user_id", appUserId())
-    .order("created_at", { ascending: false });
+  const userId = appUserId();
+  const [{ data: sources, error: sourcesError }, { data: cards, error: cardsError }] =
+    await Promise.all([
+      supabase
+        .from("sources")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false }),
+      supabase.from("cards").select("source_id").eq("user_id", userId)
+    ]);
 
-  if (error) throw error;
-  return (data ?? []) as SourceRow[];
+  if (sourcesError) throw sourcesError;
+  if (cardsError) throw cardsError;
+
+  const sourceIdsWithCards = new Set((cards ?? []).map((card) => card.source_id));
+  return ((sources ?? []) as SourceRow[]).map((source) => ({
+    ...source,
+    has_cards: sourceIdsWithCards.has(source.id)
+  }));
 }
 
 export async function createSource(input: {

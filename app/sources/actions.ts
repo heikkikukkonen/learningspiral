@@ -9,12 +9,11 @@ import {
   createSource,
   generateSuggestedCards,
   getUserSettings,
-  sourceHasCards,
   updateSource,
   updateCard,
   upsertSummary
 } from "@/lib/db";
-import { CardType, IdeaStatus, InputModality, SourceType } from "@/lib/types";
+import { CardType, InputModality, SourceType } from "@/lib/types";
 import { buildSourceSummaryContent, suggestSourceTags } from "@/lib/source-editor";
 import { refineSourceDraft } from "@/lib/llm";
 
@@ -73,7 +72,6 @@ export async function saveSourceDraftAction(formData: FormData) {
   const analysis = asString(formData.get("analysis"));
   const rawInput = asString(formData.get("rawInput")) || null;
   const inputModality = asString(formData.get("inputModality")) as InputModality;
-  const saveMode = asString(formData.get("saveMode"));
   const tags = asString(formData.get("tags"))
     .split(",")
     .map((item) => item.trim())
@@ -88,19 +86,10 @@ export async function saveSourceDraftAction(formData: FormData) {
           rawInput
         });
 
-  let ideaStatus: IdeaStatus = "draft";
-  if (saveMode === "complete") {
-    if (!(await sourceHasCards(sourceId))) {
-      throw new Error("Luo kortit ensin ennen kuin tallennat idean valmiina.");
-    }
-    ideaStatus = "refined_with_cards";
-  }
-
   await updateSource({
     sourceId,
     title,
-    tags: resolvedTags,
-    ideaStatus
+    tags: resolvedTags
   });
 
   await upsertSummary(sourceId, buildSourceSummaryContent({ idea, analysis }), {

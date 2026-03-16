@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listSources } from "@/lib/db";
-import { IdeaStatus, SourceType } from "@/lib/types";
+import { deriveSourceIdeaStage, sourceIdeaStageLabel } from "@/lib/source-status";
+import { SourceType } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ type SourceListItem = {
   author: string | null;
   tags: string[] | null;
   capture_mode: string;
-  idea_status: IdeaStatus;
+  has_cards: boolean;
   created_at: string;
 };
 
@@ -21,17 +22,6 @@ function sourceTypeLabel(type: SourceType): string | null {
 
 function captureModeLabel(captureMode: string): string | null {
   return captureMode === "chat" ? null : captureMode;
-}
-
-function ideaStatusLabel(status: IdeaStatus): string {
-  switch (status) {
-    case "refined_with_cards":
-      return "jalostettu idea kortit luotu";
-    case "refined_without_cards":
-      return "jalostettu idea ei kortteja";
-    default:
-      return "keskenerainen idea";
-  }
 }
 
 export default async function SourcesPage() {
@@ -87,7 +77,9 @@ export default async function SourcesPage() {
                 {captureModeLabel(source.capture_mode) ? (
                   <span className="pill">{captureModeLabel(source.capture_mode)}</span>
                 ) : null}
-                <span className="pill">{ideaStatusLabel(source.idea_status)}</span>
+                <span className="pill">
+                  {sourceIdeaStageLabel(deriveSourceIdeaStage(source.has_cards))}
+                </span>
                 {source.author ? <span>{source.author}</span> : null}
                 {source.tags?.map((tag) => (
                   <span className="pill" key={tag}>

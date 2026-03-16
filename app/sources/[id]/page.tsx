@@ -10,7 +10,8 @@ import { SourceEditorForm } from "@/app/sources/[id]/source-editor-form";
 import { SourcePageActions } from "@/app/sources/[id]/source-page-actions";
 import { getSourceWithDetails } from "@/lib/db";
 import { parseSourceSummaryContent, suggestSourceTags } from "@/lib/source-editor";
-import { CardType, IdeaStatus, SourceType } from "@/lib/types";
+import { deriveSourceIdeaStage, sourceIdeaStageLabel } from "@/lib/source-status";
+import { CardType, SourceType } from "@/lib/types";
 
 type SourceDetails = {
   id: string;
@@ -21,7 +22,6 @@ type SourceDetails = {
   url: string | null;
   tags: string[] | null;
   capture_mode: string;
-  idea_status: IdeaStatus;
 };
 
 type SummaryDetails = {
@@ -60,17 +60,6 @@ function captureModeLabel(captureMode: string): string | null {
 
 function assetUrl(mimeType: string, base64Data: string): string {
   return `data:${mimeType};base64,${base64Data}`;
-}
-
-function ideaStatusLabel(status: IdeaStatus): string {
-  switch (status) {
-    case "refined_with_cards":
-      return "valmis idea";
-    case "refined_without_cards":
-      return "jalostettu idea ilman kortteja";
-    default:
-      return "keskenerainen idea";
-  }
 }
 
 export default async function SourceDetailsPage({
@@ -130,6 +119,8 @@ export default async function SourceDetailsPage({
   const lastSavedLabel = summary?.updated_at
     ? `Viimeksi tallennettu ${new Date(summary.updated_at).toLocaleString("fi-FI")}`
     : "Ei tallennettu viela";
+  const hasCards = cards.length > 0;
+  const sourceStageLabel = sourceIdeaStageLabel(deriveSourceIdeaStage(hasCards));
 
   return (
     <section className="grid source-workspace">
@@ -151,7 +142,7 @@ export default async function SourceDetailsPage({
               {captureModeLabel(source.capture_mode) ? (
                 <span className="pill">{captureModeLabel(source.capture_mode)}</span>
               ) : null}
-              <span className="pill">{ideaStatusLabel(source.idea_status)}</span>
+              <span className="pill">{sourceStageLabel}</span>
             </div>
           </div>
 
@@ -307,7 +298,6 @@ export default async function SourceDetailsPage({
 
       <SourcePageActions
         sourceId={source.id}
-        hasCards={cards.length > 0}
         lastSavedLabel={lastSavedLabel}
       />
     </section>

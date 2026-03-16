@@ -8,13 +8,11 @@ import {
 
 type SourcePageActionsProps = {
   sourceId: string;
-  hasCards: boolean;
   lastSavedLabel: string;
 };
 
 export function SourcePageActions({
   sourceId,
-  hasCards,
   lastSavedLabel
 }: SourcePageActionsProps) {
   const [isPending, startTransition] = useTransition();
@@ -31,20 +29,12 @@ export function SourcePageActions({
     return formData;
   }
 
-  function handleSave(mode: "later" | "complete") {
-    if (mode === "complete" && !hasCards) {
-      const message = "Luo kortit ensin ennen kuin tallennat idean valmiina.";
-      setErrorMessage(message);
-      window.alert(message);
-      return;
-    }
-
+  function handleSave() {
     setErrorMessage("");
 
     startTransition(async () => {
       try {
         const formData = readEditorFormData();
-        formData.set("saveMode", mode);
         const result = await saveSourceDraftAndReturnAction(formData);
         window.location.assign(result.redirectTo);
       } catch (error) {
@@ -88,15 +78,6 @@ export function SourcePageActions({
         </button>
 
         <div className="source-page-save-actions">
-          <button
-            type="button"
-            className="secondary source-edit-later"
-            onClick={() => handleSave("later")}
-            disabled={isPending}
-          >
-            {isPending ? "Tallennetaan..." : "Jalosta myohemmin"}
-          </button>
-
           <div className="source-edit-save-group">
             <p className="status" style={{ margin: 0 }}>
               {lastSavedLabel}
@@ -104,10 +85,10 @@ export function SourcePageActions({
             <button
               type="button"
               className="primary source-edit-save"
-              onClick={() => handleSave("complete")}
+              onClick={() => handleSave()}
               disabled={isPending}
             >
-              {isPending ? "Tallennetaan..." : "Tallenna valmiina"}
+              {isPending ? "Tallennetaan..." : "Tallenna"}
             </button>
           </div>
         </div>
