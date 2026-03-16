@@ -2,6 +2,8 @@ import Link from "next/link";
 import { listSources } from "@/lib/db";
 import { IdeaStatus, SourceType } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 type SourceListItem = {
   id: string;
   type: SourceType;

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
   deleteSourceAction,
@@ -18,7 +17,6 @@ export function SourcePageActions({
   hasCards,
   lastSavedLabel
 }: SourcePageActionsProps) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -48,8 +46,7 @@ export function SourcePageActions({
         const formData = readEditorFormData();
         formData.set("saveMode", mode);
         const result = await saveSourceDraftAndReturnAction(formData);
-        router.push(result.redirectTo);
-        router.refresh();
+        window.location.assign(result.redirectTo);
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Tallennus epaonnistui. Yrita uudelleen.";
