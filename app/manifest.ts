@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/",
     name: "LearningSpiral",
     short_name: "Spiral",
     description: "Capture ideas from text, images and voice, then refine them into reusable learning cards.",
@@ -13,13 +14,13 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "fi",
     icons: [
       {
-        src: "/pwa-icon/192",
+        src: "/pwa-icon-192.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "maskable"
       },
       {
-        src: "/pwa-icon/512",
+        src: "/pwa-icon-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable"
@@ -37,6 +38,7 @@ export default function manifest(): MetadataRoute.Manifest {
       enctype: "multipart/form-data",
       title: "title",
       text: "text",
+      url: "url",
       files: [
         {
           name: "image",
