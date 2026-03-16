@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PwaRegister } from "./components/pwa-register";
 import { SiteNav } from "./components/site-nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "LearningSpiral",
-  description: "MVP 0.2 UI for capture chat, summary, cards, review and progress."
+  description: "MVP 0.2 UI for capture chat, summary, cards, review and progress.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "LearningSpiral"
+  }
 };
 
 export default function RootLayout({
@@ -18,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="fi">
       <body>
+        <PwaRegister />
         <header className="topbar">
           <div className="container topbar-inner">
             <div className="brand-lockup">

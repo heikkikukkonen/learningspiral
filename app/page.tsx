@@ -126,6 +126,10 @@ export default function HomePage() {
           <div className="home-visual home-visual-main" aria-hidden="true" />
         </div>
 
+        <p className="status" style={{ margin: "0 0 1rem" }}>
+          Asenna Androidilla kotinaytolle, niin voit jakaa kuvia suoraan Learningspiraliin.
+        </p>
+
         <div className="home-list">
           {homeActions.map((action) => (
             <Link
