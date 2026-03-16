@@ -36,15 +36,17 @@ export default function manifest(): MetadataRoute.Manifest {
       action: "/share/image",
       method: "post",
       enctype: "multipart/form-data",
-      title: "title",
-      text: "text",
-      url: "url",
-      files: [
-        {
-          name: "image",
-          accept: ["image/*"]
-        }
-      ]
+      params: {
+        title: "title",
+        text: "text",
+        url: "url",
+        files: [
+          {
+            name: "image",
+            accept: ["image/*", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".heic", ".heif"]
+          }
+        ]
+      } as never
     }
-  };
+  } as unknown as MetadataRoute.Manifest;
 }
