@@ -1,6 +1,7 @@
 import { SubmitButton } from "@/app/components/submit-button";
 import { getUserSettings } from "@/lib/db";
 import { saveUserSettingsAction } from "./actions";
+import { NotificationTester } from "./notification-tester";
 
 export const dynamic = "force-dynamic";
 
@@ -109,6 +110,8 @@ export default async function SettingsPage({
           </SubmitButton>
         </div>
       </form>
+
+      <NotificationTester />
     </section>
   );
 }
