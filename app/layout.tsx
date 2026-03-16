@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "LearningSpiral",
   description: "MVP 0.2 UI for capture chat, summary, cards, review and progress.",
   manifest: "/manifest.webmanifest",
+  other: {
+    "mobile-web-app-capable": "yes"
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
