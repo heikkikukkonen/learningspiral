@@ -21,6 +21,36 @@ function asString(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
 }
 
+function readCardDrafts(formData: FormData) {
+  const drafts = new Map<
+    string,
+    { cardId: string; prompt?: string; answer?: string; cardType?: CardType }
+  >();
+
+  for (const [key, value] of formData.entries()) {
+    const match = key.match(/^cards\[(\d+)\]\.(cardId|prompt|answer|cardType)$/);
+    if (!match || typeof value !== "string") continue;
+
+    const [, index, field] = match;
+    const current = drafts.get(index) ?? { cardId: "" };
+
+    if (field === "cardId") current.cardId = value;
+    if (field === "prompt") current.prompt = value;
+    if (field === "answer") current.answer = value;
+    if (field === "cardType") current.cardType = value as CardType;
+
+    drafts.set(index, current);
+  }
+
+  return [...drafts.entries()]
+    .sort((left, right) => Number(left[0]) - Number(right[0]))
+    .map(([, draft]) => draft)
+    .filter(
+      (draft): draft is { cardId: string; prompt: string; answer: string; cardType: CardType } =>
+        Boolean(draft.cardId && draft.prompt && draft.answer && draft.cardType)
+    );
+}
+
 export async function createSourceAction(formData: FormData) {
   const tags = asString(formData.get("tags"))
     .split(",")
@@ -85,6 +115,7 @@ export async function saveSourceDraftAction(formData: FormData) {
           analysis,
           rawInput
         });
+  const cardDrafts = readCardDrafts(formData);
 
   await updateSource({
     sourceId,
@@ -96,6 +127,18 @@ export async function saveSourceDraftAction(formData: FormData) {
     rawInput,
     inputModality: inputModality || "text"
   });
+
+  await Promise.all(
+    cardDrafts.map((card) =>
+      updateCard({
+        cardId: card.cardId,
+        sourceId,
+        prompt: card.prompt,
+        answer: card.answer,
+        cardType: card.cardType
+      })
+    )
+  );
 
   revalidatePath(`/sources/${sourceId}`);
   revalidatePath(`/capture?sourceId=${sourceId}`);

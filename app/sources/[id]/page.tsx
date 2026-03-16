@@ -3,7 +3,6 @@ import { SubmitButton } from "@/app/components/submit-button";
 import {
   deleteCardAction,
   generateCardsAction,
-  saveCardAction,
   setCardStatusAction
 } from "@/app/sources/actions";
 import { SourceEditorForm } from "@/app/sources/[id]/source-editor-form";
@@ -226,7 +225,7 @@ export default async function SourceDetailsPage({
         <div className="list" style={{ marginTop: "0.8rem" }}>
           {cards.length === 0 ? <p className="muted">No cards yet.</p> : null}
 
-          {cards.map((card) => (
+          {cards.map((card, index) => (
             <article className="card" key={card.id}>
               <div className="source-meta">
                 <span className="pill" data-variant="primary">
@@ -235,34 +234,45 @@ export default async function SourceDetailsPage({
                 <span className="pill">{card.status}</span>
               </div>
 
-              <form className="form" style={{ marginTop: "0.7rem" }} action={saveCardAction}>
-                <input type="hidden" name="sourceId" value={source.id} />
-                <input type="hidden" name="cardId" value={card.id} />
-
+              <div className="form" style={{ marginTop: "0.7rem" }}>
+                <input
+                  form="source-editor-form"
+                  type="hidden"
+                  name={`cards[${index}].cardId`}
+                  value={card.id}
+                />
                 <label className="form-row">
                   <span>Prompt</span>
-                  <input name="prompt" defaultValue={card.prompt} required />
+                  <input
+                    form="source-editor-form"
+                    name={`cards[${index}].prompt`}
+                    defaultValue={card.prompt}
+                    required
+                  />
                 </label>
                 <label className="form-row">
                   <span>Answer</span>
-                  <textarea name="answer" defaultValue={card.answer} required />
+                  <textarea
+                    form="source-editor-form"
+                    name={`cards[${index}].answer`}
+                    defaultValue={card.answer}
+                    required
+                  />
                 </label>
                 <label className="form-row">
                   <span>Type</span>
-                  <select name="cardType" defaultValue={card.card_type}>
+                  <select
+                    form="source-editor-form"
+                    name={`cards[${index}].cardType`}
+                    defaultValue={card.card_type}
+                  >
                     <option value="recall">recall</option>
                     <option value="apply">apply</option>
                     <option value="reflect">reflect</option>
                     <option value="decision">decision</option>
                   </select>
                 </label>
-
-                <div className="actions">
-                  <SubmitButton className="secondary" pendingText="Saving...">
-                    Save edits
-                  </SubmitButton>
-                </div>
-              </form>
+              </div>
 
               <div className="actions" style={{ marginTop: "0.75rem" }}>
                 {card.status === "suggested" ? (
