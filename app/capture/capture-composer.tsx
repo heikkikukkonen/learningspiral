@@ -657,7 +657,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     <span className="pill" data-variant={isRecording ? "primary" : undefined}>
                       {isRecording ? "Nauhoitus kaynnissa" : "Valmis nauhoitukseen"}
                     </span>
-                    <strong>{isRecording ? "Puhu rauhassa, tallennus on paalla." : "Tallenna puhe suoraan selaimessa."}</strong>
+                    {isRecording ? <strong>Puhu rauhassa, tallennus on paalla.</strong> : null}
                     <span>
                       {isRecording
                         ? "Lopeta kun ajatus on kasassa. Litterointi alkaa heti nauhoituksen jalkeen."
