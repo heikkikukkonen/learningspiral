@@ -986,9 +986,8 @@ button.danger {
   border: 1px solid rgba(210, 221, 232, 0.8);
   border-radius: 32px;
   background:
-    radial-gradient(circle at 18% 12%, rgba(210, 235, 255, 0.34) 0%, rgba(255, 255, 255, 0) 28%),
-    radial-gradient(circle at 82% 16%, rgba(255, 234, 184, 0.24) 0%, rgba(255, 255, 255, 0) 24%),
-    linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(249, 251, 255, 0.82)),
+    url("/home-bg.png") center center / cover no-repeat;
   box-shadow: 0 24px 60px rgba(180, 196, 216, 0.24);
 }
 
@@ -1187,9 +1186,8 @@ button.danger {
   border: 1px solid rgba(223, 223, 228, 0.84);
   border-radius: 32px;
   background:
-    radial-gradient(circle at 14% 16%, rgba(214, 236, 255, 0.34) 0%, rgba(255, 255, 255, 0) 24%),
-    radial-gradient(circle at 82% 20%, rgba(255, 231, 179, 0.28) 0%, rgba(255, 255, 255, 0) 28%),
-    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(251, 253, 255, 0.82)),
+    url("/home-bg.png") center center / cover no-repeat;
   box-shadow: 0 24px 60px rgba(186, 197, 214, 0.22);
 }
 
@@ -1540,9 +1538,8 @@ button.danger {
   border: 1px solid rgba(215, 220, 233, 0.84);
   border-radius: 32px;
   background:
-    radial-gradient(circle at 14% 18%, rgba(204, 238, 255, 0.36) 0%, rgba(255, 255, 255, 0) 26%),
-    radial-gradient(circle at 84% 20%, rgba(255, 225, 169, 0.26) 0%, rgba(255, 255, 255, 0) 24%),
-    linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(249, 251, 255, 0.82)),
+    url("/home-bg.png") center center / cover no-repeat;
   box-shadow: 0 24px 60px rgba(184, 198, 220, 0.24);
 }
 
