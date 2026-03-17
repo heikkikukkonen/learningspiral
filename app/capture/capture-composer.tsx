@@ -652,17 +652,9 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     <div className="capture-voice-recorder-copy">
                       {isRecording ? (
                         <div className="capture-voice-recording-status" aria-live="polite">
-                          <span className="pill" data-variant="primary">
+                          <span className="pill capture-voice-recording-pill" data-variant="primary">
                             Tallennus kaynnissa
                           </span>
-                          <div
-                            className="capture-voice-recording-progress"
-                            role="progressbar"
-                            aria-label="Tallennus kaynnissa"
-                            aria-valuetext="Tallennus etenee"
-                          >
-                            <span className="capture-voice-recording-progress-fill" />
-                          </div>
                         </div>
                       ) : (
                         <span className="pill">Valmis tallennukseen</span>
@@ -687,7 +679,6 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     </div>
                   </div>
 
-                  {isRecording ? <p className="status capture-voice-helper">Tallennus kaynnissa selaimessa...</p> : null}
                   {audioPreviewUrl ? (
                     <div className="capture-voice-preview-shell">
                       <div className="capture-voice-preview-meta">

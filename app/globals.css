@@ -1622,47 +1622,47 @@ button.danger {
 
 .capture-voice-recording-status {
   display: grid;
-  gap: 0.6rem;
+  gap: 0;
 }
 
-.capture-voice-recording-progress {
+.capture-voice-recording-pill {
   position: relative;
+  isolation: isolate;
   overflow: hidden;
-  width: min(100%, 320px);
-  height: 16px;
-  border-radius: 999px;
-  border: 1px solid rgba(146, 196, 227, 0.9);
+  width: min(100%, 100%);
+  justify-content: flex-start;
+  padding: 0.32rem 0.8rem;
+  border-color: #8ecae7 !important;
   background:
-    linear-gradient(180deg, rgba(234, 246, 255, 0.95), rgba(208, 233, 248, 0.92)),
-    rgba(221, 239, 250, 0.95);
+    linear-gradient(180deg, rgba(225, 243, 252, 0.98), rgba(198, 228, 245, 0.94)) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.78),
-    inset 0 -1px 0 rgba(134, 181, 212, 0.12);
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(130, 183, 214, 0.18);
 }
 
-.capture-voice-recording-progress::after {
+.capture-voice-recording-pill::before {
   content: "";
   position: absolute;
-  inset: 2px auto 2px 8px;
-  width: 8px;
-  border-radius: 999px;
-  background: #4b9ed0;
-  box-shadow: 0 0 0 6px rgba(75, 158, 208, 0.16);
-  animation: capture-recording-pulse 1.35s ease-in-out infinite;
+  inset: 0;
+  z-index: -2;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(85, 174, 220, 0.16), rgba(77, 166, 212, 0.32), rgba(85, 174, 220, 0.16));
 }
 
-.capture-voice-recording-progress-fill {
+.capture-voice-recording-pill::after {
+  content: "";
   position: absolute;
   inset: 0;
+  z-index: -1;
   border-radius: inherit;
   background:
     linear-gradient(
       90deg,
-      rgba(93, 182, 226, 0.1) 0%,
-      rgba(93, 182, 226, 0.42) 24%,
-      rgba(255, 255, 255, 0.78) 42%,
-      rgba(93, 182, 226, 0.42) 58%,
-      rgba(93, 182, 226, 0.1) 100%
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.18) 28%,
+      rgba(255, 255, 255, 0.82) 50%,
+      rgba(255, 255, 255, 0.18) 72%,
+      rgba(255, 255, 255, 0) 100%
     );
   background-size: 220px 100%;
   animation: capture-recording-wave 1.4s linear infinite;
@@ -1716,19 +1716,6 @@ button.danger {
 
   to {
     background-position: 220px 0;
-  }
-}
-
-@keyframes capture-recording-pulse {
-  0%,
-  100% {
-    transform: scale(0.92);
-    opacity: 0.72;
-  }
-
-  50% {
-    transform: scale(1);
-    opacity: 1;
   }
 }
 
