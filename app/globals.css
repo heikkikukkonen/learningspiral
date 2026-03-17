@@ -772,6 +772,38 @@ button.danger {
   border-top: 1px solid rgba(223, 228, 236, 0.95);
 }
 
+.source-task-card {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.source-task-card-header {
+  margin-bottom: 0;
+}
+
+.source-task-card-header h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.25rem;
+}
+
+.source-task-card-header p {
+  margin: 0;
+  max-width: 64ch;
+}
+
+.source-task-empty {
+  padding: 1rem;
+  border-radius: 22px;
+  border: 1px solid rgba(215, 223, 233, 0.95);
+  background:
+    radial-gradient(circle at 92% 12%, rgba(255, 220, 150, 0.18) 0%, rgba(255, 255, 255, 0) 22%),
+    linear-gradient(180deg, rgba(247, 250, 255, 0.98), rgba(255, 255, 255, 0.98));
+}
+
+.source-task-empty p {
+  margin: 0;
+}
+
 .source-capture-details {
   background: rgba(240, 243, 250, 0.7);
 }

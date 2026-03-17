@@ -207,23 +207,38 @@ export default async function SourceDetailsPage({
         </article>
       </div>
 
-      <article className="card">
-        <div className="actions" style={{ justifyContent: "space-between" }}>
-          <h2 style={{ margin: 0 }}>Suggested cards</h2>
+      <article className="card source-editor-card source-task-card">
+        <div className="source-origin-header">
+          <div className="page-header source-task-card-header">
+            <h2>Luo tehtavat</h2>
+            <p className="muted">
+              Kun olet jalostanut idean valmiiksi, voit luoda tehtavakortit automaattisesti.
+              Tehtavakorttien avulla varmistan, etta idea ei unohdu sinulta kertaamalla niita
+              automaattisesti.
+            </p>
+          </div>
           <form action={generateCardsAction}>
             <input type="hidden" name="sourceId" value={source.id} />
             <SubmitButton
               className="secondary"
-              pendingText="Generating..."
+              pendingText="Luodaan..."
               loadingVariant="idea-network"
             >
-              Generate cards from summary
+              Luo tehtavat
             </SubmitButton>
           </form>
         </div>
 
         <div className="list" style={{ marginTop: "0.8rem" }}>
-          {cards.length === 0 ? <p className="muted">No cards yet.</p> : null}
+          {cards.length === 0 ? (
+            <div className="source-task-empty">
+              <p className="muted">
+                Kun idea on mielestasi valmis, luo tehtavakortit tassa. Jalostan korteista
+                automaattisen kertausrytmin, jotta paasiajatuksesi pysyy mukana eika paase
+                unohtumaan.
+              </p>
+            </div>
+          ) : null}
 
           {cards.map((card, index) => (
             <article className="card" key={card.id}>
