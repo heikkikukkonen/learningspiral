@@ -236,6 +236,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     setIsAnalyzing(true);
     setError("");
     setMode("image");
+    setAsset(null);
+    setRawInputValue("");
     try {
       const formData = new FormData();
       formData.append("imageFile", file);
