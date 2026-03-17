@@ -231,13 +231,7 @@ export default async function SourceDetailsPage({
 
         <div className="list" style={{ marginTop: "0.8rem" }}>
           {cards.length === 0 ? (
-            <div className="source-task-empty">
-              <p className="muted">
-                Kun olet jalostanut idean valmiiksi, voit luoda tehtavakortit automaattisesti.
-                Tehtavakorttien avulla varmistan, etta idea ei unohdu sinulta kertaamalla niita
-                automaattisesti.
-              </p>
-            </div>
+            <div className="source-task-empty" />
           ) : null}
 
           {cards.map((card, index) => (
