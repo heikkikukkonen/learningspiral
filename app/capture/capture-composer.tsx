@@ -645,7 +645,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               <div className="capture-voice-copy">
                 <h2 style={{ margin: 0 }}>Sanele ajatus</h2>
                 <p className="status capture-voice-status">
-                  Nauhoita suoraan selaimessa tai tuo valmis aanitiedosto. AI litteroi puheen tekstiksi, jota voit korjata ennen tallennusta.
+                  Sanele ajatus talteen tai tuo valmis M4A-, MP3- tai WebM-tiedosto. Litteroin puheen tekstiksi.
                 </p>
               </div>
             </div>
@@ -656,12 +656,6 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                   <div className="capture-voice-recorder-copy">
                     <span className="pill" data-variant={isRecording ? "primary" : undefined}>
                       {isRecording ? "Nauhoitus kaynnissa" : "Valmis nauhoitukseen"}
-                    </span>
-                    {isRecording ? <strong>Puhu rauhassa, tallennus on paalla.</strong> : null}
-                    <span>
-                      {isRecording
-                        ? "Lopeta kun ajatus on kasassa. Litterointi alkaa heti nauhoituksen jalkeen."
-                        : "Sopii nopeaan ideaan, selitykseen tai ajatuksen purkamiseen ilman kirjoittamista. Voit joko nauhoittaa suoraan tai tuoda valmiin M4A-, MP3- tai WebM-tiedoston."}
                     </span>
                   </div>
 
@@ -753,7 +747,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                       disabled={!rawInputValue.trim() || isSaving}
                       onClick={() => void saveCapture("audio")}
                     >
-                      {isSaving ? "Tallennetaan..." : "Tallenna"}
+                      {isSaving ? "Tallennetaan..." : "Julkaise kun valmis"}
                     </button>
                   </div>
                 </div>
