@@ -97,6 +97,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const audioFileInputRef = useRef<HTMLInputElement | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const imagePreviewRef = useRef<HTMLDivElement | null>(null);
+  const imageTranscriptRef = useRef<HTMLLabelElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -141,6 +143,31 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
     window.addEventListener("paste", handlePaste);
     return () => window.removeEventListener("paste", handlePaste);
+  }, [asset, isAnalyzing, mode]);
+
+  useEffect(() => {
+    if (mode !== "image" || !asset || isAnalyzing) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      const transcriptElement = imageTranscriptRef.current;
+      const previewElement = imagePreviewRef.current;
+      if (!transcriptElement) return;
+
+      const transcriptRect = transcriptElement.getBoundingClientRect();
+      const previewRect = previewElement?.getBoundingClientRect();
+      const desiredTopOffset = previewRect
+        ? Math.max(32, Math.min(previewRect.height * 0.18, 120))
+        : 72;
+
+      window.scrollTo({
+        top: window.scrollY + transcriptRect.top - desiredTopOffset,
+        behavior: "smooth"
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [asset, isAnalyzing, mode]);
 
   function resetDraft(nextMode: Mode) {
@@ -544,7 +571,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               </div>
             ) : (
               <div className="capture-image-result">
-                <div className="capture-image-preview-shell">
+                <div ref={imagePreviewRef} className="capture-image-preview-shell">
                   <img
                     src={`data:${asset.mimeType};base64,${asset.base64Data}`}
                     alt={asset.fileName}
@@ -564,7 +591,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                   </div>
                 </div>
 
-                <label className="form-row capture-image-summary-field">
+                <label ref={imageTranscriptRef} className="form-row capture-image-summary-field">
                   <span>Litteroitu teksti</span>
                   <textarea value={rawInputValue} onChange={(event) => setRawInputValue(event.target.value)} />
                 </label>
