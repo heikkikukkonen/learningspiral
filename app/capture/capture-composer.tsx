@@ -561,11 +561,6 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 )}
 
                 <div className="capture-image-footer">
-                  {!isAnalyzing ? (
-                    <p className="status capture-image-helper" style={{ margin: 0 }}>
-                      Pelkka kuvan lataus riittaa. Tarkistat tekstin ennen tallennusta.
-                    </p>
-                  ) : null}
                   <button type="button" className="capture-image-cancel" onClick={cancelCapture}>
                     Peruuta
                   </button>
