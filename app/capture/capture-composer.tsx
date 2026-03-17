@@ -643,7 +643,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
           <div className="capture-voice-shell">
             <div className="capture-voice-header">
               <div className="capture-voice-copy">
-                <h2 style={{ margin: 0 }}>Nauhoita sanelu</h2>
+                <h2 style={{ margin: 0 }}>Sanele ajatus</h2>
                 <p className="status capture-voice-status">
                   Nauhoita suoraan selaimessa tai tuo valmis aanitiedosto. AI litteroi puheen tekstiksi, jota voit korjata ennen tallennusta.
                 </p>

@@ -15,7 +15,7 @@ const homeActions = [
     icon: "image"
   },
   {
-    title: "Nauhoita sanelu",
+    title: "Sanele ajatus",
     href: "/capture?mode=voice",
     accent: "slate",
     icon: "mic"
