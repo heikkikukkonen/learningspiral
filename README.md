@@ -1,4 +1,4 @@
-# LearningSpiral 0.3.0
+# Noema 0.3.0
 
 This release includes:
 

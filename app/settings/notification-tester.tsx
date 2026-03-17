@@ -58,7 +58,7 @@ export function NotificationTester({
       }
 
       const registration = await navigator.serviceWorker.ready;
-      await registration.showNotification("LearningSpiral", {
+      await registration.showNotification("Noema", {
         body: message.trim(),
         tag: "settings-test-notification",
         badge: "/pwa-icon-192.png",

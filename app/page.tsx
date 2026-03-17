@@ -30,7 +30,7 @@ const homeActions = [
 
 const crawlSections = [
   {
-    lead: "Learningspiral ei ole vain paikka tallettaa muistiinpanoja.",
+    lead: "Noema ei ole vain paikka tallettaa muistiinpanoja.",
     body:
       "Se on yritys rakentaa ihmiselle oma oppimisen kierre, jossa ideat eivat katoa vaan palaavat oikeaan aikaan takaisin ajatteluun."
   },

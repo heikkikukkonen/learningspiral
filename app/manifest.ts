@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "LearningSpiral",
-    short_name: "Spiral",
+    name: "Noema",
+    short_name: "Noema",
     description: "Capture ideas from text, images and voice, then refine them into reusable learning cards.",
     start_url: "/",
     scope: "/",

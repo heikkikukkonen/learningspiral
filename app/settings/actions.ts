@@ -85,7 +85,7 @@ export async function sendPushTestAction(input: { message: string }) {
   for (const subscription of subscriptions) {
     try {
       await sendWebPush(subscription.subscription_json, {
-        title: "LearningSpiral",
+        title: "Noema",
         body: message,
         url: "/settings"
       });

@@ -11,7 +11,7 @@ export function HomeStory({ sections }: HomeStoryProps) {
   return (
     <details className="home-story" name="home-story">
       <summary className="home-story-toggle">
-        <span>Mika on Learningspiral?</span>
+        <span>Mika on Noema?</span>
         <span className="home-story-toggle-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
             <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
@@ -33,7 +33,7 @@ export function HomeStory({ sections }: HomeStoryProps) {
         </div>
         <div className="home-story-glow" aria-hidden="true" />
         <div className="home-story-crawl">
-          <p className="home-story-kicker">Learning Spiral</p>
+          <p className="home-story-kicker">Noema</p>
           <h2>Oman ajattelun kasvava rata</h2>
           {sections.map((section) => (
             <p key={section.lead}>

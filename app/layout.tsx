@@ -5,8 +5,8 @@ import { SiteNav } from "./components/site-nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LearningSpiral",
-  description: "LearningSpiral 0.3.0 UI for capture, summary, cards, review and progress.",
+  title: "Noema",
+  description: "Noema 0.3.0 UI for capture, summary, cards, review and progress.",
   manifest: "/manifest.webmanifest",
   other: {
     "mobile-web-app-capable": "yes"
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "LearningSpiral"
+    title: "Noema"
   }
 };
 
@@ -33,7 +33,7 @@ export default function RootLayout({
           <div className="container topbar-inner">
             <div className="brand-lockup">
               <Link href="/" className="logo">
-                <span className="logo-title">Learning Spiral</span>
+                <span className="logo-title">Noema</span>
                 <span className="logo-tagline">Your thinking space</span>
               </Link>
             </div>

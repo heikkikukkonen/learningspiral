@@ -31,7 +31,7 @@ self.addEventListener("notificationclick", (event) => {
 
 self.addEventListener("push", (event) => {
   const payload = event.data ? event.data.json() : {};
-  const title = payload.title || "LearningSpiral";
+  const title = payload.title || "Noema";
   const body = payload.body || "Sinulle on uusi muistutus.";
   const url = payload.url || "/settings";
 
