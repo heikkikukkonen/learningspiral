@@ -111,40 +111,6 @@ export function SourceEditorForm({
           />
         </label>
 
-        <div className="form-row source-edit-field source-analysis-shell">
-          <div className="source-analysis-header">
-            <span>Analyysi</span>
-            <p className="status" style={{ margin: 0 }}>
-              Generoi analyysia nykyisen otsikon, idean ja alkuperaisen capturen pohjalta.
-            </p>
-          </div>
-
-          <div className="source-analysis-actions" role="group" aria-label="AI-jalostus">
-            {refineModes.map((mode) => (
-              <button
-                key={mode.id}
-                className="secondary source-analysis-action"
-                disabled={isRefining}
-                onClick={() => handleAiAction(mode.id)}
-                type="button"
-              >
-                {isRefining && activeMode === mode.id ? "Kasitellaan..." : mode.label}
-              </button>
-            ))}
-          </div>
-
-          <p className="status source-analysis-note">{aiNote}</p>
-
-          <textarea
-            name="analysis"
-            value={analysis}
-            onChange={(event) => setAnalysis(event.target.value)}
-            className="source-analysis-textarea"
-            placeholder="Jalosta ideaa pidemmalle: miksi tama on tarkea, mihin se liittyy, mita haluat muistaa."
-            required
-          />
-        </div>
-
         <div className="form-row source-edit-field">
           <span>Tagit</span>
           <div className="source-tag-editor">
@@ -182,6 +148,40 @@ export function SourceEditorForm({
               </button>
             </div>
           </div>
+        </div>
+
+        <div className="form-row source-edit-field source-analysis-shell">
+          <div className="source-analysis-header">
+            <span>Analyysi</span>
+            <p className="status" style={{ margin: 0 }}>
+              Generoi analyysia nykyisen otsikon, idean ja alkuperaisen capturen pohjalta.
+            </p>
+          </div>
+
+          <div className="source-analysis-actions" role="group" aria-label="AI-jalostus">
+            {refineModes.map((mode) => (
+              <button
+                key={mode.id}
+                className="secondary source-analysis-action"
+                disabled={isRefining}
+                onClick={() => handleAiAction(mode.id)}
+                type="button"
+              >
+                {isRefining && activeMode === mode.id ? "Kasitellaan..." : mode.label}
+              </button>
+            ))}
+          </div>
+
+          <p className="status source-analysis-note">{aiNote}</p>
+
+          <textarea
+            name="analysis"
+            value={analysis}
+            onChange={(event) => setAnalysis(event.target.value)}
+            className="source-analysis-textarea"
+            placeholder="Jalosta ideaa pidemmalle: miksi tama on tarkea, mihin se liittyy, mita haluat muistaa."
+            required
+          />
         </div>
       </form>
     </div>
