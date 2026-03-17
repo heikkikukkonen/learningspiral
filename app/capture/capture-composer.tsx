@@ -634,7 +634,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       ) : null}
 
       {mode === "voice" ? (
-        <article className="card capture-flow-card capture-voice-card">
+        <article className={`card capture-flow-card capture-voice-card${isAnalyzing && !asset ? " is-processing" : ""}`}>
           <div className="capture-voice-shell">
             <div className="capture-voice-header">
               <div className="capture-voice-copy">
@@ -647,57 +647,70 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
             {!asset ? (
               <div className="capture-voice-intake">
-                <div className="capture-voice-recorder">
-                  <div className="capture-voice-recorder-copy">
-                    <span className="pill" data-variant={isRecording ? "primary" : undefined}>
-                      {isRecording ? "Nauhoitus kaynnissa" : "Valmis nauhoitukseen"}
-                    </span>
+                <div className="capture-voice-intake-shell">
+                  <div className="capture-voice-recorder">
+                    <div className="capture-voice-recorder-copy">
+                      <span className="pill" data-variant={isRecording ? "primary" : undefined}>
+                        {isRecording ? "Nauhoitus kaynnissa" : "Valmis nauhoitukseen"}
+                      </span>
+                    </div>
+
+                    <div className="capture-voice-recorder-actions">
+                      <button
+                        type="button"
+                        className={isRecording ? "danger capture-voice-record-stop" : "primary capture-voice-record-start"}
+                        onClick={isRecording ? stopRecording : startRecording}
+                      >
+                        {isRecording ? "Lopeta nauhoitus" : "Aloita sanelu"}
+                      </button>
+                      <button
+                        type="button"
+                        className="secondary capture-voice-file-button"
+                        onClick={() => audioFileInputRef.current?.click()}
+                      >
+                        Valitse tiedosto
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="capture-voice-recorder-actions">
-                    <button
-                      type="button"
-                      className={isRecording ? "danger capture-voice-record-stop" : "primary capture-voice-record-start"}
-                      onClick={isRecording ? stopRecording : startRecording}
-                    >
-                      {isRecording ? "Lopeta nauhoitus" : "Aloita sanelu"}
-                    </button>
-                    <button
-                      type="button"
-                      className="secondary capture-voice-file-button"
-                      onClick={() => audioFileInputRef.current?.click()}
-                    >
-                      Valitse tiedosto
-                    </button>
-                  </div>
+                  {isRecording ? <p className="status capture-voice-helper">Nauhoitus kaynnissa selaimessa...</p> : null}
+                  {audioPreviewUrl ? (
+                    <div className="capture-voice-preview-shell">
+                      <div className="capture-voice-preview-meta">
+                        <span className="pill" data-variant="primary">
+                          Esikuuntelu
+                        </span>
+                        <span className="status">Tarkista aani ennen tallennusta.</span>
+                      </div>
+                      <audio controls className="capture-audio-player capture-voice-player" src={audioPreviewUrl} />
+                    </div>
+                  ) : null}
+
+                  {!isRecording ? (
+                    <div className="capture-voice-footer">
+                      <button type="button" className="capture-voice-cancel" onClick={cancelCapture}>
+                        Peruuta
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
 
-                {isRecording ? <p className="status capture-voice-helper">Nauhoitus kaynnissa selaimessa...</p> : null}
                 {isAnalyzing ? (
-                  <IdeaNetworkLoader
-                    variant="panel"
-                    label="AI litteroi puheen tekstiksi"
-                    detail="Tallennamme puheen muokattavaksi tekstiksi ilman lisaanalyysia."
-                  />
-                ) : null}
-                {audioPreviewUrl ? (
-                  <div className="capture-voice-preview-shell">
-                    <div className="capture-voice-preview-meta">
-                      <span className="pill" data-variant="primary">
-                        Esikuuntelu
-                      </span>
-                      <span className="status">Tarkista aani ennen tallennusta.</span>
+                  <div className="capture-voice-processing" aria-live="polite">
+                    <div className="capture-voice-processing-dropzone">
+                      <IdeaNetworkLoader
+                        variant="panel"
+                        label="AI litteroi puheen tekstiksi"
+                        detail="Tallennamme puheen muokattavaksi tekstiksi ilman lisaanalyysia."
+                      />
                     </div>
-                    <audio controls className="capture-audio-player capture-voice-player" src={audioPreviewUrl} />
-                  </div>
-                ) : null}
-
-                {!isRecording ? (
-                  <div className="capture-voice-footer">
-                    {isAnalyzing ? <p className="status capture-voice-helper">Kasittelemme tiedostoa juuri nyt.</p> : null}
-                    <button type="button" className="capture-voice-cancel" onClick={cancelCapture}>
-                      Peruuta
-                    </button>
+                    {!isRecording ? (
+                      <div className="capture-voice-processing-footer">
+                        <button type="button" className="capture-voice-cancel" onClick={cancelCapture}>
+                          Peruuta
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
               </div>
