@@ -369,6 +369,10 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     }
   }
 
+  function inferEditedCaptureTitle(fallback: string) {
+    return inferCaptureTitle(rawInputValue, fallback);
+  }
+
   const textCharacterCount = textValue.trim().length;
   const imageTranscriptCharacterCount = rawInputValue.trim().length;
   const voiceRawCharacterCount = rawInputValue.trim().length;
@@ -607,7 +611,9 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                         disabled={!rawInputValue.trim() || isSaving}
                         onClick={() =>
                           void saveCapture("image", {
-                            title: inferCaptureTitle(rawInputValue, asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus")
+                            title: inferEditedCaptureTitle(
+                              asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus"
+                            )
                           })
                         }
                       >
@@ -758,7 +764,13 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                       type="button"
                       className="primary capture-voice-save"
                       disabled={!rawInputValue.trim() || isSaving}
-                      onClick={() => void saveCapture("audio")}
+                      onClick={() =>
+                        void saveCapture("audio", {
+                          title: inferEditedCaptureTitle(
+                            asset?.fileName.replace(/\.[^.]+$/, "") || "Aanitallenne"
+                          )
+                        })
+                      }
                     >
                       {isSaving ? "Tallennetaan..." : "Tallenna"}
                     </button>
