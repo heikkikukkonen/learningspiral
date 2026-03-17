@@ -460,7 +460,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                   ? "Kasittely kaynnissa. Hetken paasta siirryt suoraan idean muokkaukseen."
                   : textCharacterCount > 0
                   ? `${textCharacterCount} merkkia valmiina tallennettavaksi.`
-                  : "Aloita yhdesta lauseesta. Pikanappi toimii myos Ctrl+Enterilla."}
+                  : "Tallenna toimii myos Ctrl+Enterilla."}
               </p>
               <button type="button" className="capture-text-cancel" onClick={cancelCapture}>
                 Peruuta

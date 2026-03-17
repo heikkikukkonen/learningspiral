@@ -1062,12 +1062,15 @@ button.danger {
 
 .capture-text-footer {
   display: grid;
-  justify-items: center;
+  grid-template-columns: 1fr auto;
+  align-items: center;
   gap: 0.8rem;
   padding-top: 0.1rem;
 }
 
 .capture-text-save {
+  grid-column: 2;
+  justify-self: end;
   min-width: 190px;
   min-height: 56px;
   border-radius: 999px;
@@ -1080,10 +1083,12 @@ button.danger {
 }
 
 .capture-text-helper {
+  grid-column: 1 / -1;
   text-align: center;
 }
 
 .capture-text-cancel {
+  grid-column: 2;
   border: 0;
   background: transparent;
   color: #7c8ca1;
@@ -2370,6 +2375,17 @@ button.danger {
   .capture-text-field textarea {
     min-height: 150px;
     font-size: 1rem;
+  }
+
+  .capture-text-footer {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .capture-text-save,
+  .capture-text-cancel {
+    grid-column: 1;
+    justify-self: center;
   }
 
   .capture-text-visual {
