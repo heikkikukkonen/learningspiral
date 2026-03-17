@@ -1371,6 +1371,10 @@ button.danger {
   flex-wrap: wrap;
 }
 
+.capture-image-actions {
+  width: 100%;
+}
+
 .capture-image-helper {
   color: #6d7f93;
 }
@@ -1411,6 +1415,7 @@ button.danger {
 
 .capture-image-save-group {
   display: flex;
+  width: 100%;
   align-items: center;
   gap: 0.9rem;
   flex-wrap: wrap;
@@ -1422,6 +1427,7 @@ button.danger {
   flex-direction: column;
   align-items: flex-end;
   gap: 0.45rem;
+  margin-left: auto;
 }
 
 .capture-image-cancel-link {
