@@ -661,7 +661,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     <span>
                       {isRecording
                         ? "Lopeta kun ajatus on kasassa. Litterointi alkaa heti nauhoituksen jalkeen."
-                        : "Sopii nopeaan ideaan, selitykseen tai ajatuksen purkamiseen ilman kirjoittamista."}
+                        : "Sopii nopeaan ideaan, selitykseen tai ajatuksen purkamiseen ilman kirjoittamista. Voit joko nauhoittaa suoraan tai tuoda valmiin M4A-, MP3- tai WebM-tiedoston."}
                     </span>
                   </div>
 
@@ -705,11 +705,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
                 {!isRecording ? (
                   <div className="capture-voice-footer">
-                    <p className="status capture-voice-helper">
-                      {isAnalyzing
-                        ? "Kasittelemme tiedostoa juuri nyt."
-                        : "Voit joko nauhoittaa suoraan tai tuoda valmiin M4A-, MP3- tai WebM-tiedoston."}
-                    </p>
+                    {isAnalyzing ? <p className="status capture-voice-helper">Kasittelemme tiedostoa juuri nyt.</p> : null}
                     <button type="button" className="capture-voice-cancel" onClick={cancelCapture}>
                       Peruuta
                     </button>
