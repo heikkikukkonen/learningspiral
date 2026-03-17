@@ -29,26 +29,18 @@ function HeaderIcon({
 
 export function SiteNav() {
   const pathname = usePathname();
-  const isCapturePage = pathname.startsWith("/capture");
   const sourcesActive = pathname === "/sources" || pathname.startsWith("/sources/");
   const settingsActive = pathname === "/settings" || pathname === "/login";
-  const primaryHref = isCapturePage ? "/" : "/sources";
-  const primaryLabel = isCapturePage ? "Etusivu" : "Haku ja ideat";
+  const primaryHref = "/sources";
+  const primaryLabel = "Haku";
 
   return (
     <nav className="header-actions" aria-label="Primary">
       <HeaderIcon href={primaryHref} label={primaryLabel} active={sourcesActive}>
-        {isCapturePage ? (
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4.5 10.5L12 4l7.5 6.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            <path d="M6.5 9.8V20h11V9.8" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" />
-          </svg>
-        ) : (
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="2" />
-            <path d="M16 16l4.5 4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
-          </svg>
-        )}
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="2" />
+          <path d="M16 16l4.5 4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+        </svg>
       </HeaderIcon>
       <HeaderIcon href="/settings" label="Asetukset" active={settingsActive}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
