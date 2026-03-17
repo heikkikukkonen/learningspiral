@@ -2057,9 +2057,47 @@ button.danger {
   position: relative;
   z-index: 1;
   width: 100%;
-  padding: 7.5rem 0.35rem 1rem;
+  padding: 2rem 0.35rem 1rem;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0) 28%, rgba(239, 245, 252, 0.16) 58%, rgba(236, 243, 251, 0.38) 100%);
+}
+
+.home-brand {
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  padding: 0.75rem 0 2rem;
+  text-align: center;
+}
+
+.home-brand-mark {
+  width: min(72%, 220px);
+  filter: drop-shadow(0 12px 24px rgba(98, 188, 209, 0.18));
+}
+
+.home-brand-mark img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.home-brand-title {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.45rem, 8vw, 3.4rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: #3f567a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.home-brand-tagline {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: #93a1b8;
 }
 
 .home-list {
@@ -2430,7 +2468,7 @@ button.danger {
   }
 
   .home-hero-overlay {
-    padding: 6.5rem 0.1rem 0.75rem;
+    padding: 1.3rem 0.1rem 0.75rem;
   }
 
   .home-list-card {
@@ -2588,6 +2626,23 @@ button.danger {
     min-height: 500px;
   }
 
+  .home-brand {
+    padding-top: 0.4rem;
+    padding-bottom: 1.6rem;
+  }
+
+  .home-brand-mark {
+    width: min(78%, 200px);
+  }
+
+  .home-brand-title {
+    font-size: 2.9rem;
+  }
+
+  .home-brand-tagline {
+    font-size: 0.98rem;
+  }
+
   .home-phone-card {
     width: 100%;
     min-height: calc(100vh - 48px - 1.6rem);
@@ -2598,7 +2653,7 @@ button.danger {
 
   .home-list {
     gap: 0.7rem;
-    margin-top: -9.5rem;
+    margin-top: 0;
   }
 
   .home-story-toggle {

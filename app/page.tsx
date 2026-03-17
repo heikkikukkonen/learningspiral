@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { HomeStory } from "@/app/components/home-story";
 
@@ -149,6 +150,13 @@ export default function HomePage() {
         <div className="home-hero">
           <div className="home-visual home-visual-main" aria-hidden="true" />
           <div className="home-hero-overlay">
+            <div className="home-brand">
+              <div className="home-brand-mark">
+                <Image src="/icon.png" alt="Noema logo" width={300} height={180} priority />
+              </div>
+              <h1 className="home-brand-title">Noema</h1>
+              <p className="home-brand-tagline">Where thinking deepens</p>
+            </div>
             <div className="home-list">
               {homeActions.map((action) => (
                 <Link
