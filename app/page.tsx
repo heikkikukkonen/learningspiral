@@ -29,29 +29,6 @@ const homeActions = [
   }
 ] as const;
 
-const crawlSections = [
-  {
-    lead: "Noema ei ole vain paikka tallettaa muistiinpanoja.",
-    body:
-      "Se on yritys rakentaa ihmiselle oma oppimisen kierre, jossa ideat eivat katoa vaan palaavat oikeaan aikaan takaisin ajatteluun."
-  },
-  {
-    lead: "Kun oivallus kirjasta, keskustelusta tai omasta havainnosta saadaan talteen helposti, AI voi jalostaa sen muistettavaksi ja kayttoon sopivaksi.",
-    body:
-      "Silloin uusi tieto ei korvaa vanhaa, vaan tarttuu siihen kiinni ja kasvattaa ymmarrysta kerros kerrokselta."
-  },
-  {
-    lead: "Paivittainen kertaus tekee oppimisesta aktiivista.",
-    body:
-      "Palvelu auttaa palaamaan aiempiin ajatuksiin, muodostamaan yhteyksia niiden valille ja muuttamaan lukemisen, kuulemisen ja kokemisen todelliseksi osaamiseksi."
-  },
-  {
-    lead: "Iso idea on yksinkertainen:",
-    body:
-      "jos jokaisella olisi oma jatkuvasti vahvistuva oppimishistoria, me emme vain muistaisi enemman. Me ajattelisimme paremmin, soveltaisimme rohkeammin ja ottaisimme seuraavan askeleen nopeammin."
-  }
-] as const;
-
 function ActionIcon({ icon }: { icon: (typeof homeActions)[number]["icon"] }) {
   if (icon === "pen") {
     return (
@@ -179,7 +156,7 @@ export default function HomePage() {
                 </Link>
               ))}
             </div>
-            <HomeStory sections={crawlSections} />
+            <HomeStory />
           </div>
         </div>
       </div>

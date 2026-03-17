@@ -2340,6 +2340,50 @@ button.danger {
   font-weight: 500;
 }
 
+.home-story-lead {
+  font-size: 1.12rem !important;
+  line-height: 1.55 !important;
+  color: #365968;
+}
+
+.home-story-manifest,
+.home-story-section {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.home-story-manifest p {
+  font-size: 1rem;
+  line-height: 1.45;
+  color: #365968;
+}
+
+.home-story-section-title {
+  font-size: 0.84rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary-deep) !important;
+}
+
+.home-story-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.45rem;
+  color: #47647c;
+}
+
+.home-story-list li {
+  line-height: 1.6;
+}
+
+.home-story-closing {
+  font-size: 1.08rem !important;
+  line-height: 1.6 !important;
+  color: #315660;
+}
+
 .home-story-crawl strong {
   color: #2a7581;
 }
@@ -2684,6 +2728,10 @@ button.danger {
   .home-story-crawl p {
     font-size: 0.98rem;
     line-height: 1.6;
+  }
+
+  .home-story-list {
+    padding-left: 1rem;
   }
 
 }
