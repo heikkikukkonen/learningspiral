@@ -233,9 +233,9 @@ export default async function SourceDetailsPage({
           {cards.length === 0 ? (
             <div className="source-task-empty">
               <p className="muted">
-                Kun idea on mielestasi valmis, luo tehtavakortit tassa. Jalostan korteista
-                automaattisen kertausrytmin, jotta paasiajatuksesi pysyy mukana eika paase
-                unohtumaan.
+                Kun olet jalostanut idean valmiiksi, voit luoda tehtavakortit automaattisesti.
+                Tehtavakorttien avulla varmistan, etta idea ei unohdu sinulta kertaamalla niita
+                automaattisesti.
               </p>
             </div>
           ) : null}
