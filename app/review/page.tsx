@@ -32,13 +32,13 @@ export default async function ReviewPage() {
   return (
     <section className="review-shell">
       <div className="page-header">
-        <h1>Daily Review</h1>
-        <p className="muted">Yksi tehtava kerrallaan: vastaa, tarkista, arvioi tarkeys.</p>
+        <h1>Palaa ajatuksiin</h1>
+        <p className="muted">Yksi asia kerrallaan. Vastaa ensin itse, tarkista sitten suunta ja jatka eteenpain.</p>
       </div>
 
       {loadError ? (
         <article className="card">
-          <strong>Database not connected</strong>
+          <strong>Tietokanta ei ole yhteydessa</strong>
           <p className="status" style={{ marginBottom: 0 }}>
             {loadError}
           </p>
@@ -56,7 +56,7 @@ export default async function ReviewPage() {
             0 / {totalTodayCount} tehtavaa tanaan
           </p>
           <p className="muted" style={{ marginBottom: 0 }}>
-            Ei uusia kerrattavia juuri nyt. Hyvaksy ensin ehdotettuja kortteja source-sivulta.
+            Ei uusia ajatuksia juuri nyt. Voit ensin hyvaksyta ehdotettuja kortteja idean jalostusnakyamassa.
           </p>
         </article>
       )}

@@ -74,7 +74,7 @@ export function SourcePageActions({
           onClick={handleDelete}
           disabled={isPending}
         >
-          {isPending ? "Kasitellaan..." : "Poista"}
+          {isPending ? "Kasitellaan..." : "Poista idea"}
         </button>
 
         <div className="source-page-save-actions">
@@ -88,7 +88,7 @@ export function SourcePageActions({
               onClick={() => handleSave()}
               disabled={isPending}
             >
-              {isPending ? "Tallennetaan..." : "Tallenna"}
+              {isPending ? "Tallennetaan..." : "Tallenna ja palaa"}
             </button>
           </div>
         </div>

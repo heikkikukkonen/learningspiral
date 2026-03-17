@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Noema",
-  description: "Noema 0.3.0 UI for capture, summary, cards, review and progress.",
+  description: "Rauhallinen tila ajatella, tallentaa oivalluksia ja palata niihin.",
   manifest: "/manifest.webmanifest",
   other: {
     "mobile-web-app-capable": "yes"
@@ -34,7 +34,7 @@ export default function RootLayout({
             <div className="brand-lockup">
               <Link href="/" className="logo">
                 <span className="logo-title">Noema</span>
-                <span className="logo-tagline">Your thinking space</span>
+                <span className="logo-tagline">Where thinking deepens</span>
               </Link>
             </div>
             <SiteNav />

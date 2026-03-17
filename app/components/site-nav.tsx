@@ -32,7 +32,7 @@ export function SiteNav() {
   const sourcesActive = pathname === "/sources" || pathname.startsWith("/sources/");
   const settingsActive = pathname === "/settings" || pathname === "/login";
   const primaryHref = "/sources";
-  const primaryLabel = "Haku";
+  const primaryLabel = "Ajatukset";
 
   return (
     <nav className="header-actions" aria-label="Primary">

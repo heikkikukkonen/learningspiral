@@ -19,7 +19,7 @@ type SubmitButtonProps = {
 export function SubmitButton({
   children,
   className,
-  pendingText = "Loading...",
+  pendingText = "Kasitellaan...",
   disabled,
   form,
   name,

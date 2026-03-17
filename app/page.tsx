@@ -6,7 +6,7 @@ const homeActions = [
   {
     title: "Kirjoita ajatus",
     href: "/capture?mode=text",
-    accent: "blue",
+    accent: "teal",
     icon: "pen"
   },
   {
@@ -18,13 +18,13 @@ const homeActions = [
   {
     title: "Sanele ajatus",
     href: "/capture?mode=voice",
-    accent: "slate",
+    accent: "deep",
     icon: "mic"
   },
   {
-    title: "Syvenna osaamista",
+    title: "Jatka ajattelua",
     href: "/review",
-    accent: "mint",
+    accent: "soft",
     icon: "brain"
   }
 ] as const;

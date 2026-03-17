@@ -18,9 +18,9 @@ type SourceEditorFormProps = {
 };
 
 const refineModes = [
-  { id: "refresh", label: "Paivita analyysi" },
-  { id: "deepen", label: "Syvenna analyysia" },
-  { id: "summarize", label: "Tiivista" }
+  { id: "refresh", label: "Kirkasta ajatus" },
+  { id: "deepen", label: "Syvenna ajattelua" },
+  { id: "summarize", label: "Tiivista ydin" }
 ] as const;
 
 export function SourceEditorForm({
@@ -37,8 +37,8 @@ export function SourceEditorForm({
   const [analysis, setAnalysis] = useState(initialAnalysis);
   const [tags, setTags] = useState(initialTags);
   const [tagInput, setTagInput] = useState("");
-  const [aiNote, setAiNote] = useState("AI voi paivittaa, syventaa tai tiivistaa analyysin nykyisten kenttien pohjalta.");
-  const [tagNote, setTagNote] = useState("Tagit luodaan vain pyynnosta tai voit lisata ne itse.");
+  const [aiNote, setAiNote] = useState("AI voi kirkastaa, syventaa tai tiivistaa ajatusta nykyisten kenttien pohjalta.");
+  const [tagNote, setTagNote] = useState("Voit luoda tagit pyynnosta tai lisata ne itse.");
   const [activeMode, setActiveMode] = useState<(typeof refineModes)[number]["id"] | null>(null);
   const [isRefining, setIsRefining] = useState(false);
   const [isGeneratingTags, setIsGeneratingTags] = useState(false);
@@ -151,7 +151,7 @@ export function SourceEditorForm({
               onClick={handleGenerateTags}
               disabled={isGeneratingTags}
             >
-              {isGeneratingTags ? "Luodaan..." : "Luo tagit"}
+              {isGeneratingTags ? "Luodaan..." : "Ehdota tageja"}
             </button>
           </div>
 
@@ -188,7 +188,7 @@ export function SourceEditorForm({
                 placeholder="Lisaa tagi"
               />
               <button type="button" className="secondary" onClick={addTag}>
-                Lisaa
+                Lisaa tagi
               </button>
             </div>
           </div>
@@ -198,7 +198,7 @@ export function SourceEditorForm({
           <div className="source-analysis-header">
             <span>Analyysi</span>
             <p className="status" style={{ margin: 0 }}>
-              Generoi analyysia nykyisen otsikon, idean ja alkuperaisen capturen pohjalta.
+              Jatka ajattelua nykyisen otsikon, idean ja alkuperaisen capturen pohjalta.
             </p>
           </div>
 

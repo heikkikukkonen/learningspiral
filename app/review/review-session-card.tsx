@@ -57,14 +57,14 @@ export function ReviewSessionCard({
             className="secondary"
             onClick={() => setShowAnswers((current) => !current)}
           >
-            {showAnswers ? "Piilota vastaukset" : "Nayta vastaukset"}
+            {showAnswers ? "Piilota suunta" : "Tarkista suunta"}
           </button>
         </div>
 
         {showAnswers ? (
           <div className="list">
             <article className="card">
-              <h3 style={{ marginTop: 0, marginBottom: "0.4rem" }}>Oikea vastaus</h3>
+              <h3 style={{ marginTop: 0, marginBottom: "0.4rem" }}>Mallivastaus</h3>
               <p style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>{card.answer}</p>
             </article>
 
@@ -106,17 +106,17 @@ export function ReviewSessionCard({
 
             <article className="card">
               <h3 style={{ marginTop: 0, marginBottom: "0.5rem" }}>
-                Kuinka tarkeana pidat, etta tama kysytaan uudestaan?
+                Kuinka vahvasti haluat palata tahan uudelleen?
               </h3>
               <div className="actions">
                 <SubmitButton className="secondary" pendingText="Tallennetaan..." name="rating" value="2">
-                  Matala
+                  Kevyesti
                 </SubmitButton>
                 <SubmitButton className="primary" pendingText="Tallennetaan..." name="rating" value="3">
-                  Tarkea
+                  Palaa tahan
                 </SubmitButton>
                 <SubmitButton className="success" pendingText="Tallennetaan..." name="rating" value="4">
-                  Erittain tarkea
+                  Pida lahella
                 </SubmitButton>
               </div>
             </article>

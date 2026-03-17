@@ -40,27 +40,27 @@ export default async function SourcesPage() {
   return (
     <section>
       <div className="page-header">
-        <h1>Sources</h1>
-        <p className="muted">All sources that feed summary and review cards.</p>
+        <h1>Ajatusten kirjasto</h1>
+        <p className="muted">Kaikki talteen otetut ajatukset, joihin voit palata, syventaa ja yhdistaa.</p>
       </div>
 
       <div className="actions" style={{ marginBottom: "1rem" }}>
         <Link href="/" className="button-link primary">
-          New capture
+          Kirjoita ajatus
         </Link>
         <Link href="/progress" className="button-link secondary">
-          Open progress
+          Katso virta
         </Link>
       </div>
 
       {loadError ? (
         <article className="card">
-          <strong>Database not connected</strong>
+          <strong>Tietokanta ei ole yhteydessa</strong>
           <p className="status" style={{ marginBottom: 0 }}>
             {loadError}
           </p>
           <p className="status" style={{ marginBottom: 0 }}>
-            Add `.env.local` with `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+            Lisaa `.env.local` tiedostoon `NEXT_PUBLIC_SUPABASE_URL` ja `SUPABASE_SERVICE_ROLE_KEY`.
           </p>
         </article>
       ) : null}
@@ -88,7 +88,7 @@ export default async function SourcesPage() {
                 ))}
               </div>
               <p className="status" style={{ marginBottom: 0 }}>
-                Created:{" "}
+                Tallennettu:{" "}
                 {new Date(source.created_at).toLocaleString("fi-FI", {
                   dateStyle: "short",
                   timeStyle: "short"
@@ -96,14 +96,14 @@ export default async function SourcesPage() {
               </p>
             </div>
             <Link href={`/sources/${source.id}`} className="button-link secondary">
-              Open
+              Avaa
             </Link>
           </article>
         ))}
         {!loadError && sources.length === 0 ? (
           <article className="card">
             <p className="muted" style={{ margin: 0 }}>
-              No sources yet. Start from Capture.
+              Ei ajatuksia viela. Aloita kirjoittamalla ensimmainen.
             </p>
           </article>
         ) : null}

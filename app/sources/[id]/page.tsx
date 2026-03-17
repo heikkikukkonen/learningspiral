@@ -89,10 +89,10 @@ export default async function SourceDetailsPage({
     return (
       <section className="review-shell">
         <div className="page-header">
-          <h1>Source</h1>
+          <h1>Idea</h1>
         </div>
         <article className="card">
-          <strong>Database not connected</strong>
+          <strong>Tietokanta ei ole yhteydessa</strong>
           <p className="status" style={{ marginBottom: 0 }}>
             {loadError}
           </p>
@@ -211,11 +211,11 @@ export default async function SourceDetailsPage({
           <form action={generateCardsAction}>
             <input type="hidden" name="sourceId" value={source.id} />
             <SubmitButton
-              className="secondary"
-              pendingText="Luodaan..."
+              className="primary"
+              pendingText="Luodaan tehtavia..."
               loadingVariant="idea-network"
             >
-              Luo tehtavat
+              Jatka ajattelua korteilla
             </SubmitButton>
           </form>
         </div>
@@ -242,7 +242,7 @@ export default async function SourceDetailsPage({
                   value={card.id}
                 />
                 <label className="form-row">
-                  <span>Prompt</span>
+                  <span>Kysymys</span>
                   <input
                     form="source-editor-form"
                     name={`cards[${index}].prompt`}
@@ -251,7 +251,7 @@ export default async function SourceDetailsPage({
                   />
                 </label>
                 <label className="form-row">
-                  <span>Answer</span>
+                  <span>Vastaus</span>
                   <textarea
                     form="source-editor-form"
                     name={`cards[${index}].answer`}
@@ -260,7 +260,7 @@ export default async function SourceDetailsPage({
                   />
                 </label>
                 <label className="form-row">
-                  <span>Type</span>
+                  <span>Tyyppi</span>
                   <select
                     form="source-editor-form"
                     name={`cards[${index}].cardType`}
@@ -283,8 +283,8 @@ export default async function SourceDetailsPage({
                     <input type="hidden" name="answer" value={card.answer} />
                     <input type="hidden" name="cardType" value={card.card_type} />
                     <input type="hidden" name="status" value="active" />
-                    <SubmitButton className="success" pendingText="Accepting...">
-                      Accept
+                    <SubmitButton className="success" pendingText="Hyvaksytaan...">
+                      Hyvaksy
                     </SubmitButton>
                   </form>
                 ) : null}
@@ -294,10 +294,10 @@ export default async function SourceDetailsPage({
                   <input type="hidden" name="cardId" value={card.id} />
                   <SubmitButton
                     className="danger"
-                    pendingText="Deleting..."
+                    pendingText="Poistetaan..."
                     confirmMessage="Poistetaanko kortti pysyvasti?"
                   >
-                    Delete
+                    Poista
                   </SubmitButton>
                 </form>
               </div>

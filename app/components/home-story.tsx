@@ -34,7 +34,7 @@ export function HomeStory({ sections }: HomeStoryProps) {
         <div className="home-story-glow" aria-hidden="true" />
         <div className="home-story-crawl">
           <p className="home-story-kicker">Noema</p>
-          <h2>Oman ajattelun kasvava rata</h2>
+          <h2>Rauhallinen tila ajatella</h2>
           {sections.map((section) => (
             <p key={section.lead}>
               <strong>{section.lead}</strong> {section.body}
