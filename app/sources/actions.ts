@@ -14,8 +14,8 @@ import {
   upsertSummary
 } from "@/lib/db";
 import { CardType, InputModality, SourceType } from "@/lib/types";
-import { buildSourceSummaryContent, suggestSourceTags } from "@/lib/source-editor";
-import { refineSourceDraft } from "@/lib/llm";
+import { buildSourceSummaryContent } from "@/lib/source-editor";
+import { generateSourceTags, refineSourceDraft } from "@/lib/llm";
 
 function asString(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
@@ -106,21 +106,12 @@ export async function saveSourceDraftAction(formData: FormData) {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
-  const resolvedTags =
-    tags.length > 0
-      ? tags
-      : suggestSourceTags({
-          title,
-          idea,
-          analysis,
-          rawInput
-        });
   const cardDrafts = readCardDrafts(formData);
 
   await updateSource({
     sourceId,
     title,
-    tags: resolvedTags
+    tags
   });
 
   await upsertSummary(sourceId, buildSourceSummaryContent({ idea, analysis }), {
@@ -185,6 +176,23 @@ export async function refineSourceDraftAction(formData: FormData) {
     tags: refined.data.tags,
     mode,
     model: refined.model ?? null
+  };
+}
+
+export async function generateSourceTagsAction(formData: FormData) {
+  const title = asString(formData.get("title")).trim();
+  const idea = asString(formData.get("idea")).trim();
+  const settings = await getUserSettings();
+
+  const generated = await generateSourceTags({
+    title,
+    idea,
+    settings
+  });
+
+  return {
+    tags: generated.data,
+    model: generated.model ?? null
   };
 }
 

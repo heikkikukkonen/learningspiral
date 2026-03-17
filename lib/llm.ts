@@ -30,6 +30,10 @@ interface RefinedAnalysisPayload {
   analysis: string;
 }
 
+interface GeneratedTagsPayload {
+  tags: string[];
+}
+
 function appendOptionalInstruction(lines: string[], instruction?: string) {
   const normalized = (instruction || "").trim();
   if (!normalized) return lines;
@@ -218,6 +222,23 @@ function sanitizeRefinedAnalysis(input: Partial<RefinedAnalysisPayload>): Refine
 
   return {
     analysis: analysis.slice(0, 5000)
+  };
+}
+
+function sanitizeGeneratedTags(input: Partial<GeneratedTagsPayload>): GeneratedTagsPayload | null {
+  const tags = Array.isArray(input.tags)
+    ? input.tags
+        .map((tag) => normalizeBlock(typeof tag === "string" ? tag : ""))
+        .filter(Boolean)
+        .slice(0, 6)
+    : [];
+
+  if (tags.length === 0) {
+    return null;
+  }
+
+  return {
+    tags: Array.from(new Set(tags))
   };
 }
 
@@ -482,6 +503,61 @@ export async function generateReviewCardsFromSummary(input: {
   }
 
   return { ok: true, data: ordered, model: reply.model };
+}
+
+export async function generateSourceTags(input: {
+  title: string;
+  idea: string;
+  settings?: UserSettings;
+}): Promise<LlmResult<string[]>> {
+  const fallbackTags = suggestSourceTags({
+    title: input.title,
+    idea: input.idea
+  });
+
+  if (!isLlmConfigured()) {
+    return { ok: false, data: fallbackTags };
+  }
+
+  const systemPrompt = appendOptionalInstruction([
+    "You generate concise source tags for a learning capture.",
+    buildLanguageInstruction(input.settings?.responseLanguage || "Finnish"),
+    "Return ONLY valid JSON.",
+    "Schema:",
+    "{",
+    '  "tags": ["tag 1", "tag 2"]',
+    "}",
+    "Generate 3 to 6 short tags.",
+    "Prefer concrete, searchable topic labels.",
+    "Avoid duplicate or near-duplicate synonyms.",
+    "Use only information found in the title and idea."
+  ], input.settings?.tagGenerationPrompt).join("\n");
+
+  const reply = await callResponsesApi([
+    { role: "system", content: systemPrompt },
+    {
+      role: "user",
+      content: [`Title:\n${normalizeBlock(input.title) || "(empty)"}`, "", `Idea:\n${normalizeBlock(input.idea) || "(empty)"}`].join("\n")
+    }
+  ]);
+
+  let parsed: Partial<GeneratedTagsPayload> = {};
+  try {
+    parsed = JSON.parse(reply.text);
+  } catch {
+    return { ok: false, data: fallbackTags, model: reply.model };
+  }
+
+  const sanitized = sanitizeGeneratedTags(parsed);
+  if (!sanitized) {
+    return { ok: false, data: fallbackTags, model: reply.model };
+  }
+
+  return {
+    ok: true,
+    data: sanitized.tags,
+    model: reply.model
+  };
 }
 
 export async function refineSourceDraft(input: {

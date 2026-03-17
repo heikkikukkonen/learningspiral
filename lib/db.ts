@@ -213,7 +213,8 @@ export async function getUserSettings(userId = appUserId()): Promise<UserSetting
     analysisPromptRefresh: data.analysis_prompt_refresh,
     analysisPromptDeepen: data.analysis_prompt_deepen,
     analysisPromptSummarize: data.analysis_prompt_summarize,
-    cardGenerationPrompt: data.card_generation_prompt
+    cardGenerationPrompt: data.card_generation_prompt,
+    tagGenerationPrompt: data.tag_generation_prompt
   });
 }
 
@@ -229,7 +230,8 @@ export async function upsertUserSettings(input: UserSettings, userId = appUserId
       analysis_prompt_refresh: settings.analysisPromptRefresh,
       analysis_prompt_deepen: settings.analysisPromptDeepen,
       analysis_prompt_summarize: settings.analysisPromptSummarize,
-      card_generation_prompt: settings.cardGenerationPrompt
+      card_generation_prompt: settings.cardGenerationPrompt,
+      tag_generation_prompt: settings.tagGenerationPrompt
     })
     .select("*")
     .single();
@@ -243,6 +245,7 @@ export async function upsertUserSettings(input: UserSettings, userId = appUserId
     analysisPromptDeepen: data.analysis_prompt_deepen ?? "",
     analysisPromptSummarize: data.analysis_prompt_summarize ?? "",
     cardGenerationPrompt: data.card_generation_prompt ?? "",
+    tagGenerationPrompt: data.tag_generation_prompt ?? "",
     created_at: data.created_at,
     updated_at: data.updated_at
   } as UserSettingsRow;

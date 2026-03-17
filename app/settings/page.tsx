@@ -22,7 +22,7 @@ export default async function SettingsPage({
         <h1>Asetukset</h1>
         <p className="muted">
           Maarita oma kieli ja AI-ohjaus, jota kaytetaan analyysin paivityksessa,
-          syvennyksessa, tiivistyksessa ja korttien luonnissa.
+          syvennyksessa, tiivistyksessa, korttien luonnissa ja tagien generoinnissa.
         </p>
         {saved ? (
           <p className="status" style={{ margin: "0.5rem 0 0", color: "var(--success)" }}>
@@ -74,7 +74,7 @@ export default async function SettingsPage({
               <textarea
                 name="analysisPromptRefresh"
                 defaultValue={settings.analysisPromptRefresh}
-                placeholder="Esim. pidä näkökulma käytännöllisenä ja tuo esiin päätösvaikutus."
+                placeholder="Esim. pida nakokulma kaytannollisena ja tuo esiin paatosvaikutus."
               />
             </label>
 
@@ -83,7 +83,7 @@ export default async function SettingsPage({
               <textarea
                 name="analysisPromptDeepen"
                 defaultValue={settings.analysisPromptDeepen}
-                placeholder="Esim. syvennä trade-offit, riskit ja seuraava konkreettinen askel."
+                placeholder="Esim. syvenna trade-offit, riskit ja seuraava konkreettinen askel."
               />
             </label>
 
@@ -92,7 +92,7 @@ export default async function SettingsPage({
               <textarea
                 name="analysisPromptSummarize"
                 defaultValue={settings.analysisPromptSummarize}
-                placeholder="Esim. tiivistä ydinväite, älä menetä toimintaehdotusta."
+                placeholder="Esim. tiivista ydinvaite, ala menetä toimintaehdotusta."
               />
             </label>
 
@@ -101,7 +101,16 @@ export default async function SettingsPage({
               <textarea
                 name="cardGenerationPrompt"
                 defaultValue={settings.cardGenerationPrompt}
-                placeholder="Esim. tee korteista päätöksentekoa ja soveltamista tukevia."
+                placeholder="Esim. tee korteista paatoksentekoa ja soveltamista tukevia."
+              />
+            </label>
+
+            <label className="form-row">
+              <span>Tagien luonnin prompt</span>
+              <textarea
+                name="tagGenerationPrompt"
+                defaultValue={settings.tagGenerationPrompt}
+                placeholder="Esim. luo 3-6 lyhytta, hakukelpoista tagia ilman paallekkaisia synonyymeja."
               />
             </label>
           </div>

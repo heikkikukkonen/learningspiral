@@ -4,6 +4,7 @@ export interface UserSettings {
   analysisPromptDeepen: string;
   analysisPromptSummarize: string;
   cardGenerationPrompt: string;
+  tagGenerationPrompt: string;
 }
 
 export const DEFAULT_USER_SETTINGS: UserSettings = {
@@ -11,7 +12,8 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   analysisPromptRefresh: "",
   analysisPromptDeepen: "",
   analysisPromptSummarize: "",
-  cardGenerationPrompt: ""
+  cardGenerationPrompt: "",
+  tagGenerationPrompt: ""
 };
 
 function clamp(value: string, maxLength: number): string {
@@ -24,7 +26,8 @@ export function sanitizeUserSettings(input: Partial<UserSettings> | null | undef
     analysisPromptRefresh: clamp(input?.analysisPromptRefresh || "", 1200),
     analysisPromptDeepen: clamp(input?.analysisPromptDeepen || "", 1200),
     analysisPromptSummarize: clamp(input?.analysisPromptSummarize || "", 1200),
-    cardGenerationPrompt: clamp(input?.cardGenerationPrompt || "", 1200)
+    cardGenerationPrompt: clamp(input?.cardGenerationPrompt || "", 1200),
+    tagGenerationPrompt: clamp(input?.tagGenerationPrompt || "", 1200)
   };
 }
 

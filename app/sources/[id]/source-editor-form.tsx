@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { refineSourceDraftAction, saveSourceDraftAction } from "@/app/sources/actions";
+import {
+  generateSourceTagsAction,
+  refineSourceDraftAction,
+  saveSourceDraftAction
+} from "@/app/sources/actions";
 
 type SourceEditorFormProps = {
   sourceId: string;
@@ -34,8 +38,10 @@ export function SourceEditorForm({
   const [tags, setTags] = useState(initialTags);
   const [tagInput, setTagInput] = useState("");
   const [aiNote, setAiNote] = useState("AI voi paivittaa, syventaa tai tiivistaa analyysin nykyisten kenttien pohjalta.");
+  const [tagNote, setTagNote] = useState("Tagit luodaan vain pyynnosta tai voit lisata ne itse.");
   const [activeMode, setActiveMode] = useState<(typeof refineModes)[number]["id"] | null>(null);
   const [isRefining, setIsRefining] = useState(false);
+  const [isGeneratingTags, setIsGeneratingTags] = useState(false);
 
   function addTag() {
     const next = tagInput.trim();
@@ -81,6 +87,31 @@ export function SourceEditorForm({
     })();
   }
 
+  function handleGenerateTags() {
+    setIsGeneratingTags(true);
+    void (async () => {
+      try {
+        const formData = new FormData();
+        formData.set("title", title);
+        formData.set("idea", idea);
+
+        const result = await generateSourceTagsAction(formData);
+        setTags(result.tags);
+        setTagNote(
+          result.tags.length > 0
+            ? result.model
+              ? "AI loi tagit otsikon ja idean perusteella. Muista tallentaa muutokset."
+              : "Tagit paivitettiin varalogiikalla. Muista tallentaa muutokset."
+            : "Tageja ei saatu luotua nykyisista kentista."
+        );
+      } catch (error) {
+        setTagNote(error instanceof Error ? error.message : "Tagien luonti epaonnistui.");
+      } finally {
+        setIsGeneratingTags(false);
+      }
+    })();
+  }
+
   return (
     <div className="source-editor-stack">
       <form id="source-editor-form" className="form source-edit-form" action={saveSourceDraftAction}>
@@ -112,7 +143,18 @@ export function SourceEditorForm({
         </label>
 
         <div className="form-row source-edit-field">
-          <span>Tagit</span>
+          <div className="source-analysis-header">
+            <span>Tagit</span>
+            <button
+              type="button"
+              className="secondary source-analysis-action"
+              onClick={handleGenerateTags}
+              disabled={isGeneratingTags}
+            >
+              {isGeneratingTags ? "Luodaan..." : "Luo tagit"}
+            </button>
+          </div>
+
           <div className="source-tag-editor">
             <div className="source-tag-list">
               {tags.length > 0 ? (
@@ -127,9 +169,11 @@ export function SourceEditorForm({
                   </button>
                 ))
               ) : (
-                <span className="status">AI ehdottaa tageja, mutta voit lisata ne myos itse.</span>
+                <span className="status">Tagit ovat tyhjat, kunnes luot ne tai lisat ne itse.</span>
               )}
             </div>
+
+            <p className="status source-analysis-note">{tagNote}</p>
 
             <div className="source-tag-add">
               <input

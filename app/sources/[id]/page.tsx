@@ -8,7 +8,7 @@ import {
 import { SourceEditorForm } from "@/app/sources/[id]/source-editor-form";
 import { SourcePageActions } from "@/app/sources/[id]/source-page-actions";
 import { getSourceWithDetails } from "@/lib/db";
-import { parseSourceSummaryContent, suggestSourceTags } from "@/lib/source-editor";
+import { parseSourceSummaryContent } from "@/lib/source-editor";
 import { deriveSourceIdeaStage, sourceIdeaStageLabel } from "@/lib/source-status";
 import { CardType, SourceType } from "@/lib/types";
 
@@ -106,15 +106,6 @@ export default async function SourceDetailsPage({
   }
 
   const parsedSummary = parseSourceSummaryContent(summary?.content, summary?.raw_input);
-  const resolvedTags =
-    source.tags && source.tags.length > 0
-      ? source.tags
-      : suggestSourceTags({
-          title: source.title,
-          idea: parsedSummary.idea,
-          analysis: parsedSummary.analysis,
-          rawInput: summary?.raw_input
-        });
   const lastSavedLabel = summary?.updated_at
     ? `Viimeksi tallennettu ${new Date(summary.updated_at).toLocaleString("fi-FI")}`
     : "Ei tallennettu viela";
@@ -150,7 +141,7 @@ export default async function SourceDetailsPage({
             initialTitle={source.title}
             initialIdea={parsedSummary.idea}
             initialAnalysis={parsedSummary.analysis}
-            initialTags={resolvedTags}
+            initialTags={source.tags ?? []}
             rawInput={summary?.raw_input ?? ""}
             inputModality={summary?.input_modality ?? "text"}
           />

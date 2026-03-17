@@ -22,7 +22,8 @@ export async function saveUserSettingsAction(formData: FormData) {
     analysisPromptRefresh: asString(formData.get("analysisPromptRefresh")),
     analysisPromptDeepen: asString(formData.get("analysisPromptDeepen")),
     analysisPromptSummarize: asString(formData.get("analysisPromptSummarize")),
-    cardGenerationPrompt: asString(formData.get("cardGenerationPrompt"))
+    cardGenerationPrompt: asString(formData.get("cardGenerationPrompt")),
+    tagGenerationPrompt: asString(formData.get("tagGenerationPrompt"))
   });
 
   await upsertUserSettings(settings);
