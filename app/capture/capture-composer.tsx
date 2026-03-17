@@ -599,27 +599,29 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 </label>
 
                 <div className="capture-image-actions">
-                  <button type="button" className="secondary" onClick={cancelCapture}>
-                    Peruuta
-                  </button>
                   <div className="capture-image-save-group">
                     <p className="status capture-image-helper" style={{ margin: 0 }}>
                       {imageTranscriptCharacterCount > 0
                         ? `${imageTranscriptCharacterCount} merkkia valmiina tallennettavaksi.`
                         : "Muokkaa litterointia tarvittaessa ennen tallennusta."}
                     </p>
-                    <button
-                      type="button"
-                      className="primary capture-image-save"
-                      disabled={!rawInputValue.trim() || isSaving}
-                      onClick={() =>
-                        void saveCapture("image", {
-                          title: inferCaptureTitle(rawInputValue, asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus")
-                        })
-                      }
-                    >
-                      {isSaving ? "Tallennetaan..." : "Tallenna"}
-                    </button>
+                    <div className="capture-image-save-actions">
+                      <button
+                        type="button"
+                        className="primary capture-image-save"
+                        disabled={!rawInputValue.trim() || isSaving}
+                        onClick={() =>
+                          void saveCapture("image", {
+                            title: inferCaptureTitle(rawInputValue, asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus")
+                          })
+                        }
+                      >
+                        {isSaving ? "Tallennetaan..." : "Tallenna"}
+                      </button>
+                      <button type="button" className="capture-image-cancel capture-image-cancel-link" onClick={cancelCapture}>
+                        Peruuta
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

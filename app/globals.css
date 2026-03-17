@@ -1385,6 +1385,17 @@ button.danger {
   justify-content: flex-end;
 }
 
+.capture-image-save-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+.capture-image-cancel-link {
+  font-size: 0.95rem;
+}
+
 .capture-image-save {
   min-width: 190px;
   min-height: 56px;
@@ -2345,9 +2356,14 @@ button.danger {
   .capture-image-footer,
   .capture-image-actions,
   .capture-image-preview-meta,
-  .capture-image-save-group {
+  .capture-image-save-group,
+  .capture-image-save-actions {
     justify-content: center;
     text-align: center;
+  }
+
+  .capture-image-save-actions {
+    align-items: center;
   }
 
   .capture-image-visual {
