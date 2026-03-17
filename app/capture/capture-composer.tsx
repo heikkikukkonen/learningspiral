@@ -660,7 +660,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                       className={isRecording ? "danger capture-voice-record-stop" : "primary capture-voice-record-start"}
                       onClick={isRecording ? stopRecording : startRecording}
                     >
-                      {isRecording ? "Lopeta nauhoitus" : "Aloita nauhoitus"}
+                      {isRecording ? "Lopeta nauhoitus" : "Aloita sanelu"}
                     </button>
                     <button
                       type="button"
