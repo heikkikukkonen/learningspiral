@@ -650,9 +650,23 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 <div className="capture-voice-intake-shell">
                   <div className="capture-voice-recorder">
                     <div className="capture-voice-recorder-copy">
-                      <span className="pill" data-variant={isRecording ? "primary" : undefined}>
-                        {isRecording ? "Nauhoitus kaynnissa" : "Valmis nauhoitukseen"}
-                      </span>
+                      {isRecording ? (
+                        <div className="capture-voice-recording-status" aria-live="polite">
+                          <span className="pill" data-variant="primary">
+                            Tallennus kaynnissa
+                          </span>
+                          <div
+                            className="capture-voice-recording-progress"
+                            role="progressbar"
+                            aria-label="Tallennus kaynnissa"
+                            aria-valuetext="Tallennus etenee"
+                          >
+                            <span className="capture-voice-recording-progress-fill" />
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="pill">Valmis tallennukseen</span>
+                      )}
                     </div>
 
                     <div className="capture-voice-recorder-actions">
@@ -661,7 +675,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                         className={isRecording ? "danger capture-voice-record-stop" : "primary capture-voice-record-start"}
                         onClick={isRecording ? stopRecording : startRecording}
                       >
-                        {isRecording ? "Lopeta nauhoitus" : "Aloita sanelu"}
+                        {isRecording ? "Lopeta tallennus" : "Aloita sanelu"}
                       </button>
                       <button
                         type="button"
@@ -673,7 +687,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     </div>
                   </div>
 
-                  {isRecording ? <p className="status capture-voice-helper">Nauhoitus kaynnissa selaimessa...</p> : null}
+                  {isRecording ? <p className="status capture-voice-helper">Tallennus kaynnissa selaimessa...</p> : null}
                   {audioPreviewUrl ? (
                     <div className="capture-voice-preview-shell">
                       <div className="capture-voice-preview-meta">

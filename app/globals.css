@@ -1620,6 +1620,54 @@ button.danger {
   gap: 0.55rem;
 }
 
+.capture-voice-recording-status {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.capture-voice-recording-progress {
+  position: relative;
+  overflow: hidden;
+  width: min(100%, 320px);
+  height: 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(146, 196, 227, 0.9);
+  background:
+    linear-gradient(180deg, rgba(234, 246, 255, 0.95), rgba(208, 233, 248, 0.92)),
+    rgba(221, 239, 250, 0.95);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    inset 0 -1px 0 rgba(134, 181, 212, 0.12);
+}
+
+.capture-voice-recording-progress::after {
+  content: "";
+  position: absolute;
+  inset: 2px auto 2px 8px;
+  width: 8px;
+  border-radius: 999px;
+  background: #4b9ed0;
+  box-shadow: 0 0 0 6px rgba(75, 158, 208, 0.16);
+  animation: capture-recording-pulse 1.35s ease-in-out infinite;
+}
+
+.capture-voice-recording-progress-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(93, 182, 226, 0.1) 0%,
+      rgba(93, 182, 226, 0.42) 24%,
+      rgba(255, 255, 255, 0.78) 42%,
+      rgba(93, 182, 226, 0.42) 58%,
+      rgba(93, 182, 226, 0.1) 100%
+    );
+  background-size: 220px 100%;
+  animation: capture-recording-wave 1.4s linear infinite;
+}
+
 .capture-voice-recorder-copy strong,
 .capture-voice-transcript-field span,
 .capture-voice-summary-field span {
@@ -1659,6 +1707,29 @@ button.danger {
 
 .capture-voice-file-button {
   min-width: 170px;
+}
+
+@keyframes capture-recording-wave {
+  from {
+    background-position: -220px 0;
+  }
+
+  to {
+    background-position: 220px 0;
+  }
+}
+
+@keyframes capture-recording-pulse {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.72;
+  }
+
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .capture-voice-preview-shell {
