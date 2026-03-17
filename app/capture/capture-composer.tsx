@@ -438,6 +438,13 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 }}
               />
             </label>
+            <p className="status capture-text-helper" style={{ margin: 0 }}>
+              {isTextProcessing
+                ? "Kasittely kaynnissa. Hetken paasta siirryt suoraan idean muokkaukseen."
+                : textCharacterCount > 0
+                ? `${textCharacterCount} merkkia valmiina tallennettavaksi.`
+                : "Tallenna toimii myos Ctrl+Enterilla."}
+            </p>
 
             <div className="capture-text-footer">
               <button
@@ -455,13 +462,6 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                   "Tallenna"
                 )}
               </button>
-              <p className="status capture-text-helper" style={{ margin: 0 }}>
-                {isTextProcessing
-                  ? "Kasittely kaynnissa. Hetken paasta siirryt suoraan idean muokkaukseen."
-                  : textCharacterCount > 0
-                  ? `${textCharacterCount} merkkia valmiina tallennettavaksi.`
-                  : "Tallenna toimii myos Ctrl+Enterilla."}
-              </p>
               <button type="button" className="capture-text-cancel" onClick={cancelCapture}>
                 Peruuta
               </button>
