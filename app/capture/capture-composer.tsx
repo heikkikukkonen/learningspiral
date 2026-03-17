@@ -760,7 +760,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                       disabled={!rawInputValue.trim() || isSaving}
                       onClick={() => void saveCapture("audio")}
                     >
-                      {isSaving ? "Tallennetaan..." : "Julkaise kun valmis"}
+                      {isSaving ? "Tallennetaan..." : "Tallenna"}
                     </button>
                   </div>
                 </div>
