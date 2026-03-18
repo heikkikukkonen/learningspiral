@@ -41,11 +41,14 @@ export default async function SourcesPage() {
     <section>
       <div className="page-header">
         <h1>Ajatusten kirjasto</h1>
-        <p className="muted">Kaikki talteen otetut ajatukset, joihin voit palata, syventaa ja yhdistaa.</p>
+        <p className="muted">Kaikki talteen otetut ajatukset, joihin voit palata, syventää ja yhdistää.</p>
       </div>
 
       <div className="actions" style={{ marginBottom: "1rem" }}>
-        <Link href="/" className="button-link primary">
+        <Link href="/app" className="button-link secondary">
+          Sovelluksen etusivu
+        </Link>
+        <Link href="/capture?mode=text" className="button-link primary">
           Kirjoita ajatus
         </Link>
         <Link href="/progress" className="button-link secondary">
@@ -55,12 +58,12 @@ export default async function SourcesPage() {
 
       {loadError ? (
         <article className="card">
-          <strong>Tietokanta ei ole yhteydessa</strong>
+          <strong>Tietokanta ei ole yhteydessä</strong>
           <p className="status" style={{ marginBottom: 0 }}>
             {loadError}
           </p>
           <p className="status" style={{ marginBottom: 0 }}>
-            Lisaa `.env.local` tiedostoon `NEXT_PUBLIC_SUPABASE_URL` ja `SUPABASE_SERVICE_ROLE_KEY`.
+            Lisää `.env.local` tiedostoon `NEXT_PUBLIC_SUPABASE_URL` ja `SUPABASE_SERVICE_ROLE_KEY`.
           </p>
         </article>
       ) : null}
@@ -103,7 +106,7 @@ export default async function SourcesPage() {
         {!loadError && sources.length === 0 ? (
           <article className="card">
             <p className="muted" style={{ margin: 0 }}>
-              Ei ajatuksia viela. Aloita kirjoittamalla ensimmainen.
+              Ei ajatuksia vielä. Aloita kirjoittamalla ensimmäinen.
             </p>
           </article>
         ) : null}

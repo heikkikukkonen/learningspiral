@@ -59,7 +59,7 @@ export default async function LoginPage({
   const statusMessage = getStatusMessage(searchParams);
   const mode = searchParams?.mode === "signup" ? "signup" : "signin";
   const alternateMode = mode === "signup" ? "signin" : "signup";
-  const authenticatedRedirectPath = nextPath === "/" ? "/sources" : nextPath;
+  const authenticatedRedirectPath = nextPath === "/" ? "/app" : nextPath;
 
   if (user) {
     redirect(authenticatedRedirectPath);

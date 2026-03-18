@@ -72,7 +72,7 @@ export async function middleware(request: NextRequest) {
   if (user && pathname === "/login") {
     const nextPath = request.nextUrl.searchParams.get("next");
     const safePath =
-      nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/";
+      nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/app";
     return NextResponse.redirect(new URL(safePath, request.url));
   }
 

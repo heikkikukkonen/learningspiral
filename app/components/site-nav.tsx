@@ -29,14 +29,20 @@ function HeaderIcon({
 
 export function SiteNav() {
   const pathname = usePathname();
+  const appHomeActive = pathname === "/app";
   const sourcesActive = pathname === "/sources" || pathname.startsWith("/sources/");
   const settingsActive = pathname === "/settings" || pathname === "/login";
-  const primaryHref = "/sources";
-  const primaryLabel = "Ajatukset";
+  const primaryHref = "/app";
+  const primaryLabel = "Etusivu";
 
   return (
     <nav className="header-actions" aria-label="Primary">
-      <HeaderIcon href={primaryHref} label={primaryLabel} active={sourcesActive}>
+      <HeaderIcon href={primaryHref} label={primaryLabel} active={appHomeActive}>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4.5 10.2L12 4l7.5 6.2V19a1 1 0 01-1 1h-4.4v-5.4h-4.2V20H5.5a1 1 0 01-1-1v-8.8z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
+        </svg>
+      </HeaderIcon>
+      <HeaderIcon href="/sources" label="Ajatukset" active={sourcesActive}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="2" />
           <path d="M16 16l4.5 4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />

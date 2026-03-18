@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 
 const storyMoments = [
@@ -22,10 +23,13 @@ const storyMoments = [
 
 export default async function HomePage() {
   const user = await getCurrentUser();
-  const primaryHref = user ? "/sources" : "/login?mode=signup&next=%2Fsources";
-  const primaryLabel = user ? "Siirry omaan Noemaasi" : "Aloita oma Noemasi";
-  const secondaryHref = user ? "/capture?mode=text" : "/login?mode=signin&next=%2Fsources";
-  const secondaryLabel = user ? "Tallenna ajatus" : "Kirjaudu";
+  if (user) {
+    redirect("/app");
+  }
+  const primaryHref = "/login?mode=signup&next=%2Fapp";
+  const primaryLabel = "Aloita oma Noemasi";
+  const secondaryHref = "/login?mode=signin&next=%2Fapp";
+  const secondaryLabel = "Kirjaudu";
 
   return (
     <div className="landing-page">
@@ -91,7 +95,7 @@ export default async function HomePage() {
 
         <div className="landing-hero-meta">
           {!user ? (
-            <Link href="/login?mode=signup&next=%2Fsources" className="landing-inline-link">
+            <Link href="/login?mode=signup&next=%2Fapp" className="landing-inline-link">
               Rekisteröidy
             </Link>
           ) : null}
@@ -142,7 +146,7 @@ export default async function HomePage() {
             <Link href="/story" className="button-link secondary">
               Avaa scroll story
             </Link>
-            <Link href="/login?mode=signup&next=%2Fsources" className="button-link primary">
+            <Link href="/login?mode=signup&next=%2Fapp" className="button-link primary">
               Rekisteröidy
             </Link>
           </div>

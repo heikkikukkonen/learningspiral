@@ -12,7 +12,7 @@ function asString(value: FormDataEntryValue | null) {
 }
 
 function getPostAuthRedirectPath(nextPath: string) {
-  return nextPath === "/" ? "/sources" : nextPath;
+  return nextPath === "/" ? "/app" : nextPath;
 }
 
 function redirectWithAuthError(
