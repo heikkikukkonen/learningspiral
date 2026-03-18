@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { PwaRegister } from "./components/pwa-register";
 import { SiteNav } from "./components/site-nav";
+import { UserAuthControls } from "./components/user-auth-controls";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
@@ -43,7 +44,10 @@ export default function RootLayout({
                 </span>
               </Link>
             </div>
-            <SiteNav />
+            <div className="topbar-actions">
+              <SiteNav />
+              <UserAuthControls />
+            </div>
           </div>
         </header>
         <main className="container">{children}</main>

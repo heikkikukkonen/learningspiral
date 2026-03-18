@@ -1,22 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
-
-function getEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing environment variable: ${name}`);
-  }
-  return value;
-}
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/supabase/config";
 
 export function getSupabaseAdmin() {
-  return createClient(
-    getEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    getEnv("SUPABASE_SERVICE_ROLE_KEY"),
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
+  return createClient(getSupabaseUrl(), getSupabaseServiceRoleKey(), {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
     }
-  );
+  });
 }

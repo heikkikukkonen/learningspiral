@@ -16,9 +16,10 @@ import {
 } from "@/lib/llm";
 import { normalizeCaptureSummary } from "@/lib/source-editor";
 import { DEFAULT_USER_SETTINGS, sanitizeUserSettings, UserSettings } from "@/lib/user-settings";
+import { requireUserId } from "@/lib/auth";
 
-function appUserId(): string {
-  return process.env.APP_USER_ID ?? "11111111-1111-1111-1111-111111111111";
+async function appUserId(): Promise<string> {
+  return requireUserId();
 }
 
 export interface SourceRow {
@@ -188,8 +189,9 @@ export async function logLearningEvent(input: {
   payload?: Record<string, unknown>;
 }) {
   const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
   const { error } = await supabase.from("learning_events").insert({
-    user_id: appUserId(),
+    user_id: userId,
     event_type: input.eventType,
     entity_id: input.entityId ?? null,
     payload: input.payload ?? {}
@@ -197,12 +199,13 @@ export async function logLearningEvent(input: {
   if (error) throw error;
 }
 
-export async function getUserSettings(userId = appUserId()): Promise<UserSettings> {
+export async function getUserSettings(userId?: string): Promise<UserSettings> {
   const supabase = getSupabaseAdmin();
+  const resolvedUserId = userId ?? (await appUserId());
   const { data, error } = await supabase
     .from("user_settings")
     .select("*")
-    .eq("user_id", userId)
+    .eq("user_id", resolvedUserId)
     .maybeSingle();
 
   if (error) throw error;
@@ -218,14 +221,15 @@ export async function getUserSettings(userId = appUserId()): Promise<UserSetting
   });
 }
 
-export async function upsertUserSettings(input: UserSettings, userId = appUserId()) {
+export async function upsertUserSettings(input: UserSettings, userId?: string) {
   const supabase = getSupabaseAdmin();
+  const resolvedUserId = userId ?? (await appUserId());
   const settings = sanitizeUserSettings(input);
 
   const { data, error } = await supabase
     .from("user_settings")
     .upsert({
-      user_id: userId,
+      user_id: resolvedUserId,
       response_language: settings.responseLanguage,
       analysis_prompt_refresh: settings.analysisPromptRefresh,
       analysis_prompt_deepen: settings.analysisPromptDeepen,
@@ -251,12 +255,13 @@ export async function upsertUserSettings(input: UserSettings, userId = appUserId
   } as UserSettingsRow;
 }
 
-export async function listPushSubscriptions(userId = appUserId()) {
+export async function listPushSubscriptions(userId?: string) {
   const supabase = getSupabaseAdmin();
+  const resolvedUserId = userId ?? (await appUserId());
   const { data, error } = await supabase
     .from("push_subscriptions")
     .select("*")
-    .eq("user_id", userId)
+    .eq("user_id", resolvedUserId)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -269,7 +274,7 @@ export async function upsertPushSubscription(input: {
   userId?: string;
 }) {
   const supabase = getSupabaseAdmin();
-  const userId = input.userId ?? appUserId();
+  const userId = input.userId ?? (await appUserId());
   const { data, error } = await supabase
     .from("push_subscriptions")
     .upsert(
@@ -287,23 +292,25 @@ export async function upsertPushSubscription(input: {
   return data as PushSubscriptionRow;
 }
 
-export async function deletePushSubscription(endpoint: string, userId = appUserId()) {
+export async function deletePushSubscription(endpoint: string, userId?: string) {
   const supabase = getSupabaseAdmin();
+  const resolvedUserId = userId ?? (await appUserId());
   const { error } = await supabase
     .from("push_subscriptions")
     .delete()
-    .eq("user_id", userId)
+    .eq("user_id", resolvedUserId)
     .eq("endpoint", endpoint);
 
   if (error) throw error;
 }
 
-export async function markPushSubscriptionSent(endpoint: string, userId = appUserId()) {
+export async function markPushSubscriptionSent(endpoint: string, userId?: string) {
   const supabase = getSupabaseAdmin();
+  const resolvedUserId = userId ?? (await appUserId());
   const { error } = await supabase
     .from("push_subscriptions")
     .update({ last_sent_at: new Date().toISOString() })
-    .eq("user_id", userId)
+    .eq("user_id", resolvedUserId)
     .eq("endpoint", endpoint);
 
   if (error) throw error;
@@ -311,7 +318,7 @@ export async function markPushSubscriptionSent(endpoint: string, userId = appUse
 
 export async function listSources() {
   const supabase = getSupabaseAdmin();
-  const userId = appUserId();
+  const userId = await appUserId();
   const [{ data: sources, error: sourcesError }, { data: cards, error: cardsError }] =
     await Promise.all([
       supabase
@@ -343,8 +350,9 @@ export async function createSource(input: {
   captureMode?: string;
 }) {
   const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
   const baseInsert = {
-    user_id: appUserId(),
+    user_id: userId,
     type: input.type,
     title: input.title,
     author: input.author || null,
@@ -379,7 +387,7 @@ export async function updateSource(input: {
   ideaStatus?: IdeaStatus;
 }) {
   const supabase = getSupabaseAdmin();
-  const userId = appUserId();
+  const userId = await appUserId();
 
   const baseUpdate = {
     title: input.title,
@@ -413,11 +421,12 @@ export async function updateSource(input: {
 
 export async function sourceHasCards(sourceId: string) {
   const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
   const { count, error } = await supabase
     .from("cards")
     .select("id", { count: "exact", head: true })
     .eq("source_id", sourceId)
-    .eq("user_id", appUserId());
+    .eq("user_id", userId);
 
   if (error) throw error;
   return (count ?? 0) > 0;
@@ -425,7 +434,7 @@ export async function sourceHasCards(sourceId: string) {
 
 export async function deleteSource(sourceId: string) {
   const supabase = getSupabaseAdmin();
-  const userId = appUserId();
+  const userId = await appUserId();
 
   const { data: cards, error: cardsError } = await supabase
     .from("cards")
@@ -518,7 +527,7 @@ export async function createSourceFromMultimodalCapture(input: {
   };
 }) {
   const supabase = getSupabaseAdmin();
-  const userId = appUserId();
+  const userId = await appUserId();
   const trimmedText = input.textInput?.trim() ?? "";
   const trimmedUrl = input.sourceUrl?.trim() ?? "";
 
@@ -649,7 +658,7 @@ export async function createSourceFromPreparedCapture(input: {
   };
 }) {
   const supabase = getSupabaseAdmin();
-  const userId = appUserId();
+  const userId = await appUserId();
   const rawInput = input.rawInput.trim();
 
   const source = await createSource({
@@ -699,10 +708,11 @@ export async function createSourceFromPreparedCapture(input: {
 
 export async function listCaptureMessages(sourceId: string) {
   const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
   const { data, error } = await supabase
     .from("capture_messages")
     .select("*")
-    .eq("user_id", appUserId())
+    .eq("user_id", userId)
     .eq("source_id", sourceId)
     .order("created_at", { ascending: true });
 
@@ -716,11 +726,12 @@ export async function appendCaptureMessage(input: {
   content: string;
 }) {
   const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
   const content = input.content.trim();
   if (!content) return;
 
   const { error } = await supabase.from("capture_messages").insert({
-    user_id: appUserId(),
+    user_id: userId,
     source_id: input.sourceId,
     role: input.role,
     content
@@ -762,7 +773,7 @@ export async function respondInCapture(sourceId: string, userMessage: string) {
 
 export async function getSourceWithDetails(sourceId: string) {
   const supabase = getSupabaseAdmin();
-  const userId = appUserId();
+  const userId = await appUserId();
 
   const [
     { data: source, error: sourceError },
@@ -828,7 +839,7 @@ export async function upsertSummary(
   }
 ) {
   const supabase = getSupabaseAdmin();
-  const userId = appUserId();
+  const userId = await appUserId();
   const normalizedContent = normalizeCaptureSummary(content);
 
   const { data, error } = await supabase
@@ -861,7 +872,7 @@ export async function generateSuggestedCards(params: {
   sourceId: string;
 }) {
   const supabase = getSupabaseAdmin();
-  const userId = appUserId();
+  const userId = await appUserId();
   const settings = await getUserSettings(userId);
   const { data: summary, error: summaryError } = await supabase
     .from("summaries")
@@ -995,6 +1006,7 @@ export async function updateCard(params: {
   status?: "suggested" | "active" | "rejected";
 }) {
   const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
   const dueAt = params.status === "active" ? new Date().toISOString() : undefined;
 
   const { error } = await supabase
@@ -1008,7 +1020,7 @@ export async function updateCard(params: {
     })
     .eq("id", params.cardId)
     .eq("source_id", params.sourceId)
-    .eq("user_id", appUserId());
+    .eq("user_id", userId);
 
   if (error) throw error;
 
@@ -1030,7 +1042,7 @@ export async function updateCard(params: {
 
 export async function deleteCard(params: { cardId: string; sourceId: string }) {
   const supabase = getSupabaseAdmin();
-  const userId = appUserId();
+  const userId = await appUserId();
 
   const { error: eventsError } = await supabase
     .from("learning_events")
@@ -1050,6 +1062,7 @@ export async function deleteCard(params: { cardId: string; sourceId: string }) {
 
 export async function acceptAllSuggested(sourceId: string) {
   const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
   const { data, error } = await supabase
     .from("cards")
     .update({
@@ -1057,7 +1070,7 @@ export async function acceptAllSuggested(sourceId: string) {
       due_at: new Date().toISOString()
     })
     .eq("source_id", sourceId)
-    .eq("user_id", appUserId())
+    .eq("user_id", userId)
     .eq("status", "suggested")
     .select("id, card_type");
 
@@ -1074,12 +1087,13 @@ export async function acceptAllSuggested(sourceId: string) {
 
 export async function listDueCards() {
   const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
   const nowIso = new Date().toISOString();
 
   const { data, error } = await supabase
     .from("cards")
     .select("*")
-    .eq("user_id", appUserId())
+    .eq("user_id", userId)
     .eq("status", "active")
     .lte("due_at", nowIso)
     .order("due_at", { ascending: true })
@@ -1094,7 +1108,7 @@ export async function listDueCardsWithContext(): Promise<DueReviewCard[]> {
   if (!dueCards.length) return [];
 
   const supabase = getSupabaseAdmin();
-  const userId = appUserId();
+  const userId = await appUserId();
   const sourceIds = Array.from(new Set(dueCards.map((card) => card.source_id)));
 
   const [{ data: sources, error: sourcesError }, { data: summaries, error: summariesError }] =
@@ -1122,10 +1136,11 @@ export async function listDueCardsWithContext(): Promise<DueReviewCard[]> {
 
 export async function listCardAnswerHistory(cardId: string): Promise<CardAnswerHistoryItem[]> {
   const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
   const { data, error } = await supabase
     .from("learning_events")
     .select("created_at, payload")
-    .eq("user_id", appUserId())
+    .eq("user_id", userId)
     .eq("event_type", "review_completed")
     .eq("entity_id", cardId)
     .order("created_at", { ascending: false })
@@ -1145,6 +1160,7 @@ export async function listCardAnswerHistory(cardId: string): Promise<CardAnswerH
 
 export async function countReviewsCompletedToday(): Promise<number> {
   const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
   const now = new Date();
   const dayStartUtc = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0)
@@ -1153,7 +1169,7 @@ export async function countReviewsCompletedToday(): Promise<number> {
   const { count, error } = await supabase
     .from("learning_events")
     .select("id", { count: "exact", head: true })
-    .eq("user_id", appUserId())
+    .eq("user_id", userId)
     .eq("event_type", "review_completed")
     .gte("created_at", dayStartUtc);
 
@@ -1163,7 +1179,7 @@ export async function countReviewsCompletedToday(): Promise<number> {
 
 export async function completeReview(cardId: string, rating: number, userAnswer?: string) {
   const supabase = getSupabaseAdmin();
-  const userId = appUserId();
+  const userId = await appUserId();
   const reviewedAt = new Date();
   const dueAt = shiftDays(reviewedAt, 1 + Math.max(0, rating));
 
@@ -1198,7 +1214,7 @@ function normalize(value: number, cap: number): number {
 
 export async function getProgressSnapshot(): Promise<ProgressSnapshot> {
   const supabase = getSupabaseAdmin();
-  const userId = appUserId();
+  const userId = await appUserId();
   const now = new Date();
   const from90 = shiftDays(now, -89).toISOString();
   const from30 = shiftDays(now, -29).toISOString();

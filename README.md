@@ -29,8 +29,9 @@ npm install
 2. Create `.env.local` from `.env.example` and fill:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `APP_USER_ID` (fixed UUID for local development)
+- `NEXT_PUBLIC_SITE_URL` (optional, recommended for auth redirects in production)
 - `OPENAI_API_KEY` (for live LLM responses and card generation)
 - `OPENAI_MODEL` (optional, defaults to `gpt-4.1-mini`)
 
@@ -39,6 +40,7 @@ npm install
 - `supabase/migrations/20260228103000_mvp_01_schema.sql`
 - `supabase/migrations/20260301102000_mvp_02_capture_metrics.sql`
 - `supabase/migrations/20260315100000_add_idea_status_to_sources.sql`
+- `supabase/migrations/20260318103000_add_user_profiles_auth.sql`
 
 4. Start dev server:
 
@@ -67,7 +69,7 @@ Changed tables:
 
 - If `OPENAI_API_KEY` is missing, capture replies and card generation fall back to rule-based placeholder logic.
 - Telemetry events are written to `learning_events` and feed progress metrics.
-- Login/Auth flow is still not connected to real user auth in UI.
+- Login/Auth flow uses Supabase Auth with email confirmation and OAuth providers.
 
 ## CI Migration Pipeline
 
