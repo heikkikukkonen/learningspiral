@@ -39,7 +39,7 @@ export function SourcePageActions({
         window.location.assign(result.redirectTo);
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Tallennus epaonnistui. Yrita uudelleen.";
+          error instanceof Error ? error.message : "Tallennus epäonnistui. Yritä uudelleen.";
         setErrorMessage(message);
       }
     });
@@ -59,7 +59,7 @@ export function SourcePageActions({
         await deleteSourceAction(formData);
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Idean poisto epaonnistui. Yrita uudelleen.";
+          error instanceof Error ? error.message : "Idean poisto epäonnistui. Yritä uudelleen.";
         setErrorMessage(message);
       }
     });

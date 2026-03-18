@@ -29,7 +29,7 @@ export default async function CapturePage({
           <p className="status" style={{ margin: 0 }}>
             {shareError === "missing-file"
               ? "Jaettu kuva ei tullut mukaan. Kokeile jakaa kuva uudelleen tai valitse se manuaalisesti."
-              : "Jaetun kuvan tuonti epaonnistui. Voit silti jatkaa tavallisen image capture -flow'n kautta."}
+              : "Jaetun kuvan tuonti epäonnistui. Voit silti jatkaa tavallisen image capture -flow'n kautta."}
           </p>
         </article>
       ) : null}

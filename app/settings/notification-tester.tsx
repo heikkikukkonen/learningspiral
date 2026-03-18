@@ -27,7 +27,7 @@ export function NotificationTester({
   pushConfigured: boolean;
   pushPublicKey: string;
 }) {
-  const [message, setMessage] = useState("Muista tarkistaa paivan tehtavat");
+  const [message, setMessage] = useState("Muista tarkistaa päivän tehtävät");
   const [status, setStatus] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isEnablingPush, setIsEnablingPush] = useState(false);
@@ -39,7 +39,7 @@ export function NotificationTester({
     }
 
     if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-      setStatus("Tama selain tai laite ei tue PWA-ilmoituksia.");
+      setStatus("Tämä selain tai laite ei tue PWA-ilmoituksia.");
       return;
     }
 
@@ -53,7 +53,7 @@ export function NotificationTester({
       }
 
       if (permission !== "granted") {
-        setStatus("Ilmoituslupaa ei myonnetty.");
+        setStatus("Ilmoituslupaa ei myönnetty.");
         return;
       }
 
@@ -68,10 +68,10 @@ export function NotificationTester({
         }
       });
 
-      setStatus("Testi-ilmoitus lahetetty.");
+      setStatus("Testi-ilmoitus lähetetty.");
     } catch (error) {
       console.error("[notifications] test send failed", error);
-      setStatus("Testi-ilmoituksen lahetys epaonnistui.");
+      setStatus("Testi-ilmoituksen lähetys epäonnistui.");
     } finally {
       setIsSending(false);
     }
@@ -84,7 +84,7 @@ export function NotificationTester({
     }
 
     if (!("PushManager" in window) || !("serviceWorker" in navigator)) {
-      setStatus("Tama selain tai laite ei tue push-ilmoituksia.");
+      setStatus("Tämä selain tai laite ei tue push-ilmoituksia.");
       return;
     }
 
@@ -98,7 +98,7 @@ export function NotificationTester({
       }
 
       if (permission !== "granted") {
-        setStatus("Ilmoituslupaa ei myonnetty.");
+        setStatus("Ilmoituslupaa ei myönnetty.");
         return;
       }
 
@@ -121,10 +121,10 @@ export function NotificationTester({
         }
       });
 
-      setStatus("Push-ilmoitukset otettu kayttoon tälle laitteelle.");
+      setStatus("Push-ilmoitukset otettu käyttöön tälle laitteelle.");
     } catch (error) {
       console.error("[push] enable failed", error);
-      setStatus("Push-ilmoitusten kayttoonotto epaonnistui.");
+      setStatus("Push-ilmoitusten käyttöönotto epäonnistui.");
     } finally {
       setIsEnablingPush(false);
     }
@@ -144,16 +144,16 @@ export function NotificationTester({
       const subscription = await registration.pushManager.getSubscription();
 
       if (!subscription) {
-        setStatus("Talla laitteella ei ollut aktiivista push-tilausta.");
+        setStatus("Tällä laitteella ei ollut aktiivista push-tilausta.");
         return;
       }
 
       await deletePushSubscriptionAction(subscription.endpoint);
       await subscription.unsubscribe();
-      setStatus("Push-ilmoitukset poistettu taman laitteen osalta.");
+      setStatus("Push-ilmoitukset poistettu tämän laitteen osalta.");
     } catch (error) {
       console.error("[push] disable failed", error);
-      setStatus("Push-ilmoitusten poisto epaonnistui.");
+      setStatus("Push-ilmoitusten poisto epäonnistui.");
     } finally {
       setIsEnablingPush(false);
     }
@@ -170,10 +170,10 @@ export function NotificationTester({
 
     try {
       const result = await sendPushTestAction({ message });
-      setStatus(`Server-push lahetetty ${result.sentCount} laitteelle.`);
+      setStatus(`Server-push lähetetty ${result.sentCount} laitteelle.`);
     } catch (error) {
       console.error("[push] send failed", error);
-      setStatus(error instanceof Error ? error.message : "Server-push epaonnistui.");
+      setStatus(error instanceof Error ? error.message : "Server-push epäonnistui.");
     } finally {
       setIsSending(false);
     }
@@ -185,7 +185,7 @@ export function NotificationTester({
         <div>
           <h2 style={{ margin: 0 }}>PWA-ilmoitukset</h2>
           <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-            Ota pushit kayttoon tälle laitteelle ja laheta testiviesti palvelimelta.
+            Ota pushit käyttöön tälle laitteelle ja lähetä testiviesti palvelimelta.
           </p>
         </div>
         <span className="pill" data-variant="primary">
@@ -198,7 +198,7 @@ export function NotificationTester({
         <input
           value={message}
           onChange={(event) => setMessage(event.target.value)}
-          placeholder="Esim. Muista tarkistaa paivan tehtavat"
+          placeholder="Esim. Muista tarkistaa päivän tehtävät"
         />
       </label>
 
@@ -209,7 +209,7 @@ export function NotificationTester({
           onClick={() => void enablePushNotifications()}
           disabled={isEnablingPush || !pushConfigured}
         >
-          {isEnablingPush ? "Otetaan kayttoon..." : "Ota pushit kayttoon"}
+          {isEnablingPush ? "Otetaan käyttöön..." : "Ota pushit käyttöön"}
         </button>
         <button
           type="button"
@@ -217,10 +217,10 @@ export function NotificationTester({
           onClick={() => void disablePushNotifications()}
           disabled={isEnablingPush}
         >
-          Poista pushit talt laitteelta
+          Poista pushit tältä laitteelta
         </button>
         <button type="button" className="primary" onClick={() => void sendTestNotification()} disabled={isSending}>
-          {isSending ? "Lahetetaan..." : "Laheta testi-ilmoitus"}
+          {isSending ? "Lähetetään..." : "Lähetä testi-ilmoitus"}
         </button>
         <button
           type="button"
@@ -228,7 +228,7 @@ export function NotificationTester({
           onClick={() => void sendServerPush()}
           disabled={isSending || !pushConfigured}
         >
-          {isSending ? "Lahetetaan..." : "Laheta server-push"}
+          {isSending ? "Lähetetään..." : "Lähetä server-push"}
         </button>
       </div>
 
@@ -240,7 +240,7 @@ export function NotificationTester({
 
       {!pushConfigured ? (
         <p className="status" style={{ margin: "0.75rem 0 0" }}>
-          Aseta ymparistomuuttujat `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` ja `VAPID_SUBJECT`, jotta server-push toimii.
+          Aseta ympäristömuuttujat `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` ja `VAPID_SUBJECT`, jotta server-push toimii.
         </p>
       ) : null}
     </article>

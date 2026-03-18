@@ -106,17 +106,17 @@ export function ReviewSessionCard({
 
             <article className="card">
               <h3 style={{ marginTop: 0, marginBottom: "0.5rem" }}>
-                Kuinka vahvasti haluat palata tahan uudelleen?
+                Kuinka vahvasti haluat palata tähän uudelleen?
               </h3>
               <div className="actions">
                 <SubmitButton className="secondary" pendingText="Tallennetaan..." name="rating" value="2">
                   Kevyesti
                 </SubmitButton>
                 <SubmitButton className="primary" pendingText="Tallennetaan..." name="rating" value="3">
-                  Palaa tahan
+                  Palaa tähän
                 </SubmitButton>
                 <SubmitButton className="success" pendingText="Tallennetaan..." name="rating" value="4">
-                  Pida lahella
+                  Pidä lähellä
                 </SubmitButton>
               </div>
             </article>

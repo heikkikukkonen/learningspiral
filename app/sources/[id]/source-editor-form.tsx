@@ -37,7 +37,7 @@ export function SourceEditorForm({
   const [analysis, setAnalysis] = useState(initialAnalysis);
   const [tags, setTags] = useState(initialTags);
   const [tagInput, setTagInput] = useState("");
-  const [aiNote, setAiNote] = useState("AI voi kirkastaa, syventaa tai tiivistaa ajatusta nykyisten kenttien pohjalta.");
+  const [aiNote, setAiNote] = useState("AI voi kirkastaa, syventää tai tiivistää ajatusta nykyisten kenttien pohjalta.");
   const [tagNote, setTagNote] = useState("Voit luoda tagit pyynnosta tai lisata ne itse.");
   const [activeMode, setActiveMode] = useState<(typeof refineModes)[number]["id"] | null>(null);
   const [isRefining, setIsRefining] = useState(false);
@@ -79,7 +79,7 @@ export function SourceEditorForm({
             : `Analyysi paivitettiin tilassa "${result.mode}". Muista tallentaa muutokset.`
         );
       } catch (error) {
-        setAiNote(error instanceof Error ? error.message : "Analyysin paivitys epaonnistui.");
+        setAiNote(error instanceof Error ? error.message : "Analyysin päivitys epäonnistui.");
       } finally {
         setActiveMode(null);
         setIsRefining(false);
@@ -105,7 +105,7 @@ export function SourceEditorForm({
             : "Tageja ei saatu luotua nykyisista kentista."
         );
       } catch (error) {
-        setTagNote(error instanceof Error ? error.message : "Tagien luonti epaonnistui.");
+        setTagNote(error instanceof Error ? error.message : "Tagien luonti epäonnistui.");
       } finally {
         setIsGeneratingTags(false);
       }
@@ -223,7 +223,7 @@ export function SourceEditorForm({
             value={analysis}
             onChange={(event) => setAnalysis(event.target.value)}
             className="source-analysis-textarea"
-            placeholder="Jalosta ideaa pidemmalle: miksi tama on tarkea, mihin se liittyy, mita haluat muistaa."
+            placeholder="Jalosta ideaa pidemmälle: miksi tämä on tärkeä, mihin se liittyy, mitä haluat muistaa."
             required
           />
         </div>

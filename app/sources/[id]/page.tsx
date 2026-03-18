@@ -92,7 +92,7 @@ export default async function SourceDetailsPage({
           <h1>Idea</h1>
         </div>
         <article className="card">
-          <strong>Tietokanta ei ole yhteydessa</strong>
+          <strong>Tietokanta ei ole yhteydessä</strong>
           <p className="status" style={{ marginBottom: 0 }}>
             {loadError}
           </p>

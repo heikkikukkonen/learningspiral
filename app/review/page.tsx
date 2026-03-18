@@ -33,12 +33,12 @@ export default async function ReviewPage() {
     <section className="review-shell">
       <div className="page-header">
         <h1>Palaa ajatuksiin</h1>
-        <p className="muted">Yksi asia kerrallaan. Vastaa ensin itse, tarkista sitten suunta ja jatka eteenpain.</p>
+        <p className="muted">Yksi asia kerrallaan. Vastaa ensin itse, tarkista sitten suunta ja jatka eteenpäin.</p>
       </div>
 
       {loadError ? (
         <article className="card">
-          <strong>Tietokanta ei ole yhteydessa</strong>
+          <strong>Tietokanta ei ole yhteydessä</strong>
           <p className="status" style={{ marginBottom: 0 }}>
             {loadError}
           </p>
@@ -53,10 +53,10 @@ export default async function ReviewPage() {
       ) : (
         <article className="card">
           <p className="status" style={{ margin: 0 }}>
-            0 / {totalTodayCount} tehtavaa tanaan
+            0 / {totalTodayCount} tehtävää tänään
           </p>
           <p className="muted" style={{ marginBottom: 0 }}>
-            Ei uusia ajatuksia juuri nyt. Voit ensin hyvaksyta ehdotettuja kortteja idean jalostusnakyamassa.
+            Ei uusia ajatuksia juuri nyt. Voit ensin hyväksyä ehdotettuja kortteja idean jalostusnäkymässä.
           </p>
         </article>
       )}

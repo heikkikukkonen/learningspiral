@@ -35,8 +35,8 @@ async function parseJson<T>(response: Response): Promise<T> {
     } catch {
       if (!response.ok) {
         throw new Error(
-          `Pyynto epaonnistui (${response.status}). ${
-            responseText.slice(0, 200) || "Palvelin ei palauttanut luettavaa virheviestia."
+          `Pyyntö epäonnistui (${response.status}). ${
+            responseText.slice(0, 200) || "Palvelin ei palauttanut luettavaa virheviestiä."
           }`
         );
       }
@@ -48,7 +48,7 @@ async function parseJson<T>(response: Response): Promise<T> {
     throw new Error(
       json?.error ||
         json?.message ||
-        `Pyynto epaonnistui (${response.status}).`
+        `Pyyntö epäonnistui (${response.status}).`
     );
   }
 
@@ -223,7 +223,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       return true;
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Tallennus epaonnistui. Tarkista palvelinlokit."
+        err instanceof Error ? err.message : "Tallennus epäonnistui. Tarkista palvelinlokit."
       );
       return false;
     } finally {
@@ -277,7 +277,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       setAsset(json.asset ?? null);
       setRawInputValue(json.rawInput);
       setTitleValue((current) =>
-        current || inferCaptureTitle(json.rawInput, file.name.replace(/\.[^.]+$/, "") || "Aanitallenne")
+        current || inferCaptureTitle(json.rawInput, file.name.replace(/\.[^.]+$/, "") || "Äänitallenne")
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Audio analysis failed.");
@@ -377,12 +377,12 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   const imageTranscriptCharacterCount = rawInputValue.trim().length;
   const voiceRawCharacterCount = rawInputValue.trim().length;
   const isTextProcessing = textSaveStage !== "idle";
-  const imageDropzoneLabel = isImageDragActive ? "Pudota kuva tahan" : "Raahaa tai liita kuva";
+  const imageDropzoneLabel = isImageDragActive ? "Pudota kuva tähän" : "Raahaa tai liitä kuva";
   const textProcessingLabel =
     textSaveStage === "saving" ? "Tallennetaan ideaa" : "AI kasittelee kirjoittamaasi ajatusta";
   const textProcessingDetail =
     textSaveStage === "saving"
-      ? "Luomme idealle uuden merkinnan ja siirramme sinut seuraavaksi muokkausnakymaan."
+      ? "Luomme idealle uuden merkinnän ja siirrämme sinut seuraavaksi muokkausnäkymään."
       : "Tarkistamme tekstin talteen sopivaan muotoon ennen kuin idea tallennetaan.";
 
   return (
@@ -420,7 +420,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               <div className="capture-text-copy">
                 <h2 style={{ margin: 0 }}>Kirjoita ajatus</h2>
                 <p className="status capture-text-status">
-                  Tallenna alkuperainen teksti sellaisenaan. Jalostus tapahtuu vasta sources-nakymassa.
+                  Tallenna alkuperäinen teksti sellaisenaan. Jalostus tapahtuu vasta sources-näkymässä.
                 </p>
               </div>
             </div>
@@ -430,7 +430,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               <textarea
                 ref={textAreaRef}
                 value={textValue}
-                placeholder="Kirjoita ajatuksesi tahan..."
+                placeholder="Kirjoita ajatuksesi tähän..."
                 onChange={(event) => setTextValue(event.target.value)}
                 disabled={isTextProcessing}
                 aria-busy={isTextProcessing}
@@ -553,14 +553,14 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                         imageInputRef.current?.click();
                       }
                     }}
-                    aria-label="Raahaa, liita tai valitse kuva"
+                    aria-label="Raahaa, liitä tai valitse kuva"
                     tabIndex={0}
                   >
                     <span className="capture-image-dropzone-icon" aria-hidden="true">
                       {isImageDragActive ? "\u2193" : "+"}
                     </span>
                     <strong>{imageDropzoneLabel}</strong>
-                    <span>PNG, JPG tai screenshot. Klikkaa mobiilissa, raahaa desktopissa tai liita leikepoydalta.</span>
+                    <span>PNG, JPG tai screenshot. Klikkaa mobiilissa, raahaa desktopissa tai liitä leikepöydältä.</span>
                   </button>
                 )}
 
@@ -730,7 +730,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 <div className="capture-voice-preview-shell">
                   <div className="capture-voice-preview-meta">
                     <span className="pill" data-variant="primary">
-                      Aani litteroitu
+                      Ääni litteroitu
                     </span>
                     <button
                       type="button"
@@ -767,7 +767,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                       onClick={() =>
                         void saveCapture("audio", {
                           title: inferEditedCaptureTitle(
-                            asset?.fileName.replace(/\.[^.]+$/, "") || "Aanitallenne"
+                            asset?.fileName.replace(/\.[^.]+$/, "") || "Äänitallenne"
                           )
                         })
                       }
