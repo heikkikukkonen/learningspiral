@@ -5,16 +5,21 @@ export const oauthProviderLabels = {
   apple: "Apple"
 } satisfies Partial<Record<Provider, string>>;
 
-const supportedOauthProviders = Object.keys(oauthProviderLabels) as Provider[];
+export type EnabledOauthProvider = keyof typeof oauthProviderLabels;
+
+const supportedOauthProviders = Object.keys(oauthProviderLabels) as EnabledOauthProvider[];
 
 function parseEnabledProviders(value: string | undefined) {
   if (!value) return [];
 
   return value
     .split(",")
-    .map((entry) => entry.trim().toLowerCase() as Provider)
+    .map((entry) => entry.trim().toLowerCase())
+    .filter((provider): provider is EnabledOauthProvider => {
+      return supportedOauthProviders.includes(provider as EnabledOauthProvider);
+    })
     .filter((provider, index, providers) => {
-      return supportedOauthProviders.includes(provider) && providers.indexOf(provider) === index;
+      return providers.indexOf(provider) === index;
     });
 }
 
@@ -23,5 +28,5 @@ export function getEnabledOauthProviders() {
 }
 
 export function isEnabledOauthProvider(provider: Provider) {
-  return getEnabledOauthProviders().includes(provider);
+  return (supportedOauthProviders as Provider[]).includes(provider);
 }
