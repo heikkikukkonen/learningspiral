@@ -31,7 +31,7 @@ npm install
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `NEXT_PUBLIC_SITE_URL` (optional, recommended for auth redirects in production)
+- `NEXT_PUBLIC_SITE_URL` (optional, recommended for auth redirects in production, e.g. `https://noema.my`)
 - `NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS` (optional, comma-separated list such as `google` or `google,apple`)
 - `OPENAI_API_KEY` (for live LLM responses and card generation)
 - `OPENAI_MODEL` (optional, defaults to `gpt-4.1-mini`)
@@ -59,7 +59,7 @@ If you want Google or Apple login, configure both sides:
    - local Supabase CLI: `http://127.0.0.1:54321/auth/v1/callback`
 3. In Supabase `Authentication -> URL Configuration`, allow your app callback URL:
    - local: `http://localhost:3000/auth/callback`
-   - production: `https://your-domain/auth/callback`
+   - production: `https://noema.my/auth/callback`
 4. Set `NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS=google,apple` in `.env.local` so the login page only shows providers that are actually enabled for this deployment.
 
 ## Email Confirmation Delivery
@@ -76,7 +76,7 @@ If you want to use SendGrid, configure it in Supabase Dashboard:
    - username: `apikey`
    - password: your SendGrid API key
 4. Verify the sender identity in SendGrid and use that same verified sender in Supabase.
-5. In `Authentication -> URL Configuration`, make sure your app callback URL includes `https://your-domain/auth/callback`.
+5. In `Authentication -> URL Configuration`, make sure your app callback URL includes `https://noema.my/auth/callback`.
 
 If SMTP delivery fails, the login page now surfaces the Supabase error message instead of only a generic signup failure.
 
