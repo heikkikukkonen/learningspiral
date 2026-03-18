@@ -157,7 +157,11 @@ const storySteps: StoryStep[] = [
   }
 ];
 
-export function StoryExperience() {
+type StoryExperienceProps = {
+  mode?: "landing" | "story";
+};
+
+export function StoryExperience({ mode = "story" }: StoryExperienceProps) {
   useEffect(() => {
     const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-story-step]"));
     const observer = new IntersectionObserver(
@@ -181,6 +185,38 @@ export function StoryExperience() {
 
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (mode !== "landing") {
+      return;
+    }
+
+    if (typeof window === "undefined" || window.scrollY > 8 || window.location.hash) {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (mediaQuery.matches) {
+      return;
+    }
+
+    const sessionKey = "noema-landing-scroll-nudge-seen";
+    if (window.sessionStorage.getItem(sessionKey) === "true") {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      window.scrollTo({
+        top: Math.min(window.innerHeight * 0.32, 220),
+        behavior: "smooth"
+      });
+      window.sessionStorage.setItem(sessionKey, "true");
+    }, 1400);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [mode]);
+
+  const isLanding = mode === "landing";
 
   return (
     <div className="story-page">
@@ -211,14 +247,16 @@ export function StoryExperience() {
         <div className="story-backdrop-spiral" />
       </div>
 
-      <div className="story-intro-bar">
-        <Link href="/" className="story-mini-link">
-          Etusivulle
-        </Link>
-        <span className="story-mini-label">Noeman tarina</span>
-      </div>
+      {!isLanding ? (
+        <div className="story-intro-bar">
+          <Link href="/" className="story-mini-link">
+            Etusivulle
+          </Link>
+          <span className="story-mini-label">Noeman tarina</span>
+        </div>
+      ) : null}
 
-      {storySteps.map((step) => (
+      {storySteps.map((step, index) => (
         <section
           key={step.key}
           data-story-step
@@ -262,6 +300,23 @@ export function StoryExperience() {
                   Katso ajatusverkko
                 </Link>
               </div>
+            ) : null}
+
+            {isLanding && index === 0 ? (
+              <button
+                type="button"
+                className="story-scroll-cue"
+                onClick={() => {
+                  const nextSection = document.querySelectorAll<HTMLElement>("[data-story-step]")[1];
+                  nextSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                aria-label="Vieritä seuraavaan kohtaan"
+              >
+                <span className="story-scroll-cue-label">Vieritä alas</span>
+                <span className="story-scroll-cue-arrow" aria-hidden="true">
+                  ↓
+                </span>
+              </button>
             ) : null}
           </div>
         </section>

@@ -3685,6 +3685,38 @@ svg path[stroke="#067647"] {
   font-size: clamp(3.5rem, 9vw, 6.4rem);
 }
 
+.story-scroll-cue {
+  display: inline-grid;
+  gap: 0.45rem;
+  justify-items: center;
+  margin-top: 1.4rem;
+  padding: 0.85rem 1rem 0.7rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.52);
+  box-shadow:
+    0 16px 30px rgba(32, 62, 70, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  color: #35515f;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: storyCueFloat 2.6s ease-in-out infinite;
+}
+
+.story-scroll-cue-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.story-scroll-cue-arrow {
+  font-size: 1.25rem;
+  line-height: 1;
+  animation: storyCueArrow 1.4s ease-in-out infinite;
+}
+
 .story-step[data-variant="flow"] .story-step-line,
 .story-step[data-variant="cta"] .story-step-line {
   max-width: none;
@@ -3790,6 +3822,30 @@ svg path[stroke="#067647"] {
   }
 }
 
+@keyframes storyCueFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(8px);
+  }
+}
+
+@keyframes storyCueArrow {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.75;
+  }
+
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
 @keyframes storyDriftA {
   0%,
   100% {
@@ -3874,12 +3930,23 @@ svg path[stroke="#067647"] {
     padding: 1.6rem 1rem;
   }
 
+  .story-scroll-cue {
+    margin-top: 0.8rem;
+  }
+
   .story-step-actions {
     width: 100%;
   }
 
   .story-step-actions .button-link {
     width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-scroll-cue,
+  .story-scroll-cue-arrow {
+    animation: none;
   }
 }
 
