@@ -20,7 +20,7 @@ const storySteps: StoryStep[] = [
   },
   {
     key: "core",
-    title: "Ajattelu, joka syvenee"
+    title: "Ajattelu, joka syvenee — ja muuttuu toiminnaksi"
   },
   {
     key: "flow",
@@ -227,7 +227,18 @@ export function StoryExperience() {
         >
           <div className="story-step-shell">
             {step.kicker ? <p className="story-step-kicker">{step.kicker}</p> : null}
-            {step.title ? <h1 className="story-step-title">{step.title}</h1> : null}
+            {step.title ? (
+              <h1 className="story-step-title">
+                {step.key === "core" ? (
+                  <span className="story-step-title-stack">
+                    <span>Where thinking deepens</span>
+                    <span className="story-step-title-emphasis">and turns into meaningful action</span>
+                  </span>
+                ) : (
+                  step.title
+                )}
+              </h1>
+            ) : null}
             {step.lines ? (
               <div className="story-step-lines">
                 {step.lines.map((line, index) => (

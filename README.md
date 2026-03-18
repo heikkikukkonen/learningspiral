@@ -32,6 +32,7 @@ npm install
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `NEXT_PUBLIC_SITE_URL` (optional, recommended for auth redirects in production)
+- `NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS` (optional, comma-separated list such as `google` or `google,apple`)
 - `OPENAI_API_KEY` (for live LLM responses and card generation)
 - `OPENAI_MODEL` (optional, defaults to `gpt-4.1-mini`)
 
@@ -47,6 +48,19 @@ npm install
 ```bash
 npm run dev
 ```
+
+## OAuth Setup
+
+If you want Google or Apple login, configure both sides:
+
+1. In Supabase Dashboard, open `Authentication -> Providers` and enable the providers you want.
+2. In Google Cloud and Apple Developer, use your Supabase callback URL:
+   - production: `https://<project-ref>.supabase.co/auth/v1/callback`
+   - local Supabase CLI: `http://127.0.0.1:54321/auth/v1/callback`
+3. In Supabase `Authentication -> URL Configuration`, allow your app callback URL:
+   - local: `http://localhost:3000/auth/callback`
+   - production: `https://your-domain/auth/callback`
+4. Set `NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS=google,apple` in `.env.local` so the login page only shows providers that are actually enabled for this deployment.
 
 ## Database Changes in 0.3.0
 

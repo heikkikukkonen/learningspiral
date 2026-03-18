@@ -132,7 +132,10 @@ export default function HomePage() {
                 <Image src="/icon.png" alt="Noema logo" width={300} height={180} priority />
               </div>
               <h1 className="home-brand-title">Noema</h1>
-              <p className="home-brand-tagline">Where thinking deepens</p>
+              <p className="home-brand-tagline">
+                <span>Where thinking deepens</span>
+                <span className="home-brand-tagline-emphasis">and turns into meaningful action</span>
+              </p>
             </div>
             <div className="home-list">
               {homeActions.map((action) => (

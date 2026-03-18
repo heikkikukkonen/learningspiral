@@ -4,13 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Provider } from "@supabase/supabase-js";
 import { getBaseUrl, getSafeNextPath } from "@/lib/auth";
+import { isEnabledOauthProvider } from "@/lib/oauth-providers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function asString(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value.trim() : "";
 }
-
-const oauthProviders: Provider[] = ["google", "apple", "github", "azure"];
 
 export async function signInAction(formData: FormData) {
   const email = asString(formData.get("email")).toLowerCase();
@@ -63,7 +62,7 @@ export async function signInWithOAuthAction(formData: FormData) {
   const providerValue = asString(formData.get("provider")) as Provider;
   const nextPath = getSafeNextPath(asString(formData.get("next")));
 
-  if (!oauthProviders.includes(providerValue)) {
+  if (!isEnabledOauthProvider(providerValue)) {
     redirect(`/login?error=oauth-provider&next=${encodeURIComponent(nextPath)}`);
   }
 

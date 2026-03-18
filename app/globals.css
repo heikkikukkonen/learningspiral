@@ -99,10 +99,17 @@ a {
 }
 
 .logo-tagline {
+  display: grid;
+  gap: 0.1rem;
   font-size: 0.64rem;
   line-height: 1.1;
   color: #8e97ae;
   letter-spacing: 0.01em;
+}
+
+.logo-tagline-emphasis {
+  color: #5f6f86;
+  font-weight: 600;
 }
 
 .header-actions {
@@ -2107,6 +2114,7 @@ button.danger {
 .home-brand-tagline-emphasis {
   color: #55717d;
   font-size: 0.98em;
+  font-weight: 600;
 }
 
 .home-list {
@@ -3640,6 +3648,17 @@ svg path[stroke="#067647"] {
   line-height: 0.98;
   letter-spacing: -0.05em;
   color: #31445a;
+}
+
+.story-step-title-stack {
+  display: grid;
+  gap: 0.14em;
+}
+
+.story-step-title-emphasis {
+  color: #49677a;
+  font-size: 0.9em;
+  font-weight: 600;
 }
 
 .story-step-lines {

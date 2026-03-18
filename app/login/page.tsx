@@ -1,13 +1,7 @@
 import { SubmitButton } from "@/app/components/submit-button";
 import { getCurrentUser, getCurrentUserProfile, getSafeNextPath } from "@/lib/auth";
+import { getEnabledOauthProviders, oauthProviderLabels } from "@/lib/oauth-providers";
 import { signInAction, signInWithOAuthAction, signUpAction } from "./actions";
-
-const oauthProviders = [
-  { id: "google", label: "Google" },
-  { id: "apple", label: "Apple" },
-  { id: "github", label: "GitHub" },
-  { id: "azure", label: "Microsoft" }
-] as const;
 
 function getStatusMessage(searchParams?: Record<string, string | undefined>) {
   if (searchParams?.success === "check-email") {
@@ -26,7 +20,7 @@ function getStatusMessage(searchParams?: Record<string, string | undefined>) {
     case "oauth-start":
       return "OAuth-kirjautumisen aloitus epäonnistui. Varmista, että provider on aktivoitu Supabasessa.";
     case "oauth-provider":
-      return "Valittu kirjautumistapa ei ole tuettu.";
+      return "Valittu kirjautumistapa ei ole käytössä tässä ympäristössä.";
     case "auth-callback":
       return "Tilin vahvistus tai kirjautumisen viimeistely epäonnistui. Kokeile linkkiä uudelleen.";
     default:
@@ -39,6 +33,10 @@ export default async function LoginPage({
 }: {
   searchParams?: Record<string, string | undefined>;
 }) {
+  const oauthProviders = getEnabledOauthProviders().map((provider) => ({
+    id: provider,
+    label: oauthProviderLabels[provider] ?? provider
+  }));
   const user = await getCurrentUser();
   const profile = await getCurrentUserProfile();
   const nextPath = getSafeNextPath(searchParams?.next);
@@ -134,21 +132,25 @@ export default async function LoginPage({
             </SubmitButton>
           </form>
 
-          <div className="auth-divider">tai jatka palvelulla</div>
-          <div className="auth-provider-list">
-            {oauthProviders.map((provider) => (
-              <form action={signInWithOAuthAction} key={provider.id}>
-                <input type="hidden" name="next" value={nextPath} />
-                <input type="hidden" name="provider" value={provider.id} />
-                <SubmitButton
-                  className="secondary auth-provider-button"
-                  pendingText="Siirrytään..."
-                >
-                  Jatka {provider.label}
-                </SubmitButton>
-              </form>
-            ))}
-          </div>
+          {oauthProviders.length ? (
+            <>
+              <div className="auth-divider">tai jatka palvelulla</div>
+              <div className="auth-provider-list">
+                {oauthProviders.map((provider) => (
+                  <form action={signInWithOAuthAction} key={provider.id}>
+                    <input type="hidden" name="next" value={nextPath} />
+                    <input type="hidden" name="provider" value={provider.id} />
+                    <SubmitButton
+                      className="secondary auth-provider-button"
+                      pendingText="Siirrytään..."
+                    >
+                      Jatka {provider.label}
+                    </SubmitButton>
+                  </form>
+                ))}
+              </div>
+            </>
+          ) : null}
         </article>
 
         <article className={`card auth-card ${mode === "signup" ? "is-active" : ""}`}>
