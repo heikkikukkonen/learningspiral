@@ -1,168 +1,153 @@
 import Image from "next/image";
 import Link from "next/link";
-import { HomeStory } from "@/app/components/home-story";
+import { getCurrentUser } from "@/lib/auth";
 
-const homeActions = [
+const storyMoments = [
   {
-    title: "Kirjoita ajatus",
-    href: "/capture?mode=text",
-    accent: "teal",
-    icon: "pen"
+    eyebrow: "Tallenna",
+    title: "Ajatus ei katoa heti, kun saat sen kiinni.",
+    body: "Kirjoita, kuvaa tai sanoita hetki talteen silloin kun se on elävä. Noema tekee merkityksellisestä ajatuksesta näkyvän."
   },
   {
-    title: "Lisaa kuva",
-    href: "/capture?mode=image",
-    accent: "teal",
-    icon: "image"
+    eyebrow: "Palaa",
+    title: "Oleellinen ajatus löytää takaisin luoksesi.",
+    body: "Sen sijaan että hyvät oivallukset hautautuvat muistiinpanoihin, Noema nostaa ne takaisin harkinnan piiriin oikealla hetkellä."
   },
   {
-    title: "Sanele ajatus",
-    href: "/capture?mode=voice",
-    accent: "deep",
-    icon: "mic"
-  },
-  {
-    title: "Jatka ajattelua",
-    href: "/review",
-    accent: "soft",
-    icon: "brain"
+    eyebrow: "Syvennä",
+    title: "Ajatus kasvaa yhteyksien kautta.",
+    body: "Kun palaat samaan teemaan uudelleen, ymmärrys kerrostuu. Yksittäinen havainto muuttuu suunnaksi ja toiminnaksi."
   }
 ] as const;
 
-function ActionIcon({ icon }: { icon: (typeof homeActions)[number]["icon"] }) {
-  if (icon === "pen") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          d="M4.8 18.4V20h1.6l10.5-10.5-1.6-1.6L4.8 18.4z"
-          fill="none"
-          stroke="currentColor"
-          strokeLinejoin="round"
-          strokeWidth="1.6"
-        />
-        <path d="M14.5 6.9l1.6-1.6a1.5 1.5 0 012.1 0l.5.5a1.5 1.5 0 010 2.1l-1.6 1.6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" />
-        <path d="M13.7 7.1l3.2 3.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
-      </svg>
-    );
-  }
-
-  if (icon === "image") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
-        <circle cx="8.5" cy="10" r="1.4" fill="currentColor" />
-        <path
-          d="M6 16l3.8-3.7a1 1 0 011.4 0l2.3 2.3 1.6-1.6a1 1 0 011.4 0L19 15.5"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.6"
-        />
-      </svg>
-    );
-  }
-
-  if (icon === "mic") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="9" y="4" width="6" height="9.8" rx="3" fill="none" stroke="currentColor" strokeWidth="1.6" />
-        <path d="M6.7 11.4a5.3 5.3 0 0010.6 0" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
-        <path d="M12 16.8v3.1" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
-        <path d="M9.4 20h5.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
-      </svg>
-    );
-  }
-
-  if (icon === "brain") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          d="M9.4 6.3a2.9 2.9 0 00-5.2 1.8c0 .6.1 1.1.4 1.6A3.2 3.2 0 004 15.6c.8.8 1.9 1.2 3 1.2h1.5"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-        />
-        <path
-          d="M14.6 6.3a2.9 2.9 0 015.2 1.8c0 .6-.1 1.1-.4 1.6a3.2 3.2 0 01.5 5.9c-.8.8-1.9 1.2-3 1.2h-1.5"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-        />
-        <path
-          d="M12 5.3v13.2M9.2 8.4c.7.5 1.1 1.4 1.1 2.4s-.4 1.9-1.1 2.4m5.6-4.8c-.7.5-1.1 1.4-1.1 2.4s.4 1.9 1.1 2.4M8.8 16c.8-.2 1.5-.1 2.1.2.4.2.7.5 1.1.9m3.2-1.1c-.8-.2-1.5-.1-2.1.2-.4.2-.7.5-1.1.9"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-        />
-      </svg>
-    );
-  }
+export default async function HomePage() {
+  const user = await getCurrentUser();
+  const primaryHref = user ? "/sources" : "/login?mode=signup";
+  const primaryLabel = user ? "Siirry omaan Noemaasi" : "Aloita oma Noemasi";
+  const secondaryHref = user ? "/capture?mode=text" : "/login";
+  const secondaryLabel = user ? "Tallenna ajatus" : "Kirjaudu";
 
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M12 3.5l2.2 4.6 5 .7-3.6 3.5.9 4.9-4.5-2.4-4.5 2.4.9-4.9-3.6-3.5 5-.7L12 3.5z"
-        fill="none"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="1.6"
-      />
-      <path d="M12 9v3.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
-      <circle cx="12" cy="15.5" r="0.9" fill="currentColor" />
-    </svg>
-  );
-}
+    <div className="landing-page">
+      <section className="landing-hero">
+        <div className="landing-hero-brand">
+          <Image src="/icon.png" alt="Noema" width={82} height={48} priority />
+          <span>Noema</span>
+        </div>
 
-export default function HomePage() {
-  return (
-    <section className="home-shell home-shell-mobile">
-      <div className="home-phone-card">
-        <div className="home-hero">
-          <div className="home-visual home-visual-main" aria-hidden="true" />
-          <div className="home-hero-overlay">
-            <div className="home-brand">
-              <div className="home-brand-mark">
-                <Image src="/icon.png" alt="Noema logo" width={300} height={180} priority />
-              </div>
-              <h1 className="home-brand-title">Noema</h1>
-              <p className="home-brand-tagline">
-                <span>Where thinking deepens</span>
-                <span className="home-brand-tagline-emphasis">and turns into meaningful action</span>
-              </p>
-            </div>
-            <div className="home-list">
-              {homeActions.map((action) => (
-                <Link
-                  key={action.title}
-                  href={action.href}
-                  className="home-list-card"
-                  data-accent={action.accent}
-                >
-                  <span className="home-list-icon" aria-hidden="true">
-                    <ActionIcon icon={action.icon} />
-                  </span>
-                  <span className="home-list-copy">
-                    <strong>{action.title}</strong>
-                  </span>
-                  <span className="home-list-arrow" aria-hidden="true">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                    </svg>
-                  </span>
-                </Link>
-              ))}
-            </div>
-            <HomeStory />
+        <div className="landing-hero-copy">
+          <h1>Ajattelu, joka syvenee</h1>
+          <p className="landing-hero-subtitle">ja muuttuu merkitykselliseksi toiminnaksi</p>
+          <p className="landing-hero-lead">Se, mihin et palaa, katoaa.</p>
+          <p className="landing-hero-body">
+            Noema tuo ajatuksesi takaisin ja vie ne pidemmälle.
+          </p>
+        </div>
+
+        <div className="landing-flow" aria-hidden="true">
+          <svg viewBox="0 0 1200 420" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="landingFlowStroke" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="rgba(227,247,255,0.25)" />
+                <stop offset="18%" stopColor="#dff9ff" />
+                <stop offset="50%" stopColor="#9de8f5" />
+                <stop offset="82%" stopColor="#b1f7ff" />
+                <stop offset="100%" stopColor="#fff4f1" />
+              </linearGradient>
+              <radialGradient id="landingOrb" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#ffffff" />
+                <stop offset="38%" stopColor="#baf8ff" />
+                <stop offset="100%" stopColor="rgba(118, 225, 237, 0.08)" />
+              </radialGradient>
+            </defs>
+            <path
+              className="landing-flow-stroke landing-flow-stroke-back"
+              d="M104 220C80 126 190 100 302 124C414 148 408 270 536 262C678 252 706 172 838 186C934 196 980 258 1010 282"
+            />
+            <path
+              className="landing-flow-stroke landing-flow-stroke-front"
+              d="M106 218C86 136 196 108 302 134C412 162 406 278 538 270C680 262 710 178 842 196C934 208 978 260 1008 284"
+            />
+            <circle className="landing-flow-node" cx="402" cy="149" r="16" fill="url(#landingOrb)" />
+            <circle className="landing-flow-node" cx="724" cy="231" r="18" fill="url(#landingOrb)" />
+            <circle className="landing-flow-bloom" cx="1007" cy="282" r="36" fill="url(#landingOrb)" />
+            <circle className="landing-flow-orb" cx="1007" cy="282" r="86" fill="url(#landingOrb)" />
+          </svg>
+
+          <div className="landing-flow-label landing-flow-label-save">Tallenna</div>
+          <div className="landing-flow-label landing-flow-label-return">Palaa</div>
+          <div className="landing-flow-label landing-flow-label-deepen">Syvennä</div>
+          <div className="landing-flow-label landing-flow-label-action">Merkityksellinen toiminta</div>
+        </div>
+
+        <div className="landing-hero-actions">
+          <Link href={primaryHref} className="button-link primary landing-primary-cta">
+            {primaryLabel}
+          </Link>
+          <Link href={secondaryHref} className="button-link secondary landing-secondary-cta">
+            {secondaryLabel}
+          </Link>
+        </div>
+
+        <div className="landing-hero-meta">
+          {!user ? (
+            <Link href="/login?mode=signup" className="landing-inline-link">
+              Rekisteröidy
+            </Link>
+          ) : null}
+          <Link href="/story" className="landing-inline-link">
+            Lue lisää
+          </Link>
+        </div>
+      </section>
+
+      <section id="scroll-story" className="landing-story">
+        <div className="landing-story-intro">
+          <span className="pill" data-variant="primary">
+            Scroll story
+          </span>
+          <h2>Ajatus rakentuu kerros kerrokselta.</h2>
+          <p>
+            Landing jatkaa samaa virtaa kuin kuvassa: ensin löydät ajatuksen, sitten palaat siihen,
+            ja lopulta siitä syntyy jotain, joka näkyy toiminnassa.
+          </p>
+        </div>
+
+        <div className="landing-story-rail" aria-hidden="true" />
+
+        <div className="landing-story-grid">
+          {storyMoments.map((moment, index) => (
+            <article key={moment.eyebrow} className="landing-story-card">
+              <span className="landing-story-index">0{index + 1}</span>
+              <span className="landing-story-eyebrow">{moment.eyebrow}</span>
+              <h3>{moment.title}</h3>
+              <p>{moment.body}</p>
+            </article>
+          ))}
+        </div>
+
+        <article className="landing-story-quote">
+          <p>&ldquo;Se, mihin et palaa, katoaa. Noema on tehty tuomaan se takaisin.&rdquo;</p>
+        </article>
+
+        <div className="landing-story-footer">
+          <div>
+            <h3>Haluatko nähdä koko tarinan?</h3>
+            <p>
+              Varsinainen visuaalinen scroll story on edelleen oma kokemuksensa, jonka kautta voi
+              syventyä Noeman ajatukseen rauhassa.
+            </p>
+          </div>
+          <div className="landing-story-actions">
+            <Link href="/story" className="button-link secondary">
+              Avaa scroll story
+            </Link>
+            <Link href="/login?mode=signup" className="button-link primary">
+              Rekisteröidy
+            </Link>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
