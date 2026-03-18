@@ -3922,6 +3922,21 @@ svg path[stroke="#067647"] {
   min-height: 2.1rem;
 }
 
+.auth-header-link-mobile,
+.auth-header-mobile-form {
+  display: none;
+}
+
+.auth-header-icon-button {
+  padding: 0;
+  border: 1px solid rgba(208, 217, 229, 0.92);
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 8px 20px rgba(110, 130, 158, 0.12);
+  cursor: pointer;
+}
+
 .auth-shell {
   display: grid;
   gap: 1rem;
@@ -4090,13 +4105,30 @@ svg path[stroke="#067647"] {
   }
 
   .topbar-actions {
-    width: 100%;
-    justify-content: space-between;
+    width: auto;
+    margin-left: auto;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
   }
 
-  .auth-header-shell {
-    width: 100%;
-    justify-content: space-between;
+  .auth-header-shell-desktop,
+  .auth-header-link-desktop {
+    display: none;
+  }
+
+  .auth-header-link-mobile,
+  .auth-header-mobile-form {
+    display: inline-flex;
+  }
+
+  .auth-header-mobile-form {
+    margin: 0;
+  }
+
+  .auth-header-icon-button,
+  .auth-header-link-mobile {
+    width: 2.3rem;
+    height: 2.3rem;
   }
 }
 
