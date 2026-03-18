@@ -108,24 +108,13 @@ function ActionIcon({ icon }: { icon: (typeof homeActions)[number]["icon"] }) {
   return null;
 }
 
-export default function AppHomePage({
-  searchParams
-}: {
-  searchParams?: { activated?: string };
-}) {
-  const accountActivated = searchParams?.activated === "1";
-
+export default function AppHomePage() {
   return (
     <section className="home-shell home-shell-mobile">
       <div className="home-phone-card">
         <div className="home-hero">
           <div className="home-visual home-visual-main" aria-hidden="true" />
           <div className="home-hero-overlay">
-            {accountActivated ? (
-              <article className="card auth-status auth-status-success">
-                Tili on nyt aktivoitu. Tervetuloa sisaan Noemaan.
-              </article>
-            ) : null}
             <div className="home-brand">
               <div className="home-brand-mark">
                 <Image src="/icon.png" alt="Noema logo" width={300} height={180} priority />

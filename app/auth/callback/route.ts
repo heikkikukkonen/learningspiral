@@ -3,17 +3,15 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getSafeNextPath } from "@/lib/auth";
 
-function getPostAuthRedirectPath(nextPath: string) {
-  return nextPath === "/" ? "/app" : nextPath;
+function buildRedirectUrl(origin: string, nextPath: string) {
+  return new URL(nextPath, origin);
 }
 
-function buildRedirectUrl(origin: string, nextPath: string, activated = false) {
-  const redirectUrl = new URL(getPostAuthRedirectPath(nextPath), origin);
-
-  if (activated) {
-    redirectUrl.searchParams.set("activated", "1");
-  }
-
+function buildSignupActivationRedirect(origin: string, nextPath: string) {
+  const redirectUrl = new URL("/login", origin);
+  redirectUrl.searchParams.set("mode", "signin");
+  redirectUrl.searchParams.set("success", "activated");
+  redirectUrl.searchParams.set("next", nextPath);
   return redirectUrl;
 }
 
@@ -39,7 +37,12 @@ export async function GET(request: NextRequest) {
     });
 
     if (!error) {
-      return NextResponse.redirect(buildRedirectUrl(url.origin, nextPath, type === "signup"));
+      if (type === "signup") {
+        await supabase.auth.signOut();
+        return NextResponse.redirect(buildSignupActivationRedirect(url.origin, nextPath));
+      }
+
+      return NextResponse.redirect(buildRedirectUrl(url.origin, nextPath));
     }
   }
 

@@ -9,8 +9,12 @@ function getStatusMessage(searchParams?: Record<string, string | undefined>) {
   const authErrorMessage = searchParams?.errorMessage?.trim();
   const authErrorCode = searchParams?.errorCode?.trim();
 
+  if (searchParams?.success === "activated") {
+    return "Tili on aktivoitu. Kirjaudu nyt sisaan.";
+  }
+
   if (searchParams?.success === "check-email") {
-    return "Rekisteröityminen onnistui. Vahvista tilisi sähköpostissa olevasta linkistä ennen ensimmäistä kirjautumista.";
+    return "Rekisteroityminen onnistui. Vahvista tilisi sahkopostissa olevasta linkista ennen ensimmaista kirjautumista.";
   }
 
   if (searchParams?.signedOut === "1") {
@@ -20,26 +24,26 @@ function getStatusMessage(searchParams?: Record<string, string | undefined>) {
   switch (searchParams?.error) {
     case "signin":
       if (authErrorCode === "email_not_confirmed" || authErrorMessage === "Email not confirmed") {
-        return "Tili on luotu, mutta sähköpostiosoitetta ei ole vielä vahvistettu. Avaa vahvistusviesti ja kokeile sitten uudelleen.";
+        return "Tili on luotu, mutta sahkopostiosoitetta ei ole viela vahvistettu. Avaa vahvistusviesti ja kokeile sitten uudelleen.";
       }
-      return "Kirjautuminen epäonnistui. Tarkista sähköposti ja salasana.";
+      return "Kirjautuminen epaonnistui. Tarkista sahkoposti ja salasana.";
     case "signup":
       if (authErrorMessage?.toLowerCase().includes("error sending confirmation email")) {
-        return "Rekisteröityminen epäonnistui, koska Supabase ei saanut lähetettyä vahvistusviestiä. Tarkista Supabasen SMTP-asetukset ja SendGrid-integraatio.";
+        return "Rekisteroityminen epaonnistui, koska Supabase ei saanut lahetettya vahvistusviestia. Tarkista Supabasen SMTP-asetukset ja SendGrid-integraatio.";
       }
       if (authErrorMessage?.toLowerCase().includes("rate limit")) {
-        return "Vahvistusviestejä on pyydetty liian nopeasti. Odota hetki ja kokeile uudelleen.";
+        return "Vahvistusviesteja on pyydetty liian nopeasti. Odota hetki ja kokeile uudelleen.";
       }
       if (authErrorMessage) {
-        return `Rekisteröityminen epäonnistui: ${authErrorMessage}`;
+        return `Rekisteroityminen epaonnistui: ${authErrorMessage}`;
       }
-      return "Rekisteröityminen epäonnistui. Tarkista tiedot tai kokeile toista sähköpostia.";
+      return "Rekisteroityminen epaonnistui. Tarkista tiedot tai kokeile toista sahkopostia.";
     case "oauth-start":
-      return "OAuth-kirjautumisen aloitus epäonnistui. Varmista, että provider on aktivoitu Supabasessa.";
+      return "OAuth-kirjautumisen aloitus epaonnistui. Varmista, etta provider on aktivoitu Supabasessa.";
     case "oauth-provider":
-      return "Valittu kirjautumistapa ei ole käytössä tässä ympäristössä.";
+      return "Valittu kirjautumistapa ei ole kaytossa tassa ymparistossa.";
     case "auth-callback":
-      return "Tilin vahvistus tai kirjautumisen viimeistely epäonnistui. Kokeile linkkiä uudelleen.";
+      return "Tilin vahvistus tai kirjautumisen viimeistely epaonnistui. Kokeile linkkia uudelleen.";
     default:
       return "";
   }
@@ -60,8 +64,9 @@ export default async function LoginPage({
   const mode = searchParams?.mode === "signup" ? "signup" : "signin";
   const alternateMode = mode === "signup" ? "signin" : "signup";
   const authenticatedRedirectPath = nextPath === "/" ? "/app" : nextPath;
+  const shouldStayOnLogin = searchParams?.success === "activated";
 
-  if (user) {
+  if (user && !shouldStayOnLogin) {
     redirect(authenticatedRedirectPath);
   }
 
@@ -71,10 +76,10 @@ export default async function LoginPage({
         <span className="pill" data-variant="primary">
           Noema Access
         </span>
-        <h1>Kirjaudu sisään tai aloita oma Noema-tarinasi</h1>
+        <h1>Kirjaudu sisaan tai aloita oma Noema-tarinasi</h1>
         <p className="muted">
-          Rekisteröi nimi, email, salasana ja lyhyt perustelu siitä, miksi haluat olla osa
-          Noema-tarinaa. Tili aktivoidaan sähköpostiin lähetettävän vahvistuslinkin kautta.
+          Rekisteroi nimi, email, salasana ja lyhyt perustelu siita, miksi haluat olla osa
+          Noema-tarinaa. Tili aktivoidaan sahkopostiin lahetettavan vahvistuslinkin kautta.
         </p>
       </div>
 
@@ -103,18 +108,18 @@ export default async function LoginPage({
           className={mode === "signup" ? "auth-mode-pill is-active" : "auth-mode-pill"}
           aria-current={mode === "signup" ? "page" : undefined}
         >
-          Rekisteröidy
+          Rekisteroidy
         </Link>
       </div>
 
       <div className="auth-grid auth-grid-single">
         <article className="card auth-card auth-card-wide is-active">
           <div className="page-header">
-            <h2>{mode === "signin" ? "Kirjaudu" : "Rekisteröidy"}</h2>
+            <h2>{mode === "signin" ? "Kirjaudu" : "Rekisteroidy"}</h2>
             <p className="muted" style={{ marginBottom: 0 }}>
               {mode === "signin"
-                ? "Email + salasana tai suora jatko yleisillä palveluilla."
-                : "Yksinkertainen aloitus, jonka jälkeen aktivointi tapahtuu sähköpostilinkin kautta."}
+                ? "Email + salasana tai suora jatko yleisilla palveluilla."
+                : "Yksinkertainen aloitus, jonka jalkeen aktivointi tapahtuu sahkopostilinkin kautta."}
             </p>
           </div>
 
@@ -131,7 +136,7 @@ export default async function LoginPage({
                   <input name="password" type="password" autoComplete="current-password" required />
                 </label>
                 <SubmitButton className="primary" pendingText="Kirjaudutaan...">
-                  Kirjaudu sisään
+                  Kirjaudu sisaan
                 </SubmitButton>
               </form>
 
@@ -145,7 +150,7 @@ export default async function LoginPage({
                         <input type="hidden" name="provider" value={provider.id} />
                         <SubmitButton
                           className="secondary auth-provider-button"
-                          pendingText="Siirrytään..."
+                          pendingText="Siirrytaan..."
                         >
                           Jatka {provider.label}
                         </SubmitButton>
@@ -180,7 +185,7 @@ export default async function LoginPage({
                 <span>Miksi haluat olla osa Noema-tarinaa?</span>
                 <textarea
                   name="motivation"
-                  placeholder="Muutama lause siitä, mitä haluat Noeman avulla rakentaa tai ymmärtää syvemmin."
+                  placeholder="Muutama lause siita, mita haluat Noeman avulla rakentaa tai ymmartaa syvemmin."
                   minLength={10}
                   required
                 />
@@ -192,12 +197,12 @@ export default async function LoginPage({
           )}
 
           <p className="muted auth-mode-meta">
-            {mode === "signin" ? "Eikö sinulla vielä ole tiliä?" : "Onko sinulla jo tili?"}{" "}
+            {mode === "signin" ? "Eiko sinulla viela ole tilia?" : "Onko sinulla jo tili?"}{" "}
             <Link
               href={`/login?mode=${alternateMode}&next=${encodeURIComponent(nextPath)}`}
               className="landing-inline-link"
             >
-              {mode === "signin" ? "Rekisteröidy tästä" : "Kirjaudu tästä"}
+              {mode === "signin" ? "Rekisteroidy tasta" : "Kirjaudu tasta"}
             </Link>
           </p>
         </article>
