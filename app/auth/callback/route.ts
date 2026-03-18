@@ -3,6 +3,16 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getSafeNextPath } from "@/lib/auth";
 
+function buildRedirectUrl(origin: string, nextPath: string, activated = false) {
+  const redirectUrl = new URL(nextPath, origin);
+
+  if (activated) {
+    redirectUrl.searchParams.set("activated", "1");
+  }
+
+  return redirectUrl;
+}
+
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -14,7 +24,7 @@ export async function GET(request: NextRequest) {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(new URL(nextPath, url.origin));
+      return NextResponse.redirect(buildRedirectUrl(url.origin, nextPath));
     }
   }
 
@@ -25,7 +35,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!error) {
-      return NextResponse.redirect(new URL(nextPath, url.origin));
+      return NextResponse.redirect(buildRedirectUrl(url.origin, nextPath, type === "signup"));
     }
   }
 
