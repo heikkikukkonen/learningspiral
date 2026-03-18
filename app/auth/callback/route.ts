@@ -3,8 +3,12 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getSafeNextPath } from "@/lib/auth";
 
+function getPostAuthRedirectPath(nextPath: string) {
+  return nextPath === "/" ? "/app" : nextPath;
+}
+
 function buildRedirectUrl(origin: string, nextPath: string, activated = false) {
-  const redirectUrl = new URL(nextPath, origin);
+  const redirectUrl = new URL(getPostAuthRedirectPath(nextPath), origin);
 
   if (activated) {
     redirectUrl.searchParams.set("activated", "1");
