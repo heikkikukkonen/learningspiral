@@ -22,9 +22,9 @@ const storyMoments = [
 
 export default async function HomePage() {
   const user = await getCurrentUser();
-  const primaryHref = user ? "/sources" : "/login?mode=signup";
+  const primaryHref = user ? "/sources" : "/login?mode=signup&next=%2Fsources";
   const primaryLabel = user ? "Siirry omaan Noemaasi" : "Aloita oma Noemasi";
-  const secondaryHref = user ? "/capture?mode=text" : "/login";
+  const secondaryHref = user ? "/capture?mode=text" : "/login?mode=signin&next=%2Fsources";
   const secondaryLabel = user ? "Tallenna ajatus" : "Kirjaudu";
 
   return (
@@ -91,7 +91,7 @@ export default async function HomePage() {
 
         <div className="landing-hero-meta">
           {!user ? (
-            <Link href="/login?mode=signup" className="landing-inline-link">
+            <Link href="/login?mode=signup&next=%2Fsources" className="landing-inline-link">
               Rekisteröidy
             </Link>
           ) : null}
@@ -142,7 +142,7 @@ export default async function HomePage() {
             <Link href="/story" className="button-link secondary">
               Avaa scroll story
             </Link>
-            <Link href="/login?mode=signup" className="button-link primary">
+            <Link href="/login?mode=signup&next=%2Fsources" className="button-link primary">
               Rekisteröidy
             </Link>
           </div>

@@ -3947,6 +3947,48 @@ svg path[stroke="#067647"] {
   gap: 1rem;
 }
 
+.auth-grid-single {
+  grid-template-columns: minmax(0, 44rem);
+}
+
+.auth-mode-switch {
+  display: inline-flex;
+  width: fit-content;
+  gap: 0.45rem;
+  padding: 0.35rem;
+  border: 1px solid rgba(210, 219, 231, 0.95);
+  border-radius: 999px;
+  background: rgba(248, 251, 255, 0.95);
+  box-shadow: 0 12px 26px rgba(189, 201, 217, 0.14);
+}
+
+.auth-mode-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  color: #59708d;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.auth-mode-pill:hover {
+  color: #27415d;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.auth-mode-pill.is-active {
+  color: #17324d;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(189, 201, 217, 0.2);
+}
+
 .auth-card {
   border-radius: 24px;
   border-color: rgba(210, 219, 231, 0.95);
@@ -3969,6 +4011,10 @@ svg path[stroke="#067647"] {
 
 .auth-form {
   gap: 0.8rem;
+}
+
+.auth-mode-meta {
+  margin: 1rem 0 0;
 }
 
 .auth-divider {

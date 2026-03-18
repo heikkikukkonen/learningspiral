@@ -12,7 +12,7 @@ export async function UserAuthControls() {
 
   if (!user) {
     return (
-      <Link href="/login" className="button-link secondary auth-header-link">
+      <Link href="/login?mode=signin&next=%2Fsources" className="button-link secondary auth-header-link">
         Kirjaudu
       </Link>
     );

@@ -62,6 +62,24 @@ If you want Google or Apple login, configure both sides:
    - production: `https://your-domain/auth/callback`
 4. Set `NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS=google,apple` in `.env.local` so the login page only shows providers that are actually enabled for this deployment.
 
+## Email Confirmation Delivery
+
+Signup confirmation emails are sent by Supabase Auth, not directly by this Next.js app.
+
+If you want to use SendGrid, configure it in Supabase Dashboard:
+
+1. Open `Authentication -> Email -> SMTP Settings`.
+2. Enable custom SMTP.
+3. Use SendGrid SMTP credentials there:
+   - host: `smtp.sendgrid.net`
+   - port: `587`
+   - username: `apikey`
+   - password: your SendGrid API key
+4. Verify the sender identity in SendGrid and use that same verified sender in Supabase.
+5. In `Authentication -> URL Configuration`, make sure your app callback URL includes `https://your-domain/auth/callback`.
+
+If SMTP delivery fails, the login page now surfaces the Supabase error message instead of only a generic signup failure.
+
 ## Database Changes in 0.3.0
 
 New tables:

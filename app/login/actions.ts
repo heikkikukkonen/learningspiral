@@ -11,10 +11,37 @@ function asString(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function getPostAuthRedirectPath(nextPath: string) {
+  return nextPath === "/" ? "/sources" : nextPath;
+}
+
+function redirectWithAuthError(
+  mode: "signin" | "signup",
+  nextPath: string,
+  error: { code?: string; message?: string } | null
+) {
+  const params = new URLSearchParams({
+    mode,
+    error: mode,
+    next: nextPath
+  });
+
+  if (error?.code) {
+    params.set("errorCode", error.code);
+  }
+
+  if (error?.message) {
+    params.set("errorMessage", error.message);
+  }
+
+  redirect(`/login?${params.toString()}`);
+}
+
 export async function signInAction(formData: FormData) {
   const email = asString(formData.get("email")).toLowerCase();
   const password = asString(formData.get("password"));
   const nextPath = getSafeNextPath(asString(formData.get("next")));
+  const redirectPath = getPostAuthRedirectPath(nextPath);
   const supabase = createSupabaseServerClient();
 
   const { error } = await supabase.auth.signInWithPassword({
@@ -23,11 +50,15 @@ export async function signInAction(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/login?mode=signin&error=signin&next=${encodeURIComponent(nextPath)}`);
+    console.error("signInAction failed", {
+      code: error.code,
+      message: error.message
+    });
+    redirectWithAuthError("signin", nextPath, error);
   }
 
   revalidatePath("/", "layout");
-  redirect(nextPath);
+  redirect(redirectPath);
 }
 
 export async function signUpAction(formData: FormData) {
@@ -52,7 +83,12 @@ export async function signUpAction(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/login?mode=signup&error=signup&next=${encodeURIComponent(nextPath)}`);
+    console.error("signUpAction failed", {
+      code: error.code,
+      message: error.message,
+      email
+    });
+    redirectWithAuthError("signup", nextPath, error);
   }
 
   redirect(`/login?mode=signup&success=check-email&next=${encodeURIComponent(nextPath)}`);
@@ -61,13 +97,14 @@ export async function signUpAction(formData: FormData) {
 export async function signInWithOAuthAction(formData: FormData) {
   const providerValue = asString(formData.get("provider")) as Provider;
   const nextPath = getSafeNextPath(asString(formData.get("next")));
+  const redirectPath = getPostAuthRedirectPath(nextPath);
 
   if (!isEnabledOauthProvider(providerValue)) {
     redirect(`/login?error=oauth-provider&next=${encodeURIComponent(nextPath)}`);
   }
 
   const supabase = createSupabaseServerClient();
-  const redirectTo = `${getBaseUrl()}/auth/callback?next=${encodeURIComponent(nextPath)}`;
+  const redirectTo = `${getBaseUrl()}/auth/callback?next=${encodeURIComponent(redirectPath)}`;
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: providerValue,
     options: {
@@ -86,5 +123,5 @@ export async function signOutAction() {
   const supabase = createSupabaseServerClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
-  redirect("/login?signedOut=1");
+  redirect("/login?mode=signin&signedOut=1");
 }
