@@ -51,13 +51,14 @@ export function SiteNav() {
       <HeaderIcon href="/settings" label="Asetukset" active={settingsActive}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path
-            d="M12 3.5l1.3 2.4 2.7.5-.9 2.6 1.9 2-1.9 2 .9 2.6-2.7.5L12 20.5l-1.3-2.4-2.7-.5.9-2.6-1.9-2 1.9-2-.9-2.6 2.7-.5L12 3.5z"
+            d="M12 3.75v2.1M12 18.15v2.1M5.75 12h2.1M16.15 12h2.1M7.58 7.58l1.49 1.49M14.93 14.93l1.49 1.49M16.42 7.58l-1.49 1.49M9.07 14.93l-1.49 1.49"
             fill="none"
             stroke="currentColor"
-            strokeLinejoin="round"
-            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeWidth="1.8"
           />
-          <circle cx="12" cy="12" r="2.8" fill="none" stroke="currentColor" strokeWidth="1.7" />
+          <circle cx="12" cy="12" r="5.05" fill="none" stroke="currentColor" strokeWidth="1.8" />
+          <circle cx="12" cy="12" r="2.15" fill="none" stroke="currentColor" strokeWidth="1.8" />
         </svg>
       </HeaderIcon>
     </nav>
