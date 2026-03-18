@@ -72,17 +72,6 @@ export default async function LoginPage({
 
   return (
     <section className="auth-shell">
-      <div className="auth-hero">
-        <span className="pill" data-variant="primary">
-          Noema Access
-        </span>
-        <h1>Kirjaudu sisaan tai aloita oma Noema-tarinasi</h1>
-        <p className="muted">
-          Rekisteroi nimi, email, salasana ja lyhyt perustelu siita, miksi haluat olla osa
-          Noema-tarinaa. Tili aktivoidaan sahkopostiin lahetettavan vahvistuslinkin kautta.
-        </p>
-      </div>
-
       {statusMessage ? (
         <article
           className={
@@ -116,11 +105,6 @@ export default async function LoginPage({
         <article className="card auth-card auth-card-wide is-active">
           <div className="page-header">
             <h2>{mode === "signin" ? "Kirjaudu" : "Rekisteroidy"}</h2>
-            <p className="muted" style={{ marginBottom: 0 }}>
-              {mode === "signin"
-                ? "Email + salasana tai suora jatko yleisilla palveluilla."
-                : "Yksinkertainen aloitus, jonka jalkeen aktivointi tapahtuu sahkopostilinkin kautta."}
-            </p>
           </div>
 
           {mode === "signin" ? (
