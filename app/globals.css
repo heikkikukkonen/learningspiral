@@ -82,23 +82,8 @@ a {
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.7rem;
   color: #4b5d7a;
   user-select: none;
-}
-
-.logo-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  flex-shrink: 0;
-}
-
-.logo-mark img {
-  width: 100%;
-  height: auto;
 }
 
 .logo-copy {
@@ -2115,6 +2100,13 @@ button.danger {
   font-weight: 500;
   line-height: 1.35;
   color: #93a1b8;
+  display: grid;
+  gap: 0.18rem;
+}
+
+.home-brand-tagline-emphasis {
+  color: #55717d;
+  font-size: 0.98em;
 }
 
 .home-list {

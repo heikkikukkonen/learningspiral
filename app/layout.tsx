@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { PwaRegister } from "./components/pwa-register";
 import { SiteNav } from "./components/site-nav";
@@ -35,12 +34,9 @@ export default async function RootLayout({
           <div className="container topbar-inner">
             <div className="brand-lockup">
               <Link href="/" className="logo">
-                <span className="logo-mark" aria-hidden="true">
-                  <Image src="/icon.png" alt="" width={56} height={56} priority />
-                </span>
                 <span className="logo-copy">
                   <span className="logo-title">Noema</span>
-                  <span className="logo-tagline">Where thinking deepens</span>
+                  <span className="logo-tagline">Ajattelu, joka syvenee — ja muuttuu toiminnaksi</span>
                 </span>
               </Link>
             </div>
