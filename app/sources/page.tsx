@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { listSources } from "@/lib/db";
 import { deriveSourceIdeaStage, sourceIdeaStageLabel } from "@/lib/source-status";
 import { SourceType } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Ajatusarkisto",
+  description: "Kaikki talteen otetut ajatukset, joihin voit palata, syventää ja yhdistää."
+};
 
 type SourceListItem = {
   id: string;
@@ -40,16 +45,13 @@ export default async function SourcesPage() {
   return (
     <section>
       <div className="page-header">
-        <h1>Ajatusten kirjasto</h1>
+        <h1>Ajatusarkisto</h1>
         <p className="muted">Kaikki talteen otetut ajatukset, joihin voit palata, syventää ja yhdistää.</p>
       </div>
 
       <div className="actions" style={{ marginBottom: "1rem" }}>
-        <Link href="/app" className="button-link secondary">
-          Sovelluksen etusivu
-        </Link>
         <Link href="/capture?mode=text" className="button-link primary">
-          Kirjoita ajatus
+          Uusi ajatus
         </Link>
         <Link href="/progress" className="button-link secondary">
           Katso virta
