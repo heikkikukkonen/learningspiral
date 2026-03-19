@@ -128,7 +128,7 @@ const storySteps: StoryStep[] = [
   {
     key: "noesis-b",
     lines: [
-      "Mutta se, mitä siitä syntyy —",
+      "Mutta se, mitä siitä syntyy, ",
       "on sinun tulkintasi.",
       "Sinun ymmärryksesi."
     ]

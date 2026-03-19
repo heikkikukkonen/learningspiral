@@ -36,10 +36,6 @@ export default async function RootLayout({
               <Link href="/" className="logo">
                 <span className="logo-copy">
                   <span className="logo-title">Noema</span>
-                  <span className="logo-tagline">
-                    <span>Where thinking deepens</span>
-                    <span className="logo-tagline-emphasis">and turns into meaningful action</span>
-                  </span>
                 </span>
               </Link>
             </div>
