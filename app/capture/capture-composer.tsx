@@ -25,6 +25,7 @@ type CaptureComposerProps = {
 };
 
 type TextSaveStage = "idle" | "analyzing" | "saving";
+type SaveIntent = "return" | "refine";
 async function parseJson<T>(response: Response): Promise<T> {
   const responseText = await response.text();
   let json: (T & { error?: string; message?: string }) | null = null;
@@ -111,6 +112,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [textSaveStage, setTextSaveStage] = useState<TextSaveStage>("idle");
+  const [saveIntent, setSaveIntent] = useState<SaveIntent>("refine");
   const [error, setError] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [audioPreviewUrl, setAudioPreviewUrl] = useState("");
@@ -192,6 +194,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
   async function saveCapture(
     inputModality: "text" | "image" | "audio",
+    intent: SaveIntent,
     overrides?: {
       title?: string;
       rawInput?: string;
@@ -199,6 +202,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       asset?: AssetPayload | null;
     }
   ): Promise<boolean> {
+    setSaveIntent(intent);
     setIsSaving(true);
     setError("");
     try {
@@ -218,7 +222,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       });
 
       const json = await parseJson<{ sourceId: string }>(response);
-      router.push(`/sources/${json.sourceId}`);
+      router.push(intent === "return" ? "/" : `/sources/${json.sourceId}`);
       router.refresh();
       return true;
     } catch (err) {
@@ -347,10 +351,11 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     mediaRecorderRef.current?.stop();
   }
 
-  async function saveTextCapture() {
+  async function saveTextCapture(intent: SaveIntent) {
     const trimmedText = textValue.trim();
     if (!trimmedText || isSaving || isAnalyzing) return;
 
+    setSaveIntent(intent);
     setTextSaveStage("analyzing");
     const analyzed = await analyzeText(trimmedText);
     if (!analyzed) {
@@ -359,7 +364,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     }
 
     setTextSaveStage("saving");
-    const saved = await saveCapture("text", {
+    const saved = await saveCapture("text", intent, {
       title: titleValue || inferCaptureTitle(analyzed.rawInput, "Idea"),
       rawInput: analyzed.rawInput
     });
@@ -437,35 +442,51 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 onKeyDown={(event) => {
                   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
                     event.preventDefault();
-                    void saveTextCapture();
+                    void saveTextCapture("refine");
                   }
                 }}
               />
             </label>
             <p className="status capture-text-helper" style={{ margin: 0 }}>
               {isTextProcessing
-                ? "Kasittely kaynnissa. Hetken paasta siirryt suoraan idean muokkaukseen."
+                ? saveIntent === "return"
+                  ? "Kasittely kaynnissa. Hetken paasta palaat etusivulle."
+                  : "Kasittely kaynnissa. Hetken paasta siirryt idean muokkaukseen."
                 : textCharacterCount > 0
                 ? `${textCharacterCount} merkkia valmiina tallennettavaksi.`
-                : "Tallenna toimii myos Ctrl+Enterilla."}
+                : "Ctrl+Enter tallentaa ja avaa idean jalostuksen."}
             </p>
 
             <div className="capture-text-footer">
-              <button
-                type="button"
-                className="primary capture-text-save"
-                disabled={!textValue.trim() || isSaving || isAnalyzing}
-                onClick={() => void saveTextCapture()}
-              >
-                {isTextProcessing ? (
-                  <span className="submit-button-content">
-                    <IdeaNetworkLoader label={textProcessingLabel} />
-                    {textSaveStage === "saving" ? "Tallennetaan..." : "Kasittelen..."}
-                  </span>
-                ) : (
-                  "Tallenna"
-                )}
-              </button>
+              <div className="capture-text-save-actions">
+                <button
+                  type="button"
+                  className="secondary capture-text-secondary-save"
+                  disabled={!textValue.trim() || isSaving || isAnalyzing}
+                  onClick={() => void saveTextCapture("return")}
+                >
+                  {isTextProcessing && saveIntent === "return"
+                    ? textSaveStage === "saving"
+                      ? "Tallennetaan..."
+                      : "Kasitellaan..."
+                    : "Tallenna ja palaa"}
+                </button>
+                <button
+                  type="button"
+                  className="primary capture-text-save"
+                  disabled={!textValue.trim() || isSaving || isAnalyzing}
+                  onClick={() => void saveTextCapture("refine")}
+                >
+                  {isTextProcessing && saveIntent === "refine" ? (
+                    <span className="submit-button-content">
+                      <IdeaNetworkLoader label={textProcessingLabel} />
+                      {textSaveStage === "saving" ? "Tallennetaan..." : "Kasittelen..."}
+                    </span>
+                  ) : (
+                    "Tallenna ja jalosta idea"
+                  )}
+                </button>
+              </div>
               <button type="button" className="capture-text-cancel" onClick={cancelCapture}>
                 Peruuta
               </button>
@@ -607,17 +628,31 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     <div className="capture-image-save-actions">
                       <button
                         type="button"
-                        className="primary capture-image-save"
+                        className="secondary capture-image-secondary-save"
                         disabled={!rawInputValue.trim() || isSaving}
                         onClick={() =>
-                          void saveCapture("image", {
+                          void saveCapture("image", "return", {
                             title: inferEditedCaptureTitle(
                               asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus"
                             )
                           })
                         }
                       >
-                        {isSaving ? "Tallennetaan..." : "Tallenna"}
+                        {isSaving && saveIntent === "return" ? "Tallennetaan..." : "Tallenna ja palaa"}
+                      </button>
+                      <button
+                        type="button"
+                        className="primary capture-image-save"
+                        disabled={!rawInputValue.trim() || isSaving}
+                        onClick={() =>
+                          void saveCapture("image", "refine", {
+                            title: inferEditedCaptureTitle(
+                              asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus"
+                            )
+                          })
+                        }
+                      >
+                        {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Tallenna ja jalosta idea"}
                       </button>
                       <button type="button" className="capture-image-cancel capture-image-cancel-link" onClick={cancelCapture}>
                         Peruuta
@@ -762,17 +797,31 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     </p>
                     <button
                       type="button"
+                      className="secondary capture-voice-secondary-save"
+                      disabled={!rawInputValue.trim() || isSaving}
+                      onClick={() =>
+                        void saveCapture("audio", "return", {
+                          title: inferEditedCaptureTitle(
+                            asset?.fileName.replace(/\.[^.]+$/, "") || "Aanitallenne"
+                          )
+                        })
+                      }
+                    >
+                      {isSaving && saveIntent === "return" ? "Tallennetaan..." : "Tallenna ja palaa"}
+                    </button>
+                    <button
+                      type="button"
                       className="primary capture-voice-save"
                       disabled={!rawInputValue.trim() || isSaving}
                       onClick={() =>
-                        void saveCapture("audio", {
+                        void saveCapture("audio", "refine", {
                           title: inferEditedCaptureTitle(
                             asset?.fileName.replace(/\.[^.]+$/, "") || "Äänitallenne"
                           )
                         })
                       }
                     >
-                      {isSaving ? "Tallennetaan..." : "Tallenna"}
+                      {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Tallenna ja jalosta idea"}
                     </button>
                   </div>
                 </div>

@@ -137,11 +137,6 @@ export async function saveSourceDraftAction(formData: FormData) {
   revalidatePath("/progress");
 }
 
-export async function saveSourceDraftAndReturnAction(formData: FormData) {
-  await saveSourceDraftAction(formData);
-  return { redirectTo: "/sources" };
-}
-
 export async function refineSourceDraftAction(formData: FormData) {
   const title = asString(formData.get("title")).trim() || "Untitled idea";
   const idea = asString(formData.get("idea"));

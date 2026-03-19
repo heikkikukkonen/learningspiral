@@ -1079,9 +1079,23 @@ button.danger {
   padding-top: 0.25rem;
 }
 
-.capture-text-save {
+.capture-text-save-actions {
   grid-column: 2;
-  justify-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+.capture-text-secondary-save,
+.capture-image-secondary-save,
+.capture-voice-secondary-save {
+  min-width: 190px;
+  min-height: 48px;
+  border-radius: 999px;
+}
+
+.capture-text-save {
   min-width: 190px;
   min-height: 56px;
   border-radius: 999px;
@@ -2664,6 +2678,12 @@ button.danger {
     justify-items: center;
   }
 
+  .capture-text-save-actions {
+    grid-column: 1;
+    align-items: center;
+  }
+
+  .capture-text-secondary-save,
   .capture-text-save,
   .capture-text-cancel {
     grid-column: 1;

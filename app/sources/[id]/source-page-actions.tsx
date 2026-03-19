@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   deleteSourceAction,
-  saveSourceDraftAndReturnAction
+  saveSourceDraftAction
 } from "@/app/sources/actions";
 
 type SourcePageActionsProps = {
@@ -15,6 +16,7 @@ export function SourcePageActions({
   sourceId,
   lastSavedLabel
 }: SourcePageActionsProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -35,8 +37,8 @@ export function SourcePageActions({
     startTransition(async () => {
       try {
         const formData = readEditorFormData();
-        const result = await saveSourceDraftAndReturnAction(formData);
-        window.location.assign(result.redirectTo);
+        await saveSourceDraftAction(formData);
+        router.refresh();
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Tallennus epäonnistui. Yritä uudelleen.";
@@ -88,7 +90,7 @@ export function SourcePageActions({
               onClick={() => handleSave()}
               disabled={isPending}
             >
-              {isPending ? "Tallennetaan..." : "Tallenna ja palaa"}
+              {isPending ? "Tallennetaan..." : "Tallenna"}
             </button>
           </div>
         </div>
