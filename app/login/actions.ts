@@ -70,7 +70,7 @@ export async function signUpAction(formData: FormData) {
   const supabase = createSupabaseServerClient();
   const emailRedirectTo = `${getBaseUrl()}/auth/callback?next=${encodeURIComponent(nextPath)}`;
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -89,6 +89,11 @@ export async function signUpAction(formData: FormData) {
       email
     });
     redirectWithAuthError("signup", nextPath, error);
+  }
+
+  if (data.session) {
+    revalidatePath("/", "layout");
+    redirect(getPostAuthRedirectPath(nextPath));
   }
 
   redirect(`/login?mode=signup&success=check-email&next=${encodeURIComponent(nextPath)}`);

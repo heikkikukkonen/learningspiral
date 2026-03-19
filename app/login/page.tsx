@@ -10,7 +10,7 @@ function getStatusMessage(searchParams?: Record<string, string | undefined>) {
   const authErrorCode = searchParams?.errorCode?.trim();
 
   if (searchParams?.success === "activated") {
-    return "Tili on aktivoitu. Kirjaudu nyt sisaan.";
+    return "Tili on aktivoitu.";
   }
 
   if (searchParams?.success === "check-email") {
@@ -64,9 +64,8 @@ export default async function LoginPage({
   const mode = searchParams?.mode === "signup" ? "signup" : "signin";
   const alternateMode = mode === "signup" ? "signin" : "signup";
   const authenticatedRedirectPath = nextPath === "/" ? "/app" : nextPath;
-  const shouldStayOnLogin = searchParams?.success === "activated";
 
-  if (user && !shouldStayOnLogin) {
+  if (user) {
     redirect(authenticatedRedirectPath);
   }
 
