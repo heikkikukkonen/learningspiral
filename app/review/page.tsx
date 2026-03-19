@@ -32,7 +32,7 @@ export default async function ReviewPage() {
   return (
     <section className="review-shell">
       <div className="page-header">
-        <h1>Palaa ajatuksiin</h1>
+        <h1>Vahvista Noemaasi</h1>
         <p className="muted">Yksi asia kerrallaan. Vastaa ensin itse, tarkista sitten suunta ja jatka eteenpäin.</p>
       </div>
 

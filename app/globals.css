@@ -2120,6 +2120,7 @@ button.danger {
 .home-list {
   display: grid;
   gap: 0.95rem;
+  margin-bottom: 0.55rem;
 }
 
 .home-story {
@@ -3069,6 +3070,7 @@ button.danger {
 
 .home-list {
   gap: 0.8rem;
+  margin-bottom: 0.55rem;
 }
 
 .home-list-card,

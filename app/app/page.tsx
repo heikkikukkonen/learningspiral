@@ -21,7 +21,7 @@ const homeActions = [
     icon: "mic"
   },
   {
-    title: "Jatka ajattelua",
+    title: "Vahvista Noemaasi",
     href: "/review",
     accent: "soft",
     icon: "brain"
