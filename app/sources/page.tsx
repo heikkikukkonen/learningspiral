@@ -6,7 +6,7 @@ import { SourceType } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Ajatusarkisto",
+  title: "Ajatusvirta",
   description: "Kaikki talteen otetut ajatukset, joihin voit palata, syventää ja yhdistää."
 };
 
@@ -45,7 +45,7 @@ export default async function SourcesPage() {
   return (
     <section>
       <div className="page-header">
-        <h1>Ajatusarkisto</h1>
+        <h1>Ajatusvirta</h1>
         <p className="muted">Kaikki talteen otetut ajatukset, joihin voit palata, syventää ja yhdistää.</p>
       </div>
 
