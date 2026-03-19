@@ -15,12 +15,12 @@ const storySteps: StoryStep[] = [
   {
     key: "intro",
     kicker: "Noema",
-    title: "Rauhallinen tila ajatella",
+    title: "Ajattelu, joka syvenee — ja synnyttää merkityksellistä toimintaa",
     variant: "hero"
   },
   {
     key: "core",
-    title: "Ajattelu, joka syvenee — ja muuttuu toiminnaksi"
+    title: "Tallenna. Pohdi. Palaa. Yhdistä. Toimi."
   },
   {
     key: "flow",
@@ -34,22 +34,8 @@ const storySteps: StoryStep[] = [
   },
   {
     key: "growth",
-    title: "Anna sen kasvaa ymmärrykseksi",
+    title: "Anna sen kasvaa ymmärrykseksi. Toimi.",
     variant: "spiral"
-  },
-  {
-    key: "problem-a",
-    lines: [
-      "Ajattelu ei epäonnistu siksi,",
-      "että sinulta puuttuisi ideoita."
-    ]
-  },
-  {
-    key: "problem-b",
-    lines: [
-      "Se epäonnistuu siksi,",
-      "että mikään ei kanna niitä eteenpäin."
-    ]
   },
   {
     key: "story-a",
@@ -61,7 +47,7 @@ const storySteps: StoryStep[] = [
   },
   {
     key: "story-b",
-    lines: ["Ja sitten-", "se katoaa."]
+    lines: ["Ja sitten -", "se katoaa."]
   },
   {
     key: "story-c",
@@ -86,7 +72,7 @@ const storySteps: StoryStep[] = [
   {
     key: "definition-b",
     lines: [
-      "Se on järjestelmä,",
+      "Se on apurisi,",
       "joka pitää ajattelusi elävänä",
       "ja auttaa sitä syvenemään."
     ]
@@ -95,7 +81,7 @@ const storySteps: StoryStep[] = [
     key: "definition-c",
     lines: [
       "Se tuo ajatuksesi takaisin.",
-      "Yhdistää ne.",
+      "Vahvistaa niitä. Yhdistää ne.",
       "Ja rakentaa niistä ymmärrystä."
     ]
   },
@@ -109,7 +95,8 @@ const storySteps: StoryStep[] = [
   },
   {
     key: "noesis-a",
-    lines: ["Jokainen hetki alkaa havainnosta.", "Se on noesis."]
+    lines: ["Jokainen hetki alkaa havainnosta.", 
+      "Se on <i>noesis</i>."]
   },
   {
     key: "noesis-b",
@@ -146,20 +133,32 @@ const storySteps: StoryStep[] = [
     lines: ["Ja ajan myötä se näkyy:", "päätöksissäsi", "toiminnassasi", "suunnassasi"]
   },
   {
-    key: "finale",
-    lines: ["Ajattelusi ei enää ala alusta.", "Se rakentuu."]
-  },
-  {
     key: "cta",
     variant: "cta",
     title: "Aloita oman Noemasi rakentaminen",
-    lines: ["Tallenna. Pohdi. Palaa. Yhdistä."]
+    lines: ["Tallenna. Pohdi. Palaa. Yhdistä. Toimi."]
   }
 ];
 
 type StoryExperienceProps = {
   mode?: "landing" | "story";
 };
+
+function renderStoryLine(line: string) {
+  const italicMatch = line.match(/^(.*)<i>(.+)<\/i>(.*)$/);
+  if (!italicMatch) {
+    return line;
+  }
+
+  const [, before, italic, after] = italicMatch;
+  return (
+    <>
+      {before}
+      <i>{italic}</i>
+      {after}
+    </>
+  );
+}
 
 export function StoryExperience({ mode = "story" }: StoryExperienceProps) {
   useEffect(() => {
@@ -267,14 +266,7 @@ export function StoryExperience({ mode = "story" }: StoryExperienceProps) {
             {step.kicker ? <p className="story-step-kicker">{step.kicker}</p> : null}
             {step.title ? (
               <h1 className="story-step-title">
-                {step.key === "core" ? (
-                  <span className="story-step-title-stack">
-                    <span>Where thinking deepens</span>
-                    <span className="story-step-title-emphasis">and turns into meaningful action</span>
-                  </span>
-                ) : (
-                  step.title
-                )}
+                {step.title}
               </h1>
             ) : null}
             {step.lines ? (
@@ -285,7 +277,7 @@ export function StoryExperience({ mode = "story" }: StoryExperienceProps) {
                     className="story-step-line"
                     style={{ ["--story-delay" as string]: `${index * 180}ms` }}
                   >
-                    {line}
+                    {renderStoryLine(line)}
                   </p>
                 ))}
               </div>
