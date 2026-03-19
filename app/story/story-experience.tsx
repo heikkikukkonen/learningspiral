@@ -30,11 +30,7 @@ const storySteps: StoryStep[] = [
       "Toimi."
     ]
   },
-  {
-    key: "growth",
-    title: "Ajatukset voivat kohdata toisensa.",
-    variant: "spiral"
-  },
+
   {
     key: "story-a1",
     lines: [
