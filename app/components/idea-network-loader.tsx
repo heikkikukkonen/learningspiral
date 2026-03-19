@@ -7,7 +7,7 @@ type IdeaNetworkLoaderProps = {
 };
 
 export function IdeaNetworkLoader({
-  label = "AI kasittelee ideaa",
+  label = "Kasittelen ideaa",
   detail,
   variant = "inline"
 }: IdeaNetworkLoaderProps) {

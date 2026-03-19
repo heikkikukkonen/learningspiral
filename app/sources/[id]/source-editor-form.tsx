@@ -37,7 +37,7 @@ export function SourceEditorForm({
   const [analysis, setAnalysis] = useState(initialAnalysis);
   const [tags, setTags] = useState(initialTags);
   const [tagInput, setTagInput] = useState("");
-  const [aiNote, setAiNote] = useState("AI voi kirkastaa, syventää tai tiivistää ajatusta nykyisten kenttien pohjalta.");
+  const [aiNote, setAiNote] = useState("Voin kirkastaa, syventää tai tiivistää ajatusta nykyisten kenttien pohjalta.");
   const [tagNote, setTagNote] = useState("Voit luoda tagit pyynnosta tai lisata ne itse.");
   const [activeMode, setActiveMode] = useState<(typeof refineModes)[number]["id"] | null>(null);
   const [isRefining, setIsRefining] = useState(false);
@@ -75,7 +75,7 @@ export function SourceEditorForm({
         setAnalysis(result.analysis);
         setAiNote(
           result.model
-            ? `AI paivitti analyysin tilassa "${result.mode}". Muista tallentaa, jos haluat sailyttaa muutokset.`
+            ? `Päivitin analyysin tilassa "${result.mode}". Muista tallentaa, jos haluat sailyttaa muutokset.`
             : `Analyysi paivitettiin tilassa "${result.mode}". Muista tallentaa muutokset.`
         );
       } catch (error) {
@@ -100,7 +100,7 @@ export function SourceEditorForm({
         setTagNote(
           result.tags.length > 0
             ? result.model
-              ? "AI loi tagit otsikon ja idean perusteella. Muista tallentaa muutokset."
+              ? "Loin sinulle tagit otsikon ja idean perusteella. Muista tallentaa muutokset."
               : "Tagit paivitettiin varalogiikalla. Muista tallentaa muutokset."
             : "Tageja ei saatu luotua nykyisista kentista."
         );
@@ -202,7 +202,7 @@ export function SourceEditorForm({
             </p>
           </div>
 
-          <div className="source-analysis-actions" role="group" aria-label="AI-jalostus">
+          <div className="source-analysis-actions" role="group" aria-label="Ajatuksen jalostus">
             {refineModes.map((mode) => (
               <button
                 key={mode.id}

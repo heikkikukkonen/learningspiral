@@ -379,11 +379,11 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   const isTextProcessing = textSaveStage !== "idle";
   const imageDropzoneLabel = isImageDragActive ? "Pudota kuva tähän" : "Raahaa tai liitä kuva";
   const textProcessingLabel =
-    textSaveStage === "saving" ? "Tallennetaan ideaa" : "AI kasittelee kirjoittamaasi ajatusta";
+    textSaveStage === "saving" ? "Tallennetaan ideaa" : "Kasittelen kirjoittamaasi ajatusta";
   const textProcessingDetail =
     textSaveStage === "saving"
-      ? "Luomme idealle uuden merkinnän ja siirrämme sinut seuraavaksi muokkausnäkymään."
-      : "Tarkistamme tekstin talteen sopivaan muotoon ennen kuin idea tallennetaan.";
+      ? "Luon idealle uuden merkinnän ja siirrän sinut seuraavaksi muokkausnäkymään."
+      : "Tarkistan tekstin talteen sopivaan muotoon ennen kuin idea tallennetaan.";
 
   return (
     <div className="grid">
@@ -460,7 +460,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 {isTextProcessing ? (
                   <span className="submit-button-content">
                     <IdeaNetworkLoader label={textProcessingLabel} />
-                    {textSaveStage === "saving" ? "Tallennetaan..." : "AI kasittelee..."}
+                    {textSaveStage === "saving" ? "Tallennetaan..." : "Kasittelen..."}
                   </span>
                 ) : (
                   "Tallenna"
@@ -494,7 +494,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               <div className="capture-image-copy">
                 <h2 style={{ margin: 0 }}>Lisaa kuva</h2>
                 <p className="status capture-image-status">
-                  Tuo screenshot, muistiinpano tai kuva. AI tulkitsee sen tekstiksi, jota voit korjata ennen tallennusta.
+                  Tuo screenshot, muistiinpano tai kuva. Muutan sen tekstiksi, jota voit korjata ennen tallennusta.
                 </p>
               </div>
             </div>
@@ -505,8 +505,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                   <div className="capture-image-dropzone capture-image-dropzone-processing">
                     <IdeaNetworkLoader
                       variant="panel"
-                      label="AI lukee kuvan tekstiksi"
-                      detail="Teemme kuvasta muokattavan litteroinnin ilman lisajalostusta."
+                      label="Luen kuvan tekstiksi"
+                      detail="Teen kuvasta muokattavan litteroinnin ilman lisajalostusta."
                     />
                   </div>
                 ) : (
@@ -711,8 +711,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     <div className="capture-voice-processing-dropzone">
                       <IdeaNetworkLoader
                         variant="panel"
-                        label="AI litteroi puheen tekstiksi"
-                        detail="Tallennamme puheen muokattavaksi tekstiksi ilman lisaanalyysia."
+                        label="Litteroin puheen tekstiksi"
+                        detail="Tallennan puheen muokattavaksi tekstiksi ilman lisaanalyysia."
                       />
                     </div>
                     {!isRecording ? (

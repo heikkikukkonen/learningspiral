@@ -24,8 +24,8 @@ export default async function SettingsPage({
       <div className="page-header">
         <h1>Asetukset</h1>
         <p className="muted">
-          Määritä oma kieli ja AI-ohjaus, jota käytetään analyysin päivityksessä,
-          syvennyksessä, tiivistyksessä, korttien luonnissa ja tagien generoinnissa.
+          Määritä oma kieli ja ohjaus, jota käytetään analyysin päivityksessä,
+          syvennyksessä, tiivistyksessä, korttien luonnissa ja tagien ehdottamisessa.
         </p>
         {saved ? (
           <p className="status" style={{ margin: "0.5rem 0 0", color: "var(--success)" }}>
@@ -80,7 +80,7 @@ export default async function SettingsPage({
             <div>
               <h2 style={{ margin: 0 }}>Kieli</h2>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Kaikki ChatGPT-agentin tuottama käyttäjälle näkyvä sisältö pyydetään
+                Kaikki sinulle näkyvä sisältö pyydetään
                 tällä kielellä.
               </p>
             </div>
@@ -105,7 +105,7 @@ export default async function SettingsPage({
             <div>
               <h2 style={{ margin: 0 }}>Prompt-ohjaus</h2>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Näitä kenttiä lisätään sellaisenaan mukaan kyseisen AI-toiminnon
+                Näitä kenttiä lisätään sellaisenaan mukaan kyseisen toiminnon
                 ohjaukseen.
               </p>
             </div>
