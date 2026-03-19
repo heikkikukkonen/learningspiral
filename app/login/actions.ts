@@ -61,6 +61,33 @@ export async function signInAction(formData: FormData) {
   redirect(redirectPath);
 }
 
+export async function requestPasswordResetAction(formData: FormData) {
+  const email = asString(formData.get("email")).toLowerCase();
+  const nextPath = getSafeNextPath(asString(formData.get("next")));
+  const supabase = createSupabaseServerClient();
+  const redirectTo = `${getBaseUrl()}/auth/callback?next=${encodeURIComponent("/reset-password")}`;
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo
+  });
+
+  if (error) {
+    const params = new URLSearchParams({
+      mode: "signin",
+      error: "reset-password",
+      next: nextPath
+    });
+
+    if (error.message) {
+      params.set("errorMessage", error.message);
+    }
+
+    redirect(`/login?${params.toString()}`);
+  }
+
+  redirect(`/login?mode=signin&success=reset-password-email&next=${encodeURIComponent(nextPath)}`);
+}
+
 export async function signUpAction(formData: FormData) {
   const fullName = asString(formData.get("fullName"));
   const email = asString(formData.get("email")).toLowerCase();

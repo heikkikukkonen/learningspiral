@@ -3,7 +3,12 @@ import { redirect } from "next/navigation";
 import { SubmitButton } from "@/app/components/submit-button";
 import { getCurrentUser, getSafeNextPath } from "@/lib/auth";
 import { getEnabledOauthProviders, oauthProviderLabels } from "@/lib/oauth-providers";
-import { signInAction, signInWithOAuthAction, signUpAction } from "./actions";
+import {
+  requestPasswordResetAction,
+  signInAction,
+  signInWithOAuthAction,
+  signUpAction
+} from "./actions";
 
 function getStatusMessage(searchParams?: Record<string, string | undefined>) {
   const authErrorMessage = searchParams?.errorMessage?.trim();
@@ -15,6 +20,14 @@ function getStatusMessage(searchParams?: Record<string, string | undefined>) {
 
   if (searchParams?.success === "check-email") {
     return "Rekisteroityminen onnistui. Vahvista tilisi sahkopostissa olevasta linkista ennen ensimmaista kirjautumista.";
+  }
+
+  if (searchParams?.success === "reset-password-email") {
+    return "Salasanan palautuslinkki on lahetetty sahkopostiisi.";
+  }
+
+  if (searchParams?.success === "password-reset-complete") {
+    return "Salasana on paivitetty. Voit nyt kirjautua uudella salasanalla.";
   }
 
   if (searchParams?.signedOut === "1") {
@@ -44,6 +57,11 @@ function getStatusMessage(searchParams?: Record<string, string | undefined>) {
       return "Valittu kirjautumistapa ei ole kaytossa tassa ymparistossa.";
     case "auth-callback":
       return "Tilin vahvistus tai kirjautumisen viimeistely epaonnistui. Kokeile linkkia uudelleen.";
+    case "reset-password":
+      if (authErrorMessage) {
+        return `Salasanan palautus epaonnistui: ${authErrorMessage}`;
+      }
+      return "Salasanan palautus epaonnistui. Kokeile hetken paasta uudelleen.";
     default:
       return "";
   }
@@ -123,6 +141,20 @@ export default async function LoginPage({
                   Kirjaudu sisaan
                 </SubmitButton>
               </form>
+
+              <details className="auth-account-summary">
+                <summary>Unohtuiko salasana?</summary>
+                <form action={requestPasswordResetAction} className="form auth-form">
+                  <input type="hidden" name="next" value={nextPath} />
+                  <label className="form-row">
+                    <span>Email</span>
+                    <input name="email" type="email" autoComplete="email" required />
+                  </label>
+                  <SubmitButton className="secondary" pendingText="Lahetetaan...">
+                    Laheta palautuslinkki
+                  </SubmitButton>
+                </form>
+              </details>
 
               {oauthProviders.length ? (
                 <>
