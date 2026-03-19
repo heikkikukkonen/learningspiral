@@ -19,10 +19,6 @@ const storySteps: StoryStep[] = [
     variant: "hero"
   },
   {
-    key: "core",
-    title: "Tallenna. Pohdi. Palaa siihen. Yhdistä se. Toimi."
-  },
-  {
     key: "flow",
     variant: "flow",
     lines: [
