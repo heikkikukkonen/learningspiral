@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { HomeStory } from "@/app/components/home-story";
 
 const homeActions = [
   {
@@ -147,7 +146,6 @@ export default function AppHomePage() {
                 </Link>
               ))}
             </div>
-            <HomeStory />
           </div>
         </div>
       </div>
