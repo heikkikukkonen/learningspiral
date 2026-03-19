@@ -64,6 +64,7 @@ export default async function LoginPage({
   const mode = searchParams?.mode === "signup" ? "signup" : "signin";
   const alternateMode = mode === "signup" ? "signin" : "signup";
   const authenticatedRedirectPath = nextPath === "/" ? "/app" : nextPath;
+  const isAwaitingEmailConfirmation = searchParams?.success === "check-email";
 
   if (user) {
     redirect(authenticatedRedirectPath);
@@ -143,6 +144,13 @@ export default async function LoginPage({
                 </>
               ) : null}
             </>
+          ) : isAwaitingEmailConfirmation ? (
+            <div className="auth-account-summary">
+              <p>
+                Tarkista sahkopostisi ja avaa vahvistuslinkki viimeistellaaksesi tilin
+                aktivoinnin.
+              </p>
+            </div>
           ) : (
             <form action={signUpAction} className="form auth-form">
               <input type="hidden" name="next" value={nextPath} />
