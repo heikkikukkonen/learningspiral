@@ -1103,6 +1103,22 @@ export async function listDueCards() {
   return (data ?? []) as CardRow[];
 }
 
+export async function countDueCards(): Promise<number> {
+  const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
+  const nowIso = new Date().toISOString();
+
+  const { count, error } = await supabase
+    .from("cards")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .lte("due_at", nowIso);
+
+  if (error) throw error;
+  return count ?? 0;
+}
+
 export async function listDueCardsWithContext(): Promise<DueReviewCard[]> {
   const dueCards = await listDueCards();
   if (!dueCards.length) return [];

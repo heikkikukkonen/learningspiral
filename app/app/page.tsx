@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { countDueCards } from "@/lib/db";
 
 const homeActions = [
   {
@@ -23,7 +24,7 @@ const homeActions = [
   {
     title: "Vahvista Noemaasi",
     href: "/review",
-    accent: "soft",
+    accent: "highlight",
     icon: "brain"
   }
 ] as const;
@@ -107,7 +108,9 @@ function ActionIcon({ icon }: { icon: (typeof homeActions)[number]["icon"] }) {
   return null;
 }
 
-export default function AppHomePage() {
+export default async function AppHomePage() {
+  const dueCardsCount = await countDueCards().catch(() => 0);
+
   return (
     <section className="home-shell home-shell-mobile">
       <div className="home-phone-card">
@@ -137,6 +140,11 @@ export default function AppHomePage() {
                   </span>
                   <span className="home-list-copy">
                     <strong>{action.title}</strong>
+                    {action.href === "/review" ? (
+                      <span className="home-list-meta">
+                        {dueCardsCount} {dueCardsCount === 1 ? "kortti kerrattavana" : "korttia kerrattavana"}
+                      </span>
+                    ) : null}
                   </span>
                   <span className="home-list-arrow" aria-hidden="true">
                     <svg viewBox="0 0 24 24">
