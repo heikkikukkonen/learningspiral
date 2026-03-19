@@ -20,7 +20,7 @@ const storySteps: StoryStep[] = [
   },
   {
     key: "core",
-    title: "Tallenna. Pohdi. Palaa. Yhdistä. Toimi."
+    title: "Tallenna. Pohdi. Palaa siihen. Yhdistä se. Toimi."
   },
   {
     key: "flow",
@@ -28,42 +28,57 @@ const storySteps: StoryStep[] = [
     lines: [
       "Tallenna se, mikä on merkityksellistä.",
       "Pohdi sitä.",
-      "Palauta se mieleesi.",
-      "Yhdistä se."
+      "Palaa siihen.",
+      "Yhdistä se.",
+      "Anna sen kasvaa ymmärrykseksi.",
+      "Toimi."
     ]
   },
   {
     key: "growth",
-    title: "Anna sen kasvaa ymmärrykseksi. Toimi.",
+    title: "Ajatukset voivat kohdata toisensa.",
     variant: "spiral"
   },
   {
-    key: "story-a",
+    key: "story-a1",
     lines: [
-      "Luet jotain tärkeää.",
-      "Koet oivalluksen hetken.",
-      "Kirjoitat sen ylös."
+      "On olemassa hetkiä,",
+      "joissa eri ajatukset yhdistyvät."
     ]
   },
   {
+    key: "story-a2",
+    lines: [
+      "Jokin, mitä luit.",
+      "Jokin, mitä koit.",
+      "Jokin, mitä olet pohtinut aiemmin."
+    ]
+  },
+  {
+    key: "story-a3",
+    variant: "quote",
+    lines: ["Ja yhtäkkiä —", "ne liittyvät toisiinsa."]
+  },
+  {
     key: "story-b",
-    lines: ["Ja sitten -", "se katoaa."]
+    lines: [
+      "Syntyy uusi ajatus.",
+      "Selkeämpi suunta.",
+      "Oivallus, joka tuntuu oikealta."
+    ]
   },
   {
     key: "story-c",
     lines: [
-      "Ei siksi, ettei se olisi merkityksellistä,",
-      "vaan siksi, ettei mikään tuonut sitä takaisin."
+      "Tämä ei ole sattumaa.",
+      "Se on seurausta siitä,",
+      "että palaat ajatuksiisi",
+      "ja annat niiden kohdata toisensa."
     ]
   },
   {
-    key: "quote",
-    variant: "quote",
-    lines: ["Se, mihin et palaa, katoaa."]
-  },
-  {
     key: "turn",
-    title: "Noema muuttaa tämän"
+    title: "Noema tekee tästä mahdollista"
   },
   {
     key: "definition-a",
@@ -73,35 +88,55 @@ const storySteps: StoryStep[] = [
     key: "definition-b",
     lines: [
       "Se on apurisi,",
-      "joka pitää ajattelusi elävänä",
+      "joka pitää ajattelusi liikkeessä",
       "ja auttaa sitä syvenemään."
     ]
   },
   {
     key: "definition-c",
     lines: [
-      "Se tuo ajatuksesi takaisin.",
-      "Vahvistaa niitä. Yhdistää ne.",
-      "Ja rakentaa niistä ymmärrystä."
+      "Se ei ajattele puolestasi —",
+      "vaan auttaa sinua ajattelemaan paremmin."
     ]
   },
   {
+    key: "definition-d",
+    lines: [
+      "Se tuo ajatuksesi takaisin.",
+      "Vahvistaa niitä.",
+      "Ja ennen kaikkea:",
+      "antaa niille mahdollisuuden kohdata toisensa."
+    ]
+  },
+  {
+    key: "definition-e",
+    lines: ["Ja kun ne kohtaavat,", "syntyy jotain uutta."]
+  },
+  {
     key: "layer-a",
-    lines: ["Uusi tieto ei korvaa vanhaa-", "se rakentuu sen päälle."]
+    lines: [
+      "Uusi tieto ei korvaa vanhaa —",
+      "se tarttuu siihen kiinni."
+    ]
   },
   {
     key: "layer-b",
-    lines: ["Ajatuksista syntyy kokonaisuus.", "Kerros kerrokselta."]
+    lines: [
+      "Ajatuksista alkaa muodostua verkko.",
+      "Ymmärrys, joka rakentuu ajan myötä."
+    ]
   },
   {
     key: "noesis-a",
-    lines: ["Jokainen hetki alkaa havainnosta.", 
-      "Se on <i>noesis</i>."]
+    lines: [
+      "Jokainen hetki alkaa havainnosta.",
+      "Se on noesis."
+    ]
   },
   {
     key: "noesis-b",
     lines: [
-      "Mutta se, mitä siitä syntyy-",
+      "Mutta se, mitä siitä syntyy —",
       "on sinun tulkintasi.",
       "Sinun ymmärryksesi."
     ]
@@ -117,7 +152,7 @@ const storySteps: StoryStep[] = [
   {
     key: "choice-b",
     lines: [
-      "Ero ei ole siinä, mitä tapahtuu-",
+      "Ero ei ole siinä, mitä tapahtuu —",
       "vaan siinä, miten ajattelet siitä."
     ]
   },
@@ -125,40 +160,29 @@ const storySteps: StoryStep[] = [
     key: "core-a",
     lines: [
       "Kun rakennat omaa Noemaasi,",
-      "rakennat tapaasi nähdä ja toimia."
+      "rakennat kykyäsi yhdistää, ymmärtää",
+      "ja nähdä merkitys."
     ]
   },
   {
-    key: "action",
+    key: "action-a",
     lines: ["Ja ajan myötä se näkyy:", "päätöksissäsi", "toiminnassasi", "suunnassasi"]
+  },
+  {
+    key: "action-b",
+    lines: ["Ei vain siinä, mitä tiedät —", "vaan siinä, mitä teet."]
   },
   {
     key: "cta",
     variant: "cta",
     title: "Aloita oman Noemasi rakentaminen",
-    lines: ["Tallenna. Pohdi. Palaa. Yhdistä. Toimi."]
+    lines: ["Tallenna. Palaa. Yhdistä. Toimi."]
   }
 ];
 
 type StoryExperienceProps = {
   mode?: "landing" | "story";
 };
-
-function renderStoryLine(line: string) {
-  const italicMatch = line.match(/^(.*)<i>(.+)<\/i>(.*)$/);
-  if (!italicMatch) {
-    return line;
-  }
-
-  const [, before, italic, after] = italicMatch;
-  return (
-    <>
-      {before}
-      <i>{italic}</i>
-      {after}
-    </>
-  );
-}
 
 export function StoryExperience({ mode = "story" }: StoryExperienceProps) {
   useEffect(() => {
@@ -264,20 +288,16 @@ export function StoryExperience({ mode = "story" }: StoryExperienceProps) {
         >
           <div className="story-step-shell">
             {step.kicker ? <p className="story-step-kicker">{step.kicker}</p> : null}
-            {step.title ? (
-              <h1 className="story-step-title">
-                {step.title}
-              </h1>
-            ) : null}
+            {step.title ? <h1 className="story-step-title">{step.title}</h1> : null}
             {step.lines ? (
               <div className="story-step-lines">
-                {step.lines.map((line, index) => (
+                {step.lines.map((line, lineIndex) => (
                   <p
                     key={`${step.key}-${line}`}
                     className="story-step-line"
-                    style={{ ["--story-delay" as string]: `${index * 180}ms` }}
+                    style={{ ["--story-delay" as string]: `${lineIndex * 180}ms` }}
                   >
-                    {renderStoryLine(line)}
+                    {line}
                   </p>
                 ))}
               </div>
@@ -286,10 +306,7 @@ export function StoryExperience({ mode = "story" }: StoryExperienceProps) {
             {step.variant === "cta" ? (
               <div className="story-step-actions">
                 <Link href="/capture?mode=text" className="button-link primary">
-                  Aloita kirjoittamalla ajatus
-                </Link>
-                <Link href="/sources" className="button-link secondary">
-                  Katso ajatusverkko
+                  Aloita kirjaamalla ajatus
                 </Link>
               </div>
             ) : null}
