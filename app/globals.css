@@ -884,6 +884,135 @@ button.danger {
   max-width: 680px;
 }
 
+.review-card-shell {
+  display: grid;
+  gap: 1rem;
+  padding: 1.2rem;
+  border-radius: 28px;
+  border-color: rgba(204, 214, 228, 0.95);
+  background:
+    radial-gradient(circle at 94% 10%, rgba(255, 224, 156, 0.26) 0%, rgba(255, 255, 255, 0) 22%),
+    radial-gradient(circle at 12% 12%, rgba(173, 219, 255, 0.2) 0%, rgba(255, 255, 255, 0) 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 255, 0.98));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 20px 44px rgba(187, 199, 217, 0.2);
+}
+
+.review-card-shell-idea {
+  background:
+    radial-gradient(circle at 88% 12%, rgba(170, 226, 214, 0.22) 0%, rgba(255, 255, 255, 0) 22%),
+    radial-gradient(circle at 12% 12%, rgba(197, 221, 255, 0.22) 0%, rgba(255, 255, 255, 0) 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 252, 249, 0.98));
+}
+
+.review-card-progress {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.review-card-counter {
+  margin: 0;
+  font-size: clamp(1.9rem, 5vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  color: #21354c;
+}
+
+.review-card-head {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.review-card-title {
+  margin: 0;
+  font-size: clamp(1.55rem, 4vw, 2.25rem);
+  line-height: 1.04;
+  letter-spacing: -0.04em;
+  color: #21354c;
+}
+
+.review-card-lead {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  color: #52647d;
+  white-space: pre-wrap;
+}
+
+.review-card-form textarea {
+  min-height: 180px;
+  border-radius: 22px;
+  padding: 1rem 1.05rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(249, 251, 255, 0.99)),
+    #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 12px 28px rgba(191, 203, 220, 0.16);
+}
+
+.review-reveal-button,
+.review-idea-button {
+  min-height: 52px;
+  border-radius: 999px;
+}
+
+.review-card-panels {
+  gap: 0.9rem;
+}
+
+.review-answer-panel {
+  border-radius: 24px;
+  padding: 1rem 1.05rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(245, 249, 255, 0.9)),
+    #fff;
+}
+
+.review-panel-label {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6c7f99;
+}
+
+.review-schedule-panel h3 {
+  font-size: 1.08rem;
+}
+
+.review-schedule-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.review-schedule-grid form,
+.review-schedule-button {
+  width: 100%;
+}
+
+.review-schedule-button {
+  min-height: 80px;
+  padding: 0.85rem 0.9rem;
+  border-radius: 22px;
+  text-align: left;
+  line-height: 1.3;
+}
+
+.review-idea-actions {
+  margin-top: 0.2rem;
+}
+
+.review-empty-card {
+  text-align: center;
+}
+
 .settings-form {
   gap: 1rem;
 }
@@ -3971,6 +4100,10 @@ svg path[stroke="#067647"] {
 }
 
 @media (max-width: 760px) {
+  .review-schedule-grid {
+    grid-template-columns: 1fr;
+  }
+
   .home-story-link {
     grid-template-columns: 1fr;
     justify-items: start;

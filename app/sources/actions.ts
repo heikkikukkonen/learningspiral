@@ -73,9 +73,13 @@ export async function createSourceAction(formData: FormData) {
 
 export async function completeReviewAction(formData: FormData) {
   const cardId = asString(formData.get("cardId"));
-  const rating = Number(asString(formData.get("rating")) || "3");
+  const scheduleValue = asString(formData.get("schedule"));
+  const schedule =
+    scheduleValue === "soon" || scheduleValue === "near" || scheduleValue === "later"
+      ? scheduleValue
+      : "near";
   const userAnswer = asString(formData.get("userAnswer"));
-  await completeReview(cardId, rating, userAnswer);
+  await completeReview(cardId, schedule, userAnswer);
   revalidatePath("/review");
   revalidatePath("/progress");
 }

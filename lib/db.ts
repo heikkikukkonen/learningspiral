@@ -76,6 +76,17 @@ export interface DueReviewCard extends CardRow {
   summary_content: string | null;
 }
 
+export interface UnrefinedIdeaQueueItem {
+  id: string;
+  title: string;
+  tags: string[] | null;
+  type: SourceType;
+  capture_mode: string;
+  created_at: string;
+  summary_content: string | null;
+  raw_input: string | null;
+}
+
 export interface CardAnswerHistoryItem {
   created_at: string;
   user_answer: string;
@@ -148,6 +159,16 @@ function shiftDays(base: Date, delta: number): Date {
   const copy = new Date(base);
   copy.setUTCDate(copy.getUTCDate() + delta);
   return copy;
+}
+
+function shiftMinutes(base: Date, delta: number): Date {
+  const copy = new Date(base);
+  copy.setUTCMinutes(copy.getUTCMinutes() + delta);
+  return copy;
+}
+
+function randomIntInclusive(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function buildFallbackAssistantSummary(text: string): string {
@@ -337,6 +358,48 @@ export async function listSources() {
     ...source,
     has_cards: sourceIdsWithCards.has(source.id)
   }));
+}
+
+export async function listUnrefinedIdeas(limit = 20): Promise<UnrefinedIdeaQueueItem[]> {
+  const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
+  const sources = await listSources();
+  const queue = sources.filter((source) => !source.has_cards).slice(0, limit);
+
+  if (!queue.length) return [];
+
+  const sourceIds = queue.map((source) => source.id);
+  const { data: summaries, error } = await supabase
+    .from("summaries")
+    .select("source_id, content, raw_input")
+    .eq("user_id", userId)
+    .in("source_id", sourceIds);
+
+  if (error) throw error;
+
+  const summaryBySourceId = new Map(
+    (summaries ?? []).map((summary) => [
+      summary.source_id,
+      {
+        content: typeof summary.content === "string" ? summary.content : null,
+        raw_input: typeof summary.raw_input === "string" ? summary.raw_input : null
+      }
+    ])
+  );
+
+  return queue.map((source) => {
+    const summary = summaryBySourceId.get(source.id);
+    return {
+      id: source.id,
+      title: source.title,
+      tags: source.tags ?? [],
+      type: source.type,
+      capture_mode: source.capture_mode,
+      created_at: source.created_at,
+      summary_content: summary?.content ?? null,
+      raw_input: summary?.raw_input ?? null
+    };
+  });
 }
 
 export async function createSource(input: {
@@ -1174,6 +1237,46 @@ export async function listCardAnswerHistory(cardId: string): Promise<CardAnswerH
     .filter((item): item is CardAnswerHistoryItem => Boolean(item));
 }
 
+export async function listCardAnswerHistoryMap(cardIds: string[]) {
+  if (!cardIds.length) return {} as Record<string, CardAnswerHistoryItem[]>;
+
+  const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
+  const { data, error } = await supabase
+    .from("learning_events")
+    .select("entity_id, created_at, payload")
+    .eq("user_id", userId)
+    .eq("event_type", "review_completed")
+    .in("entity_id", cardIds)
+    .order("created_at", { ascending: false })
+    .limit(Math.max(50, cardIds.length * 10));
+
+  if (error) throw error;
+
+  const historyByCardId: Record<string, CardAnswerHistoryItem[]> = {};
+
+  for (const cardId of cardIds) {
+    historyByCardId[cardId] = [];
+  }
+
+  for (const row of data ?? []) {
+    const payload = (row.payload ?? {}) as Record<string, unknown>;
+    const userAnswer = typeof payload.user_answer === "string" ? payload.user_answer.trim() : "";
+    const cardId = typeof row.entity_id === "string" ? row.entity_id : "";
+    if (!userAnswer || !cardId) continue;
+
+    const current = historyByCardId[cardId] ?? [];
+    if (current.length >= 10) continue;
+    current.push({
+      created_at: row.created_at,
+      user_answer: userAnswer
+    });
+    historyByCardId[cardId] = current;
+  }
+
+  return historyByCardId;
+}
+
 export async function countReviewsCompletedToday(): Promise<number> {
   const supabase = getSupabaseAdmin();
   const userId = await appUserId();
@@ -1193,11 +1296,23 @@ export async function countReviewsCompletedToday(): Promise<number> {
   return count ?? 0;
 }
 
-export async function completeReview(cardId: string, rating: number, userAnswer?: string) {
+export async function completeReview(
+  cardId: string,
+  schedule: "soon" | "near" | "later",
+  userAnswer?: string
+) {
   const supabase = getSupabaseAdmin();
   const userId = await appUserId();
   const reviewedAt = new Date();
-  const dueAt = shiftDays(reviewedAt, 1 + Math.max(0, rating));
+  const laterDays = schedule === "later" ? randomIntInclusive(10, 50) : null;
+  const dueAt =
+    schedule === "soon"
+      ? shiftMinutes(reviewedAt, 3)
+      : schedule === "near"
+        ? shiftDays(reviewedAt, 1)
+        : shiftDays(reviewedAt, laterDays ?? 10);
+  const rating = schedule === "soon" ? 0 : schedule === "near" ? 1 : 2;
+  const intervalDays = schedule === "soon" ? 0 : schedule === "near" ? 1 : (laterDays ?? 10);
 
   const { error: logError } = await supabase.from("review_logs").insert({
     user_id: userId,
@@ -1211,6 +1326,7 @@ export async function completeReview(cardId: string, rating: number, userAnswer?
     .update({
       last_reviewed_at: reviewedAt.toISOString(),
       due_at: dueAt.toISOString(),
+      interval_days: intervalDays,
       reps: 1
     })
     .eq("id", cardId)
@@ -1220,7 +1336,12 @@ export async function completeReview(cardId: string, rating: number, userAnswer?
   await logLearningEvent({
     eventType: "review_completed",
     entityId: cardId,
-    payload: { rating, user_answer: userAnswer?.trim() || null }
+    payload: {
+      rating,
+      schedule,
+      interval_days: intervalDays,
+      user_answer: userAnswer?.trim() || null
+    }
   });
 }
 
