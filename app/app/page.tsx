@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { countDueCards } from "@/lib/db";
+import { countReviewQueueItems } from "@/lib/db";
 
 const homeActions = [
   {
@@ -113,7 +113,7 @@ export default async function AppHomePage({
 }: {
   searchParams?: { captureSaved?: string };
 }) {
-  const dueCardsCount = await countDueCards().catch(() => 0);
+  const reviewQueueCount = await countReviewQueueItems().catch(() => 0);
   const captureSaved = searchParams?.captureSaved === "1";
 
   return (
@@ -154,7 +154,7 @@ export default async function AppHomePage({
                     <strong>{action.title}</strong>
                     {action.href === "/review" ? (
                       <span className="home-list-meta">
-                        {dueCardsCount} {dueCardsCount === 1 ? "kortti kerrattavana" : "korttia kerrattavana"}
+                        {reviewQueueCount} {reviewQueueCount === 1 ? "asia syvennettavana" : "asiaa syvennettavana"}
                       </span>
                     ) : null}
                   </span>

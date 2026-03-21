@@ -151,6 +151,7 @@ export interface PushSubscriptionRow {
 }
 
 const CARD_GENERATION_MODEL = "rule-v1";
+const UNREFINED_IDEA_QUEUE_LIMIT = 20;
 
 function isMissingIdeaStatusColumnError(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
@@ -424,7 +425,9 @@ export async function listUserTagStats(limit = 40): Promise<TagSuggestion[]> {
   }));
 }
 
-export async function listUnrefinedIdeas(limit = 20): Promise<UnrefinedIdeaQueueItem[]> {
+export async function listUnrefinedIdeas(
+  limit = UNREFINED_IDEA_QUEUE_LIMIT
+): Promise<UnrefinedIdeaQueueItem[]> {
   const supabase = getSupabaseAdmin();
   const userId = await appUserId();
   const sources = await listSources();
@@ -464,6 +467,15 @@ export async function listUnrefinedIdeas(limit = 20): Promise<UnrefinedIdeaQueue
       raw_input: summary?.raw_input ?? null
     };
   });
+}
+
+export async function countReviewQueueItems(): Promise<number> {
+  const [dueCardsCount, unrefinedIdeas] = await Promise.all([
+    countDueCards(),
+    listUnrefinedIdeas()
+  ]);
+
+  return dueCardsCount + unrefinedIdeas.length;
 }
 
 export async function createSource(input: {
