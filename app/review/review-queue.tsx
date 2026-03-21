@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { completeReviewAction } from "@/app/sources/actions";
 import { SubmitButton } from "@/app/components/submit-button";
 import type { CardAnswerHistoryItem, DueReviewCard, UnrefinedIdeaQueueItem } from "@/lib/db";
@@ -54,9 +54,6 @@ function ReviewCard({
       <div className="review-card-progress">
         <p className="review-card-counter">
           {currentIndex} / {totalCount}
-        </p>
-        <p className="status" style={{ margin: 0 }}>
-          Kuinka mones nykyisessa jonossa
         </p>
       </div>
 
@@ -212,9 +209,6 @@ function IdeaCard({
         <p className="review-card-counter">
           {currentIndex} / {totalCount}
         </p>
-        <p className="status" style={{ margin: 0 }}>
-          Kuinka mones nykyisessa jonossa
-        </p>
       </div>
 
       <div className="review-card-head">
@@ -222,7 +216,6 @@ function IdeaCard({
           <span className="pill" data-variant="primary">
             Keskenerainen ajatus
           </span>
-          <span className="pill">{idea.title}</span>
           {idea.tags?.slice(0, 3).map((tag) => (
             <span className="pill" key={tag}>
               #{tag}
@@ -260,14 +253,6 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
   const currentIndex = totalCount - items.length + 1;
   const currentItem = items[0] ?? null;
 
-  const headerMeta = useMemo(() => {
-    if (totalCount === 0) {
-      return `${reviewedToday} tehtavaa kasitelty tanaan`;
-    }
-
-    return `${totalCount} asiaa jonossa juuri nyt`;
-  }, [reviewedToday, totalCount]);
-
   function removeCurrentItem() {
     setItems((current) => current.slice(1));
   }
@@ -294,9 +279,6 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
         <p className="muted">
           Yksi asia kerrallaan. Vastaa ensin itse, nayta sitten tiedot tai nosta keskenerainen
           ajatus syvennettavaksi.
-        </p>
-        <p className="status" style={{ marginBottom: 0 }}>
-          {headerMeta}
         </p>
       </div>
 
