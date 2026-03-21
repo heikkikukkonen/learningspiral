@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { countDueCards } from "@/lib/db";
 
 const homeActions = [
   {
@@ -20,12 +19,6 @@ const homeActions = [
     href: "/capture?mode=voice",
     accent: "deep",
     icon: "mic"
-  },
-  {
-    title: "Vahvista Noemaasi",
-    href: "/review",
-    accent: "highlight",
-    icon: "brain"
   }
 ] as const;
 
@@ -40,7 +33,14 @@ function ActionIcon({ icon }: { icon: (typeof homeActions)[number]["icon"] }) {
           strokeLinejoin="round"
           strokeWidth="1.6"
         />
-        <path d="M14.5 6.9l1.6-1.6a1.5 1.5 0 012.1 0l.5.5a1.5 1.5 0 010 2.1l-1.6 1.6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" />
+        <path
+          d="M14.5 6.9l1.6-1.6a1.5 1.5 0 012.1 0l.5.5a1.5 1.5 0 010 2.1l-1.6 1.6"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.6"
+        />
         <path d="M13.7 7.1l3.2 3.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
       </svg>
     );
@@ -63,54 +63,17 @@ function ActionIcon({ icon }: { icon: (typeof homeActions)[number]["icon"] }) {
     );
   }
 
-  if (icon === "mic") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="9" y="4" width="6" height="9.8" rx="3" fill="none" stroke="currentColor" strokeWidth="1.6" />
-        <path d="M6.7 11.4a5.3 5.3 0 0010.6 0" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
-        <path d="M12 16.8v3.1" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
-        <path d="M9.4 20h5.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
-      </svg>
-    );
-  }
-
-  if (icon === "brain") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          d="M9.4 6.3a2.9 2.9 0 00-5.2 1.8c0 .6.1 1.1.4 1.6A3.2 3.2 0 004 15.6c.8.8 1.9 1.2 3 1.2h1.5"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-        />
-        <path
-          d="M14.6 6.3a2.9 2.9 0 015.2 1.8c0 .6-.1 1.1-.4 1.6a3.2 3.2 0 01.5 5.9c-.8.8-1.9 1.2-3 1.2h-1.5"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-        />
-        <path
-          d="M12 5.3v13.2M9.2 8.4c.7.5 1.1 1.4 1.1 2.4s-.4 1.9-1.1 2.4m5.6-4.8c-.7.5-1.1 1.4-1.1 2.4s.4 1.9 1.1 2.4M8.8 16c.8-.2 1.5-.1 2.1.2.4.2.7.5 1.1.9m3.2-1.1c-.8-.2-1.5-.1-2.1.2-.4.2-.7.5-1.1.9"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-        />
-      </svg>
-    );
-  }
-
-  return null;
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="9" y="4" width="6" height="9.8" rx="3" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M6.7 11.4a5.3 5.3 0 0010.6 0" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
+      <path d="M12 16.8v3.1" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
+      <path d="M9.4 20h5.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
+    </svg>
+  );
 }
 
 export default async function AppHomePage() {
-  const dueCardsCount = await countDueCards().catch(() => 0);
-
   return (
     <section className="home-shell home-shell-mobile">
       <div className="home-phone-card">
@@ -123,28 +86,26 @@ export default async function AppHomePage() {
               </div>
               <h1 className="home-brand-title">Noema</h1>
               <p className="home-brand-tagline">
-                <span>Where thinking deepens</span>
-                <span className="home-brand-tagline-emphasis">and turns into meaningful action</span>
+                <span>Tallenna</span>
+                <span className="home-brand-tagline-emphasis">se, mika on merkityksellista</span>
               </p>
             </div>
+
+            <div className="home-intro">
+              <p className="home-intro-lead">
+                Ajatus ei katoa. Voit palata siihen myöhemmin tai jatkaa syventämistä heti.
+              </p>
+            </div>
+
             <div className="home-list">
               {homeActions.map((action) => (
-                <Link
-                  key={action.title}
-                  href={action.href}
-                  className="home-list-card"
-                  data-accent={action.accent}
-                >
+                <Link key={action.title} href={action.href} className="home-list-card" data-accent={action.accent}>
                   <span className="home-list-icon" aria-hidden="true">
                     <ActionIcon icon={action.icon} />
                   </span>
                   <span className="home-list-copy">
                     <strong>{action.title}</strong>
-                    {action.href === "/review" ? (
-                      <span className="home-list-meta">
-                        {dueCardsCount} {dueCardsCount === 1 ? "kortti kerrattavana" : "korttia kerrattavana"}
-                      </span>
-                    ) : null}
+                    <span className="home-list-meta">Aloita tästä nopeasti</span>
                   </span>
                   <span className="home-list-arrow" aria-hidden="true">
                     <svg viewBox="0 0 24 24">
@@ -153,6 +114,15 @@ export default async function AppHomePage() {
                   </span>
                 </Link>
               ))}
+            </div>
+
+            <div className="home-secondary-actions">
+              <Link href="/review" className="button-link secondary">
+                Siirry Syvenny-tilaan
+              </Link>
+              <Link href="/sources" className="button-link secondary">
+                Selaa ajatuksia
+              </Link>
             </div>
           </div>
         </div>

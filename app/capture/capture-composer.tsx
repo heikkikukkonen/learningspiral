@@ -189,7 +189,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
 
   function cancelCapture() {
     resetDraft("text");
-    router.push("/");
+    router.push("/app");
   }
 
   async function saveCapture(
@@ -222,7 +222,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       });
 
       const json = await parseJson<{ sourceId: string }>(response);
-      router.push(intent === "return" ? "/" : `/sources/${json.sourceId}`);
+      router.push(intent === "return" ? "/app" : `/sources/${json.sourceId}`);
       router.refresh();
       return true;
     } catch (err) {
@@ -425,7 +425,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               <div className="capture-text-copy">
                 <h2 style={{ margin: 0 }}>Kirjoita ajatus</h2>
                 <p className="status capture-text-status">
-                  Tallenna alkuperäinen teksti sellaisenaan. Jalostus tapahtuu vasta sources-näkymässä.
+                  Tallenna ajatus kevyesti. Voit palata siihen myohemmin tai jatkaa syventamista heti.
                 </p>
               </div>
             </div>
@@ -450,11 +450,11 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
             <p className="status capture-text-helper" style={{ margin: 0 }}>
               {isTextProcessing
                 ? saveIntent === "return"
-                  ? "Kasittely kaynnissa. Hetken paasta palaat etusivulle."
-                  : "Kasittely kaynnissa. Hetken paasta siirryt idean muokkaukseen."
+                  ? "Kasittely kaynnissa. Hetken paasta palaat Tallenna-nakymaan."
+                  : "Kasittely kaynnissa. Hetken paasta siirryt syventamaan ajatusta."
                 : textCharacterCount > 0
                 ? `${textCharacterCount} merkkia valmiina tallennettavaksi.`
-                : "Ctrl+Enter tallentaa ja avaa idean jalostuksen."}
+                : "Ctrl+Enter tallentaa ja jatkaa syventamiseen."}
             </p>
 
             <div className="capture-text-footer">
@@ -469,7 +469,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     ? textSaveStage === "saving"
                       ? "Tallennetaan..."
                       : "Kasitellaan..."
-                    : "Tallenna ja palaa"}
+                    : "Tallenna ja palaa myohemmin"}
                 </button>
                 <button
                   type="button"
@@ -483,7 +483,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                       {textSaveStage === "saving" ? "Tallennetaan..." : "Kasittelen..."}
                     </span>
                   ) : (
-                    "Tallenna ja jalosta idea"
+                    "Jatka syventamista"
                   )}
                 </button>
               </div>
@@ -527,7 +527,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     <IdeaNetworkLoader
                       variant="panel"
                       label="Luen kuvan tekstiksi"
-                      detail="Teen kuvasta muokattavan litteroinnin ilman lisajalostusta."
+                      detail="Teen kuvasta muokattavan tekstin, jonka voit tallentaa rauhassa."
                     />
                   </div>
                 ) : (
@@ -623,7 +623,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     <p className="status capture-image-helper" style={{ margin: 0 }}>
                       {imageTranscriptCharacterCount > 0
                         ? `${imageTranscriptCharacterCount} merkkia valmiina tallennettavaksi.`
-                        : "Muokkaa litterointia tarvittaessa ennen tallennusta."}
+                        : "Muokkaa tekstia tarvittaessa ennen tallennusta."}
                     </p>
                     <div className="capture-image-save-actions">
                       <button
@@ -638,7 +638,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                           })
                         }
                       >
-                        {isSaving && saveIntent === "return" ? "Tallennetaan..." : "Tallenna ja palaa"}
+                        {isSaving && saveIntent === "return" ? "Tallennetaan..." : "Tallenna ja palaa myohemmin"}
                       </button>
                       <button
                         type="button"
@@ -652,7 +652,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                           })
                         }
                       >
-                        {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Tallenna ja jalosta idea"}
+                        {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Jatka syventamista"}
                       </button>
                       <button type="button" className="capture-image-cancel capture-image-cancel-link" onClick={cancelCapture}>
                         Peruuta
@@ -781,7 +781,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                 </div>
 
                 <label className="form-row capture-voice-transcript-field">
-                  <span>Litteroitu raakateksti</span>
+                  <span>Litteroitu teksti</span>
                   <textarea value={rawInputValue} onChange={(event) => setRawInputValue(event.target.value)} />
                 </label>
 
@@ -807,7 +807,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                         })
                       }
                     >
-                      {isSaving && saveIntent === "return" ? "Tallennetaan..." : "Tallenna ja palaa"}
+                      {isSaving && saveIntent === "return" ? "Tallennetaan..." : "Tallenna ja palaa myohemmin"}
                     </button>
                     <button
                       type="button"
@@ -821,7 +821,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                         })
                       }
                     >
-                      {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Tallenna ja jalosta idea"}
+                      {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Jatka syventamista"}
                     </button>
                   </div>
                 </div>
@@ -851,3 +851,5 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     </div>
   );
 }
+
+

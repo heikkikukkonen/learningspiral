@@ -21,9 +21,9 @@ type SourceEditorFormProps = {
 };
 
 const refineModes = [
-  { id: "refresh", label: "Kirkasta ajatus" },
-  { id: "deepen", label: "Syvenna ajattelua" },
-  { id: "summarize", label: "Tiivista ydin" }
+  { id: "refresh", label: "Haasta ajatusta" },
+  { id: "deepen", label: "Hae lisatietoa" },
+  { id: "summarize", label: "Muotoile tasta tehtava" }
 ] as const;
 
 export function SourceEditorForm({
@@ -42,10 +42,10 @@ export function SourceEditorForm({
   const [tags, setTags] = useState(() => dedupeTags(initialTags));
   const [tagInput, setTagInput] = useState("");
   const [aiNote, setAiNote] = useState(
-    "Voin kirkastaa, syventaa tai tiivistaa ajatusta nykyisten kenttien pohjalta."
+    "Pyydä Noemaa haastamaan, laajentamaan tai suuntaamaan ajatustasi."
   );
   const [tagNote, setTagNote] = useState(
-    "Voit lisata tageja itse tai valita aiemmista ehdotuksista."
+    "Voit lisätä tunnisteita itse tai valita aiemmista ehdotuksista."
   );
   const [activeMode, setActiveMode] = useState<(typeof refineModes)[number]["id"] | null>(null);
   const [isRefining, setIsRefining] = useState(false);
@@ -114,8 +114,8 @@ export function SourceEditorForm({
     setTagInput("");
     setTagNote(
       resolvedSuggestion
-        ? `Kaytin olemassa olevaa tagia "${resolvedSuggestion.tag}", jotta saman aiheen tagit pysyvat yhdessa.`
-        : `Lisattiin uusi tagi "${resolvedTag}".`
+        ? `Kaytin olemassa olevaa tunnistetta "${resolvedSuggestion.tag}", jotta saman aiheen ajatukset pysyvat yhdessa.`
+        : `Lisattiin uusi tunniste "${resolvedTag}".`
     );
   }
 
@@ -140,11 +140,11 @@ export function SourceEditorForm({
         setAnalysis(result.analysis);
         setAiNote(
           result.model
-            ? `Paivitin analyysin tilassa "${result.mode}". Muista tallentaa muutokset, jos haluat sailyttaa ne.`
-            : `Analyysi paivittyi tilassa "${result.mode}". Muista tallentaa muutokset.`
+            ? `Noema paivitti vastauksen tilassa "${result.mode}". Muista tallentaa muutokset.`
+            : `Noeman vastaus paivittyi tilassa "${result.mode}". Muista tallentaa muutokset.`
         );
       } catch (error) {
-        setAiNote(error instanceof Error ? error.message : "Analyysin paivitys epaonnistui.");
+        setAiNote(error instanceof Error ? error.message : "Noeman vastauksen paivitys epaonnistui.");
       } finally {
         setActiveMode(null);
         setIsRefining(false);
@@ -165,12 +165,12 @@ export function SourceEditorForm({
         setTagNote(
           result.tags.length > 0
             ? result.model
-              ? "Loin tagit otsikon, idean ja aiempien tagiesi perusteella. Muista tallentaa muutokset."
-              : "Tagit paivitettiin aiempia tageja painottavalla varalogiikalla. Muista tallentaa muutokset."
-            : "Tageja ei saatu luotua nykyisista kentista."
+              ? "Loin tunnisteet otsikon, ajatuksen ja aiempien tunnisteidesi perusteella. Muista tallentaa muutokset."
+              : "Tunnisteet paivitettiin varalogiikalla. Muista tallentaa muutokset."
+            : "Tunnisteita ei saatu luotua nykyisista kentista."
         );
       } catch (error) {
-        setTagNote(error instanceof Error ? error.message : "Tagien luonti epaonnistui.");
+        setTagNote(error instanceof Error ? error.message : "Tunnisteiden luonti epaonnistui.");
       } finally {
         setIsGeneratingTags(false);
       }
@@ -191,37 +191,35 @@ export function SourceEditorForm({
             name="title"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="Anna muistiinpanolle selkea otsikko"
+            placeholder="Anna ajatukselle selkea otsikko"
             required
           />
         </label>
 
         <label className="form-row source-edit-field">
-          <span>Idea</span>
+          <span>Selkeyta</span>
           <textarea
             name="idea"
             value={idea}
             onChange={(event) => setIdea(event.target.value)}
-            placeholder="Kirjoita ytimekas paaoivallus tai varsinainen ajatus."
+            placeholder="Anna ajatukselle selkea muoto."
             required
           />
         </label>
 
         <div className="form-row source-edit-field">
           <div className="source-analysis-header">
-            <span>Tagit</span>
+            <span>Liita tunnisteita</span>
+            <p className="status" style={{ margin: 0 }}>
+              Tunnisteet auttavat ajatuksia loytamaan toisensa.
+            </p>
           </div>
 
           <div className="source-tag-editor">
             {hasTags ? (
               <div className="source-tag-list">
                 {tags.map((tag) => (
-                  <button
-                    key={tag}
-                    className="source-tag-chip"
-                    onClick={() => removeTag(tag)}
-                    type="button"
-                  >
+                  <button key={tag} className="source-tag-chip" onClick={() => removeTag(tag)} type="button">
                     <span>{tag}</span>
                     <span aria-hidden="true">x</span>
                   </button>
@@ -239,7 +237,7 @@ export function SourceEditorForm({
                     addResolvedTag();
                   }
                 }}
-                placeholder="Lisaa tagi tai hae olemassa olevista"
+                placeholder="Lisaa tunniste tai hae olemassa olevista"
               />
             </div>
 
@@ -265,7 +263,7 @@ export function SourceEditorForm({
 
             <div className="source-tag-add source-tag-add-actions">
               <button type="button" className="secondary" onClick={() => addResolvedTag()}>
-                {exactAutocompleteSuggestion ? "Kayta olemassa olevaa" : "Lisaa uusi tunniste"}
+                {exactAutocompleteSuggestion ? "Kayta olemassa olevaa" : "Lisaa tunniste"}
               </button>
               {!hasTags ? (
                 <button
@@ -305,13 +303,13 @@ export function SourceEditorForm({
 
         <div className="form-row source-edit-field source-analysis-shell">
           <div className="source-analysis-header">
-            <span>Analyysi</span>
+            <span>Kysy Noemalta</span>
             <p className="status" style={{ margin: 0 }}>
-              Jatka ajattelua nykyisen otsikon, idean ja alkuperaisen capturen pohjalta.
+              Pyydä Noemaa haastamaan, laajentamaan tai suuntaamaan ajatustasi.
             </p>
           </div>
 
-          <div className="source-analysis-actions" role="group" aria-label="Ajatuksen jalostus">
+          <div className="source-analysis-actions" role="group" aria-label="Kysy Noemalta">
             {refineModes.map((mode) => (
               <button
                 key={mode.id}
@@ -332,7 +330,7 @@ export function SourceEditorForm({
             value={analysis}
             onChange={(event) => setAnalysis(event.target.value)}
             className="source-analysis-textarea"
-            placeholder="Jalosta ideaa pidemmalle: miksi tama on tarkea, mihin se liittyy, mita haluat muistaa."
+            placeholder="Kirjoita tahan Noeman suunta, jatkoajatus tai oma tarkennuksesi."
             required
           />
         </div>

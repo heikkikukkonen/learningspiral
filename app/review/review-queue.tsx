@@ -25,7 +25,7 @@ type Props = {
 function buildIdeaPreview(idea: UnrefinedIdeaQueueItem): string {
   const primary = idea.raw_input?.trim() || idea.summary_content?.trim() || "";
   if (!primary) {
-    return "Ajatus odottaa viela otsikointia ja jalostusta.";
+    return "Tama ajatus odottaa viela syventamista.";
   }
 
   return primary.length > 280 ? `${primary.slice(0, 277)}...` : primary;
@@ -56,18 +56,17 @@ function ReviewCard({
           {currentIndex} / {totalCount}
         </p>
         <p className="status" style={{ margin: 0 }}>
-          Kuinka mones nykyisessa jonossa
+          Missa kohdassa olet nyt
         </p>
       </div>
 
       <div className="review-card-head">
         <div className="source-meta">
-          <span className="pill" data-variant="primary">
-            {card.card_type}
-          </span>
+          <span className="pill" data-variant="primary">Tehtava</span>
           <span className="pill">{card.source_title}</span>
         </div>
         <h2 className="review-card-title">{card.prompt}</h2>
+        <p className="review-card-lead">Palaa tahan rauhassa. Mita ajattelet tasta nyt?</p>
       </div>
 
       <div className="form review-card-form">
@@ -88,14 +87,14 @@ function ReviewCard({
             className="secondary review-reveal-button"
             onClick={() => setShowAnswer((current) => !current)}
           >
-            {showAnswer ? "Piilota suunta" : "Tarkista suunta"}
+            {showAnswer ? "Piilota suunta" : "Tutki tata lisaa"}
           </button>
         </div>
 
         {showAnswer ? (
           <div className="list review-card-panels">
             <article className="card review-answer-panel">
-              <p className="review-panel-label">Mallivastaus</p>
+              <p className="review-panel-label">Suunta</p>
               <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{card.answer}</p>
             </article>
 
@@ -122,7 +121,7 @@ function ReviewCard({
             </article>
 
             <details className="card review-answer-panel">
-              <summary style={{ cursor: "pointer", fontWeight: 700 }}>Avaa tehtavaan liittyva teoria</summary>
+              <summary style={{ cursor: "pointer", fontWeight: 700 }}>Avaa ajatukseen liittyva tausta</summary>
               <div style={{ marginTop: "0.7rem" }}>
                 <p className="status" style={{ marginTop: 0 }}>
                   Lahde: {card.source_title}
@@ -135,7 +134,7 @@ function ReviewCard({
 
             <article className="card review-answer-panel review-schedule-panel">
               <h3 style={{ marginTop: 0, marginBottom: "0.5rem" }}>
-                Kuinka vahvasti haluat palata tahan uudelleen?
+                Milloin haluat palata tahan uudelleen?
               </h3>
               <div className="review-schedule-grid">
                 <form
@@ -151,7 +150,7 @@ function ReviewCard({
                     pendingText="Tallennetaan..."
                     disabled={pending || !userAnswer.trim()}
                   >
-                    Heti (3min)
+                    Heti (3 min)
                   </SubmitButton>
                 </form>
                 <form
@@ -167,7 +166,7 @@ function ReviewCard({
                     pendingText="Tallennetaan..."
                     disabled={pending || !userAnswer.trim()}
                   >
-                    Pida lahella (1paiva)
+                    Pida lahella (1 paiva)
                   </SubmitButton>
                 </form>
                 <form
@@ -213,14 +212,14 @@ function IdeaCard({
           {currentIndex} / {totalCount}
         </p>
         <p className="status" style={{ margin: 0 }}>
-          Kuinka mones nykyisessa jonossa
+          Missa kohdassa olet nyt
         </p>
       </div>
 
       <div className="review-card-head">
         <div className="source-meta">
           <span className="pill" data-variant="primary">
-            Jalostamaton idea
+            Ajatus
           </span>
           <span className="pill">{idea.title}</span>
           {idea.tags?.slice(0, 3).map((tag) => (
@@ -229,23 +228,23 @@ function IdeaCard({
             </span>
           ))}
         </div>
-        <h2 className="review-card-title">Haluatko jalostaa taman ajatuksen valmiiksi?</h2>
+        <h2 className="review-card-title">Tama ajatus odottaa syventamista.</h2>
         <p className="review-card-lead">{buildIdeaPreview(idea)}</p>
       </div>
 
       <div className="card review-answer-panel">
-        <p className="review-panel-label">Miksi tama on nyt jonossa</p>
+        <p className="review-panel-label">Miksi tama nakyy taalla</p>
         <p style={{ margin: 0 }}>
-          Ajatus on tallessa, mutta sita ei ole viela muokattu valmiiksi eika muutettu korteiksi.
+          Ajatuksesta puuttuu viela tunniste tai tehtava. Jatka tasta, kun olet valmis syventymaan.
         </p>
       </div>
 
       <div className="actions review-idea-actions">
         <Link href={`/sources/${idea.id}`} className="button-link primary review-idea-button">
-          Jalosta nyt
+          Jatka ajatusta
         </Link>
         <button type="button" className="secondary review-idea-button" onClick={onSkip}>
-          Jatka myohemmin
+          Palaa myohemmin
         </button>
       </div>
     </article>
@@ -265,7 +264,7 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
       return `${reviewedToday} tehtavaa kasitelty tanaan`;
     }
 
-    return `${totalCount} asiaa jonossa juuri nyt`;
+    return `${totalCount} asiaa odottaa juuri nyt`;
   }, [reviewedToday, totalCount]);
 
   function removeCurrentItem() {
@@ -290,10 +289,9 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
   return (
     <>
       <div className="page-header">
-        <h1>Vahvista Noemaasi</h1>
+        <h1>Syvenny</h1>
         <p className="muted">
-          Yksi asia kerrallaan. Vastaa ensin itse, tarkista sitten suunta tai nosta keskenerainen
-          ajatus jalostukseen.
+          Rauhallinen tila ajatella. Yksi ajatus kerrallaan. Palaa siihen, mika on noussut esiin.
         </p>
         <p className="status" style={{ marginBottom: 0 }}>
           {headerMeta}
@@ -333,10 +331,9 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
           <p className="review-card-counter" style={{ marginBottom: "0.35rem" }}>
             {totalCount === 0 ? 0 : totalCount} / {totalCount}
           </p>
-          <h2 className="review-card-title">Jono on tasta eraa tyhja</h2>
+          <h2 className="review-card-title">Kaikki ajatukset ovat talla hetkella kasitelty.</h2>
           <p className="muted" style={{ marginBottom: 0 }}>
-            Ei uusia tehtavia juuri nyt. Voit tuoda uusia ajatuksia talteen tai jalostaa olemassa
-            olevia lahtenakymassa.
+            Tallenna uusi ajatus tai palaa myohemmin.
           </p>
         </article>
       )}

@@ -94,10 +94,10 @@ export default async function SourceDetailsPage({
     return (
       <section className="review-shell">
         <div className="page-header">
-          <h1>Idea</h1>
+          <h1>Ajatus</h1>
         </div>
         <article className="card">
-          <strong>Tietokanta ei ole yhteydessä</strong>
+          <strong>Tietokanta ei ole yhteydessa</strong>
           <p className="status" style={{ marginBottom: 0 }}>
             {loadError}
           </p>
@@ -120,10 +120,9 @@ export default async function SourceDetailsPage({
   return (
     <section className="grid source-workspace">
       <div className="page-header source-workspace-header">
-        <h1>Idean jalostaminen</h1>
+        <h1>Syvenna ajatusta</h1>
         <p className="muted">
-          Muokkaa ideasta selkea otsikko, ydinajatus, analyysi ja tagit ennen korttien luontia.
-          {" "}Voit myos vain tallentaa tiedot ja jalostaa idean valmiiksi myohemmin.
+          Anna ajatukselle selkea muoto. Tunnisteet auttavat ajatuksia loytamaan toisensa, ja tehtava auttaa palaamaan tahan myohemmin.
         </p>
       </div>
 
@@ -131,9 +130,7 @@ export default async function SourceDetailsPage({
         <article className="card source-editor-card">
           <div className="source-editor-topbar">
             <div className="source-meta">
-              {sourceTypeLabel(source.type) ? (
-                <span className="pill">{sourceTypeLabel(source.type)}</span>
-              ) : null}
+              {sourceTypeLabel(source.type) ? <span className="pill">{sourceTypeLabel(source.type)}</span> : null}
               {captureModeLabel(source.capture_mode) ? (
                 <span className="pill">{captureModeLabel(source.capture_mode)}</span>
               ) : null}
@@ -154,7 +151,7 @@ export default async function SourceDetailsPage({
 
           <div className="source-origin-panel">
             <details className="capture-details source-capture-details">
-              <summary>Nayta alkuperainen capture</summary>
+              <summary>Nayta alkuperainen ajatus</summary>
 
               <div className="source-capture-details-body">
                 <div className="source-meta">
@@ -195,9 +192,7 @@ export default async function SourceDetailsPage({
                   </div>
                 ) : null}
 
-                {summary?.raw_input ? (
-                  <p className="source-capture-raw-text">{summary.raw_input}</p>
-                ) : null}
+                {summary?.raw_input ? <p className="source-capture-raw-text">{summary.raw_input}</p> : null}
               </div>
             </details>
           </div>
@@ -207,29 +202,21 @@ export default async function SourceDetailsPage({
       <article className="card source-editor-card source-task-card">
         <div className="source-origin-header">
           <div className="page-header source-task-card-header">
-            <h2>Luo tehtavat</h2>
+            <h2>Luo tehtava</h2>
             <p className="muted">
-              Kun olet jalostanut idean valmiiksi, voit luoda tehtavakortit automaattisesti.
-              Tehtavakorttien avulla varmistan, etta idea ei unohdu sinulta kertaamalla niita
-              automaattisesti.
+              Tehtava auttaa palaamaan ajatukseen myohemmin. Luo tasta seuraava rauhallinen askel.
             </p>
           </div>
           <form action={generateCardsAction}>
             <input type="hidden" name="sourceId" value={source.id} />
-            <SubmitButton
-              className="primary"
-              pendingText="Luodaan tehtavia..."
-              loadingVariant="idea-network"
-            >
-              Jatka ajattelua korteilla
+            <SubmitButton className="primary" pendingText="Luodaan tehtavaa..." loadingVariant="idea-network">
+              Luo tehtava
             </SubmitButton>
           </form>
         </div>
 
         <div className="list" style={{ marginTop: "0.8rem" }}>
-          {cards.length === 0 ? (
-            <div className="source-task-empty" />
-          ) : null}
+          {cards.length === 0 ? <div className="source-task-empty" /> : null}
 
           {cards.map((card, index) => (
             <article className="card" key={card.id}>
@@ -241,37 +228,18 @@ export default async function SourceDetailsPage({
               </div>
 
               <div className="form" style={{ marginTop: "0.7rem" }}>
-                <input
-                  form="source-editor-form"
-                  type="hidden"
-                  name={`cards[${index}].cardId`}
-                  value={card.id}
-                />
+                <input form="source-editor-form" type="hidden" name={`cards[${index}].cardId`} value={card.id} />
                 <label className="form-row">
                   <span>Kysymys</span>
-                  <input
-                    form="source-editor-form"
-                    name={`cards[${index}].prompt`}
-                    defaultValue={card.prompt}
-                    required
-                  />
+                  <input form="source-editor-form" name={`cards[${index}].prompt`} defaultValue={card.prompt} required />
                 </label>
                 <label className="form-row">
                   <span>Vastaus</span>
-                  <textarea
-                    form="source-editor-form"
-                    name={`cards[${index}].answer`}
-                    defaultValue={card.answer}
-                    required
-                  />
+                  <textarea form="source-editor-form" name={`cards[${index}].answer`} defaultValue={card.answer} required />
                 </label>
                 <label className="form-row">
                   <span>Tyyppi</span>
-                  <select
-                    form="source-editor-form"
-                    name={`cards[${index}].cardType`}
-                    defaultValue={card.card_type}
-                  >
+                  <select form="source-editor-form" name={`cards[${index}].cardType`} defaultValue={card.card_type}>
                     <option value="recall">recall</option>
                     <option value="apply">apply</option>
                     <option value="reflect">reflect</option>
@@ -312,10 +280,7 @@ export default async function SourceDetailsPage({
         </div>
       </article>
 
-      <SourcePageActions
-        sourceId={source.id}
-        lastSavedLabel={lastSavedLabel}
-      />
+      <SourcePageActions sourceId={source.id} lastSavedLabel={lastSavedLabel} />
     </section>
   );
 }

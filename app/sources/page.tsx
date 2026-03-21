@@ -6,8 +6,8 @@ import { SourceType } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Ajatusvirta",
-  description: "Kaikki talteen otetut ajatukset, joihin voit palata, syventää ja yhdistää."
+  title: "Ajatukset",
+  description: "Selaa tallentamiasi ajatuksia ja palaa niihin myöhemmin."
 };
 
 type SourceListItem = {
@@ -29,9 +29,14 @@ function captureModeLabel(captureMode: string): string | null {
   return captureMode === "chat" ? null : captureMode;
 }
 
-export default async function SourcesPage() {
+export default async function SourcesPage({
+  searchParams
+}: {
+  searchParams?: { q?: string };
+}) {
   let sources: SourceListItem[] = [];
   let loadError = "";
+  const query = searchParams?.q?.trim().toLocaleLowerCase("fi-FI") ?? "";
 
   try {
     sources = await listSources();
@@ -42,36 +47,62 @@ export default async function SourcesPage() {
         : "Could not load data. Check Supabase configuration.";
   }
 
+  const filteredSources = query
+    ? sources.filter((source) => {
+        const haystack = [
+          source.title,
+          source.author ?? "",
+          source.capture_mode,
+          ...(source.tags ?? [])
+        ]
+          .join(" ")
+          .toLocaleLowerCase("fi-FI");
+        return haystack.includes(query);
+      })
+    : sources;
+
   return (
     <section>
       <div className="page-header">
-        <h1>Ajatusvirta</h1>
-        <p className="muted">Kaikki talteen otetut ajatukset, joihin voit palata, syventää ja yhdistää.</p>
+        <h1>Ajatukset</h1>
+        <p className="muted">Selaa tallentamiasi ajatuksia ja palaa niihin myöhemmin.</p>
       </div>
 
-      <div className="actions" style={{ marginBottom: "1rem" }}>
-        <Link href="/capture?mode=text" className="button-link primary">
-          Uusi ajatus
-        </Link>
-        <Link href="/progress" className="button-link secondary">
-          Katso virta
-        </Link>
-      </div>
+      <form className="card thoughts-search-card" style={{ marginBottom: "1rem" }}>
+        <label className="form-row">
+          <span>Haku</span>
+          <input
+            type="search"
+            name="q"
+            defaultValue={searchParams?.q ?? ""}
+            placeholder="Hae ajatuksia, tunnisteita tai sisältöä"
+          />
+        </label>
+
+        <div className="actions">
+          <button type="submit" className="primary">
+            Hae
+          </button>
+          <Link href="/app" className="button-link secondary">
+            Tallenna uusi ajatus
+          </Link>
+        </div>
+      </form>
 
       {loadError ? (
         <article className="card">
-          <strong>Tietokanta ei ole yhteydessä</strong>
+          <strong>Tietokanta ei ole yhteydessa</strong>
           <p className="status" style={{ marginBottom: 0 }}>
             {loadError}
           </p>
           <p className="status" style={{ marginBottom: 0 }}>
-            Lisää `.env.local` tiedostoon `NEXT_PUBLIC_SUPABASE_URL` ja `SUPABASE_SERVICE_ROLE_KEY`.
+            Lisaa `.env.local` tiedostoon `NEXT_PUBLIC_SUPABASE_URL` ja `SUPABASE_SERVICE_ROLE_KEY`.
           </p>
         </article>
       ) : null}
 
       <div className="list" style={{ marginTop: loadError ? "1rem" : 0 }}>
-        {sources.map((source) => (
+        {filteredSources.map((source) => (
           <article className="card source-row" key={source.id}>
             <div>
               <h3 style={{ margin: "0 0 0.4rem" }}>{source.title}</h3>
@@ -105,11 +136,17 @@ export default async function SourcesPage() {
             </Link>
           </article>
         ))}
-        {!loadError && sources.length === 0 ? (
+
+        {!loadError && filteredSources.length === 0 ? (
           <article className="card">
             <p className="muted" style={{ margin: 0 }}>
-              Ei ajatuksia vielä. Aloita kirjoittamalla ensimmäinen.
+              {query ? "Haulla ei loytynyt ajatuksia." : "Et ole viela tallentanut ajatuksia."}
             </p>
+            {!query ? (
+              <p className="muted" style={{ marginBottom: 0 }}>
+                Aloita tallentamalla ensimmainen ajatus.
+              </p>
+            ) : null}
           </article>
         ) : null}
       </div>

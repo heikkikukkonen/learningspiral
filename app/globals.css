@@ -121,9 +121,9 @@ a {
 .header-icon {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  gap: 0.45rem;
+  min-height: 2.3rem;
+  padding: 0.35rem 0.7rem 0.35rem 0.45rem;
   border-radius: 999px;
   color: #5d6f8f;
   transition:
@@ -139,8 +139,21 @@ a {
 }
 
 .header-icon svg {
-  width: 1.45rem;
-  height: 1.45rem;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.header-icon-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.header-icon-label {
+  font-size: 0.84rem;
+  font-weight: 700;
 }
 
 main.container {
@@ -2336,6 +2349,18 @@ button.danger {
   font-weight: 600;
 }
 
+.home-intro {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.home-intro-lead {
+  margin: 0;
+  max-width: 28rem;
+  text-align: center;
+  color: #5e708e;
+}
+
 .home-list {
   display: grid;
   gap: 0.95rem;
@@ -2750,6 +2775,13 @@ button.danger {
   font-weight: 600;
   letter-spacing: 0.01em;
   color: rgba(69, 96, 127, 0.72);
+}
+
+.home-secondary-actions {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .home-list-card[data-accent="highlight"] .home-list-copy strong {
@@ -4306,6 +4338,16 @@ svg path[stroke="#067647"] {
   cursor: pointer;
 }
 
+.thoughts-search-card {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.settings-signout-mobile {
+  display: none;
+  margin-top: 0.9rem;
+}
+
 .auth-shell {
   display: grid;
   gap: 1rem;
@@ -4498,6 +4540,22 @@ svg path[stroke="#067647"] {
   .auth-header-link-mobile {
     width: 2.3rem;
     height: 2.3rem;
+  }
+
+  .header-actions {
+    gap: 0.2rem;
+  }
+
+  .header-icon {
+    padding: 0.35rem 0.45rem;
+  }
+
+  .header-icon-label {
+    font-size: 0.74rem;
+  }
+
+  .settings-signout-mobile {
+    display: block;
   }
 }
 

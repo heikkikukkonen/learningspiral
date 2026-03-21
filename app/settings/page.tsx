@@ -1,4 +1,5 @@
 import { SubmitButton } from "@/app/components/submit-button";
+import { signOutAction } from "@/app/login/actions";
 import { getCurrentUser, getCurrentUserProfile } from "@/lib/auth";
 import { getUserSettings } from "@/lib/db";
 import { getPushPublicKey, isPushConfigured } from "@/lib/push";
@@ -23,10 +24,7 @@ export default async function SettingsPage({
     <section className="review-shell">
       <div className="page-header">
         <h1>Asetukset</h1>
-        <p className="muted">
-          Määritä oma kieli ja ohjaus, jota käytetään analyysin päivityksessä,
-          syvennyksessä, tiivistyksessä, korttien luonnissa ja tagien ehdottamisessa.
-        </p>
+        <p className="muted">Hallitse omaa Noemaasi ja sovelluksen asetuksia.</p>
         {saved ? (
           <p className="status" style={{ margin: "0.5rem 0 0", color: "var(--success)" }}>
             Asetukset tallennettu onnistuneesti.
@@ -40,7 +38,7 @@ export default async function SettingsPage({
             <div>
               <h2 style={{ margin: 0 }}>Tili</h2>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Rekisteröityminen, aktivointi ja Noema-tarinasi syy.
+                Kayttajan tiedot ja tilin tila.
               </p>
             </div>
             <span className="pill" data-variant="primary">
@@ -60,7 +58,7 @@ export default async function SettingsPage({
           </div>
 
           <div className="form-row">
-            <span>Miksi haluat olla osa Noema-tarinaa?</span>
+            <span>Miksi haluat olla osa Noemaa?</span>
             <p className="status" style={{ margin: 0, color: "var(--text)" }}>
               {profile?.motivation || user.user_metadata?.motivation || "Ei tallennettua perustelua."}
             </p>
@@ -68,9 +66,15 @@ export default async function SettingsPage({
 
           {!user.email_confirmed_at ? (
             <p className="status" style={{ margin: 0, color: "var(--danger)" }}>
-              Tili aktivoituu vasta, kun sähköpostissa oleva vahvistuslinkki on avattu.
+              Tili aktivoituu vasta, kun sahkopostissa oleva vahvistuslinkki on avattu.
             </p>
           ) : null}
+
+          <form action={signOutAction} className="settings-signout-mobile">
+            <button type="submit" className="secondary">
+              Kirjaudu ulos
+            </button>
+          </form>
         </article>
       ) : null}
 
@@ -80,13 +84,10 @@ export default async function SettingsPage({
             <div>
               <h2 style={{ margin: 0 }}>Kieli</h2>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Kaikki sinulle näkyvä sisältö pyydetään
-                tällä kielellä.
+                Kaikki sinulle nakyva sisalto pyydetaan talla kielella.
               </p>
             </div>
-            <span className="pill" data-variant="primary">
-              User level
-            </span>
+            <span className="pill" data-variant="primary">Kaytossa</span>
           </div>
 
           <label className="form-row">
@@ -105,55 +106,54 @@ export default async function SettingsPage({
             <div>
               <h2 style={{ margin: 0 }}>Prompt-ohjaus</h2>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Näitä kenttiä lisätään sellaisenaan mukaan kyseisen toiminnon
-                ohjaukseen.
+                Naita kenttia lisataan sellaisenaan mukaan kyseisen toiminnon ohjaukseen.
               </p>
             </div>
           </div>
 
           <div className="grid settings-grid">
             <label className="form-row">
-              <span>Analyysin prompt / refresh</span>
+              <span>Noeman prompt / refresh</span>
               <textarea
                 name="analysisPromptRefresh"
                 defaultValue={settings.analysisPromptRefresh}
-                placeholder="Esim. pidä näkökulma käytännöllisenä ja tuo esiin päätösvaikutus."
+                placeholder="Esim. pida nakokulma kaytannollisena ja tuo esiin paatosvaikutus."
               />
             </label>
 
             <label className="form-row">
-              <span>Analyysin prompt / deepen</span>
+              <span>Noeman prompt / deepen</span>
               <textarea
                 name="analysisPromptDeepen"
                 defaultValue={settings.analysisPromptDeepen}
-                placeholder="Esim. syvennä trade-offit, riskit ja seuraava konkreettinen askel."
+                placeholder="Esim. syvenna trade-offit, riskit ja seuraava konkreettinen askel."
               />
             </label>
 
             <label className="form-row">
-              <span>Analyysin prompt / summarize</span>
+              <span>Noeman prompt / summarize</span>
               <textarea
                 name="analysisPromptSummarize"
                 defaultValue={settings.analysisPromptSummarize}
-                placeholder="Esim. tiivistä ydinväite, älä menetä toimintaehdotusta."
+                placeholder="Esim. tiivista ydinvaite, ala menetä toimintaehdotusta."
               />
             </label>
 
             <label className="form-row">
-              <span>Korttien luonti prompt</span>
+              <span>Tehtavien luonti prompt</span>
               <textarea
                 name="cardGenerationPrompt"
                 defaultValue={settings.cardGenerationPrompt}
-                placeholder="Esim. tee korteista päätöksentekoa ja soveltamista tukevia."
+                placeholder="Esim. tee tehtavista paatoksentekoa ja soveltamista tukevia."
               />
             </label>
 
             <label className="form-row">
-              <span>Tagien luonnin prompt</span>
+              <span>Tunnisteiden luonnin prompt</span>
               <textarea
                 name="tagGenerationPrompt"
                 defaultValue={settings.tagGenerationPrompt}
-                placeholder="Esim. luo 3-6 lyhyttä, hakukelpoista tagia ilman päällekkäisiä synonyymeja."
+                placeholder="Esim. luo 3-6 lyhytta, hakukelpoista tunnistetta ilman paallekkaisia synonyymeja."
               />
             </label>
           </div>
