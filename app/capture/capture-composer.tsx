@@ -392,6 +392,13 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       ? "Luon ajatukselle uuden merkinnän ja siirrän sinut seuraavaksi muokkausnäkymään."
       : "Tarkistan tekstin talteen sopivaan muotoon ennen kuin ajatus tallennetaan.";
 
+  const activeTextProcessingDetail =
+    textSaveStage === "saving"
+      ? saveIntent === "return"
+        ? "Luon ajatukselle uuden merkinnan ja palautan sinut etusivulle."
+        : "Luon ajatukselle uuden merkinnan ja siirran sinut seuraavaksi muokkausnakymaan."
+      : textProcessingDetail;
+
   return (
     <div className="grid">
       <input
@@ -496,7 +503,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
           </div>
           {isTextProcessing ? (
             <div className="capture-text-processing" aria-live="polite">
-              <IdeaNetworkLoader variant="panel" label={textProcessingLabel} detail={textProcessingDetail} />
+              <IdeaNetworkLoader variant="panel" label={textProcessingLabel} detail={activeTextProcessingDetail} />
             </div>
           ) : null}
           <div className="capture-text-visual" aria-hidden="true">
