@@ -122,7 +122,7 @@ export default async function SourceDetailsPage({
       <div className="page-header source-workspace-header">
         <h1>Idean jalostaminen</h1>
         <p className="muted">
-          Muokkaa ideasta selkea otsikko, ydinajatus, analyysi ja tagit ennen korttien luontia.
+          Muokkaa ideasta selkea otsikko, ydinajatus, analyysi ja tunnisteet ennen korttien luontia.
           {" "}Voit myos vain tallentaa tiedot ja jalostaa idean valmiiksi myohemmin.
         </p>
       </div>

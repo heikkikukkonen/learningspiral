@@ -45,7 +45,7 @@ export function SourceEditorForm({
     "Voin kirkastaa, syventaa tai tiivistaa ajatusta nykyisten kenttien pohjalta."
   );
   const [tagNote, setTagNote] = useState(
-    "Voit lisata tageja itse tai valita aiemmista ehdotuksista."
+    "Voit lisata tunnisteita itse tai valita aiemmista ehdotuksista."
   );
   const [activeMode, setActiveMode] = useState<(typeof refineModes)[number]["id"] | null>(null);
   const [isRefining, setIsRefining] = useState(false);
@@ -114,8 +114,8 @@ export function SourceEditorForm({
     setTagInput("");
     setTagNote(
       resolvedSuggestion
-        ? `Kaytin olemassa olevaa tagia "${resolvedSuggestion.tag}", jotta saman aiheen tagit pysyvat yhdessa.`
-        : `Lisattiin uusi tagi "${resolvedTag}".`
+        ? `Kaytin olemassa olevaa tunnistetta "${resolvedSuggestion.tag}", jotta saman aiheen tunnisteet pysyvat yhdessa.`
+        : `Lisattiin uusi tunniste "${resolvedTag}".`
     );
   }
 
@@ -165,12 +165,12 @@ export function SourceEditorForm({
         setTagNote(
           result.tags.length > 0
             ? result.model
-              ? "Loin tagit otsikon, idean ja aiempien tagiesi perusteella. Muista tallentaa muutokset."
-              : "Tagit paivitettiin aiempia tageja painottavalla varalogiikalla. Muista tallentaa muutokset."
-            : "Tageja ei saatu luotua nykyisista kentista."
+              ? "Loin tunnisteet otsikon, idean ja aiempien tunnisteidesi perusteella. Muista tallentaa muutokset."
+              : "Tunnisteet paivitettiin aiempia tunnisteita painottavalla varalogiikalla. Muista tallentaa muutokset."
+            : "Tunnisteita ei saatu luotua nykyisista kentista."
         );
       } catch (error) {
-        setTagNote(error instanceof Error ? error.message : "Tagien luonti epaonnistui.");
+        setTagNote(error instanceof Error ? error.message : "Tunnisteiden luonti epaonnistui.");
       } finally {
         setIsGeneratingTags(false);
       }
@@ -209,7 +209,7 @@ export function SourceEditorForm({
 
         <div className="form-row source-edit-field">
           <div className="source-analysis-header">
-            <span>Tagit</span>
+            <span>Tunnisteet</span>
           </div>
 
           <div className="source-tag-editor">
@@ -239,7 +239,7 @@ export function SourceEditorForm({
                     addResolvedTag();
                   }
                 }}
-                placeholder="Lisaa tagi tai hae olemassa olevista"
+                placeholder="Lisaa tunniste tai hae olemassa olevista"
               />
             </div>
 

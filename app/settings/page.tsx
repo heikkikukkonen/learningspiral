@@ -25,7 +25,7 @@ export default async function SettingsPage({
         <h1>Asetukset</h1>
         <p className="muted">
           Määritä oma kieli ja ohjaus, jota käytetään analyysin päivityksessä,
-          syvennyksessä, tiivistyksessä, korttien luonnissa ja tagien ehdottamisessa.
+          syvennyksessä, tiivistyksessä, korttien luonnissa ja tunnisteiden ehdottamisessa.
         </p>
         {saved ? (
           <p className="status" style={{ margin: "0.5rem 0 0", color: "var(--success)" }}>
@@ -149,11 +149,11 @@ export default async function SettingsPage({
             </label>
 
             <label className="form-row">
-              <span>Tagien luonnin prompt</span>
+              <span>Tunnisteiden luonnin prompt</span>
               <textarea
                 name="tagGenerationPrompt"
                 defaultValue={settings.tagGenerationPrompt}
-                placeholder="Esim. luo 3-6 lyhyttä, hakukelpoista tagia ilman päällekkäisiä synonyymeja."
+                placeholder="Esim. luo 3-6 lyhyttä, hakukelpoista tunnistetta ilman päällekkäisiä synonyymeja."
               />
             </label>
           </div>
