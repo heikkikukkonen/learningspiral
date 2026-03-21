@@ -7,7 +7,7 @@ import { SourceType } from "@/lib/types";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Ajatukset",
-  description: "Kaikki talteen otetut ajatukset, joihin voit palata, syventää ja yhdistää."
+  description: "Kaikki tallennetut ajatukset, joihin voit palata, syventaa ja yhdistaa."
 };
 
 type SourceListItem = {
@@ -46,15 +46,15 @@ export default async function SourcesPage() {
     <section>
       <div className="page-header">
         <h1>Ajatukset</h1>
-        <p className="muted">Kaikki talteen otetut ajatukset, joihin voit palata, syventää ja yhdistää.</p>
+        <p className="muted">Kaikki tallennetut ajatukset, joihin voit palata, syventaa ja yhdistaa.</p>
       </div>
 
       <div className="actions" style={{ marginBottom: "1rem" }}>
         <Link href="/capture?mode=text" className="button-link primary">
-          Uusi ajatus
+          Tallenna ajatus
         </Link>
         <Link href="/progress" className="button-link secondary">
-          Katso virta
+          Katso eteneminen
         </Link>
       </div>
 

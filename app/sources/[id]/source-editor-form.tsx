@@ -42,7 +42,7 @@ export function SourceEditorForm({
   const [tags, setTags] = useState(() => dedupeTags(initialTags));
   const [tagInput, setTagInput] = useState("");
   const [aiNote, setAiNote] = useState(
-    "Voin kirkastaa, syventaa tai tiivistaa ajatusta nykyisten kenttien pohjalta."
+    "Voin ehdottaa tekstia, joka auttaa tutkimaan tata lisaa nykyisten kenttien pohjalta."
   );
   const [tagNote, setTagNote] = useState("");
   const [activeMode, setActiveMode] = useState<(typeof refineModes)[number]["id"] | null>(null);
@@ -138,11 +138,11 @@ export function SourceEditorForm({
         setAnalysis(result.analysis);
         setAiNote(
           result.model
-            ? `Paivitin analyysin tilassa "${result.mode}". Muista tallentaa muutokset, jos haluat sailyttaa ne.`
-            : `Analyysi paivittyi tilassa "${result.mode}". Muista tallentaa muutokset.`
+            ? `Paivitin "Tutki tata lisaa" -tekstin tilassa "${result.mode}". Muista tallentaa muutokset, jos haluat sailyttaa ne.`
+            : `"Tutki tata lisaa" -teksti paivittyi tilassa "${result.mode}". Muista tallentaa muutokset.`
         );
       } catch (error) {
-        setAiNote(error instanceof Error ? error.message : "Analyysin paivitys epaonnistui.");
+        setAiNote(error instanceof Error ? error.message : '"Tutki tata lisaa" -tekstin paivitys epaonnistui.');
       } finally {
         setActiveMode(null);
         setIsRefining(false);
@@ -189,13 +189,13 @@ export function SourceEditorForm({
             name="title"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="Anna muistiinpanolle selkea otsikko"
+            placeholder="Anna ajatukselle selkea otsikko"
             required
           />
         </label>
 
         <label className="form-row source-edit-field">
-          <span>Idea</span>
+          <span>Ajatus</span>
           <textarea
             name="idea"
             value={idea}
@@ -303,13 +303,13 @@ export function SourceEditorForm({
 
         <div className="form-row source-edit-field source-analysis-shell">
           <div className="source-analysis-header">
-            <span>Analyysi</span>
+            <span>Tutki tata lisaa</span>
             <p className="status" style={{ margin: 0 }}>
-              Jatka ajattelua nykyisen otsikon, idean ja alkuperaisen capturen pohjalta.
+              Jatka ajattelua nykyisen otsikon, ajatuksen ja alkuperaisen tallenteen pohjalta.
             </p>
           </div>
 
-          <div className="source-analysis-actions" role="group" aria-label="Ajatuksen jalostus">
+          <div className="source-analysis-actions" role="group" aria-label="Ajatuksen syventaminen">
             {refineModes.map((mode) => (
               <button
                 key={mode.id}
@@ -330,7 +330,7 @@ export function SourceEditorForm({
             value={analysis}
             onChange={(event) => setAnalysis(event.target.value)}
             className="source-analysis-textarea"
-            placeholder="Jalosta ideaa pidemmalle: miksi tama on tarkea, mihin se liittyy, mita haluat muistaa."
+            placeholder="Tutki tata lisaa: miksi tama on tarkea, mihin se liittyy ja mita haluat muistaa."
             required
           />
         </div>

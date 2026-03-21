@@ -25,8 +25,8 @@ export default async function SettingsPage({
       <div className="page-header">
         <h1>Asetukset</h1>
         <p className="muted">
-          Määritä oma kieli ja ohjaus, jota käytetään analyysin päivityksessä,
-          syvennyksessä, tiivistyksessä, korttien luonnissa ja tunnisteiden ehdottamisessa.
+          Määritä oma kieli ja ohjaus, jota käytetään "Tutki tata lisaa" -tekstin paivityksessa,
+          syventamisessa, tiivistyksessa, tehtavien luonnissa ja tunnisteiden ehdottamisessa.
         </p>
         {saved ? (
           <p className="status" style={{ margin: "0.5rem 0 0", color: "var(--success)" }}>
@@ -120,7 +120,7 @@ export default async function SettingsPage({
 
           <div className="grid settings-grid">
             <label className="form-row">
-              <span>Analyysin prompt / refresh</span>
+              <span>Tutki tata lisaa / kirkasta</span>
               <textarea
                 name="analysisPromptRefresh"
                 defaultValue={settings.analysisPromptRefresh}
@@ -129,7 +129,7 @@ export default async function SettingsPage({
             </label>
 
             <label className="form-row">
-              <span>Analyysin prompt / deepen</span>
+              <span>Tutki tata lisaa / syvenna</span>
               <textarea
                 name="analysisPromptDeepen"
                 defaultValue={settings.analysisPromptDeepen}
@@ -138,7 +138,7 @@ export default async function SettingsPage({
             </label>
 
             <label className="form-row">
-              <span>Analyysin prompt / summarize</span>
+              <span>Tutki tata lisaa / tiivista</span>
               <textarea
                 name="analysisPromptSummarize"
                 defaultValue={settings.analysisPromptSummarize}
@@ -147,7 +147,7 @@ export default async function SettingsPage({
             </label>
 
             <label className="form-row">
-              <span>Korttien luonti prompt</span>
+              <span>Tehtavien luonti prompt</span>
               <textarea
                 name="cardGenerationPrompt"
                 defaultValue={settings.cardGenerationPrompt}

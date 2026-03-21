@@ -23,7 +23,7 @@ export function SourcePageActions({
   function readEditorFormData() {
     const form = document.getElementById("source-editor-form");
     if (!(form instanceof HTMLFormElement)) {
-      throw new Error("Idealomaketta ei loytynyt.");
+      throw new Error("Ajatuslomaketta ei loytynyt.");
     }
 
     const formData = new FormData(form);
@@ -48,7 +48,7 @@ export function SourcePageActions({
   }
 
   function handleDelete() {
-    if (!window.confirm("Poistetaanko idea pysyvasti? Tama poistaa myos siihen liittyvat kortit.")) {
+    if (!window.confirm("Poistetaanko ajatus pysyvasti? Tama poistaa myos siihen liittyvat tehtavat.")) {
       return;
     }
 
@@ -61,7 +61,7 @@ export function SourcePageActions({
         await deleteSourceAction(formData);
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Idean poisto epäonnistui. Yritä uudelleen.";
+          error instanceof Error ? error.message : "Ajatuksen poisto epäonnistui. Yritä uudelleen.";
         setErrorMessage(message);
       }
     });
@@ -76,7 +76,7 @@ export function SourcePageActions({
           onClick={handleDelete}
           disabled={isPending}
         >
-          {isPending ? "Kasitellaan..." : "Poista idea"}
+          {isPending ? "Kasitellaan..." : "Poista ajatus"}
         </button>
 
         <div className="source-page-save-actions">

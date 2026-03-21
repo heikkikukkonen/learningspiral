@@ -94,7 +94,7 @@ export default async function SourceDetailsPage({
     return (
       <section className="review-shell">
         <div className="page-header">
-          <h1>Idea</h1>
+          <h1>Ajatus</h1>
         </div>
         <article className="card">
           <strong>Tietokanta ei ole yhteydessä</strong>
@@ -120,10 +120,10 @@ export default async function SourceDetailsPage({
   return (
     <section className="grid source-workspace">
       <div className="page-header source-workspace-header">
-        <h1>Idean jalostaminen</h1>
+        <h1>Syvenny ajatukseen</h1>
         <p className="muted">
-          Muokkaa ideasta selkea otsikko, ydinajatus, analyysi ja tunnisteet ennen korttien luontia.
-          {" "}Voit myos vain tallentaa tiedot ja jalostaa idean valmiiksi myohemmin.
+          Muokkaa ajatuksesta selkea otsikko, ajatus, "Tutki tata lisaa" -teksti ja tunnisteet ennen tehtavien luontia.
+          {" "}Voit myos vain tallentaa tiedot ja syventaa ajatusta myohemmin.
         </p>
       </div>
 
@@ -154,7 +154,7 @@ export default async function SourceDetailsPage({
 
           <div className="source-origin-panel">
             <details className="capture-details source-capture-details">
-              <summary>Nayta alkuperainen capture</summary>
+              <summary>Nayta alkuperainen tallenne</summary>
 
               <div className="source-capture-details-body">
                 <div className="source-meta">
@@ -209,9 +209,8 @@ export default async function SourceDetailsPage({
           <div className="page-header source-task-card-header">
             <h2>Luo tehtavat</h2>
             <p className="muted">
-              Kun olet jalostanut idean valmiiksi, voit luoda tehtavakortit automaattisesti.
-              Tehtavakorttien avulla varmistan, etta idea ei unohdu sinulta kertaamalla niita
-              automaattisesti.
+              Kun olet syventanyt ajatuksen riittavan valmiiksi, voit luoda tehtavat automaattisesti.
+              Tehtavien avulla ajatus pysyy mukana kertauksessa, soveltamisessa ja reflektoinnissa.
             </p>
           </div>
           <form action={generateCardsAction}>
@@ -221,7 +220,7 @@ export default async function SourceDetailsPage({
               pendingText="Luodaan tehtavia..."
               loadingVariant="idea-network"
             >
-              Jatka ajattelua korteilla
+              Luo tehtavat
             </SubmitButton>
           </form>
         </div>

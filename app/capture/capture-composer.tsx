@@ -425,7 +425,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               <div className="capture-text-copy">
                 <h2 style={{ margin: 0 }}>Kirjoita ajatus</h2>
                 <p className="status capture-text-status">
-                  Tallenna alkuperäinen teksti sellaisenaan. Jalostus tapahtuu vasta sources-näkymässä.
+                  Tallenna alkuperainen teksti sellaisenaan. Syventyminen tapahtuu vasta ajatuksen omassa nakymassa.
                 </p>
               </div>
             </div>
@@ -451,10 +451,10 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
               {isTextProcessing
                 ? saveIntent === "return"
                   ? "Kasittely kaynnissa. Hetken paasta palaat etusivulle."
-                  : "Kasittely kaynnissa. Hetken paasta siirryt idean muokkaukseen."
+                  : "Kasittely kaynnissa. Hetken paasta siirryt syventamaan ajatusta."
                 : textCharacterCount > 0
                 ? `${textCharacterCount} merkkia valmiina tallennettavaksi.`
-                : "Ctrl+Enter tallentaa ja avaa idean jalostuksen."}
+                : "Ctrl+Enter tallentaa ja avaa ajatuksen syventamisen."}
             </p>
 
             <div className="capture-text-footer">
@@ -483,7 +483,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                       {textSaveStage === "saving" ? "Tallennetaan..." : "Kasittelen..."}
                     </span>
                   ) : (
-                    "Tallenna ja jalosta idea"
+                    "Tallenna ja syvenny"
                   )}
                 </button>
               </div>
@@ -527,7 +527,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     <IdeaNetworkLoader
                       variant="panel"
                       label="Luen kuvan tekstiksi"
-                      detail="Teen kuvasta muokattavan litteroinnin ilman lisajalostusta."
+                      detail="Teen kuvasta muokattavan litteroinnin ilman lisasyventamista."
                     />
                   </div>
                 ) : (
@@ -652,7 +652,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                           })
                         }
                       >
-                        {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Tallenna ja jalosta idea"}
+                        {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Tallenna ja syvenny"}
                       </button>
                       <button type="button" className="capture-image-cancel capture-image-cancel-link" onClick={cancelCapture}>
                         Peruuta
@@ -821,7 +821,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                         })
                       }
                     >
-                      {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Tallenna ja jalosta idea"}
+                      {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Tallenna ja syvenny"}
                     </button>
                   </div>
                 </div>

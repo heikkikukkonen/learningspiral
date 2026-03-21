@@ -25,7 +25,7 @@ type Props = {
 function buildIdeaPreview(idea: UnrefinedIdeaQueueItem): string {
   const primary = idea.raw_input?.trim() || idea.summary_content?.trim() || "";
   if (!primary) {
-    return "Ajatus odottaa viela otsikointia ja jalostusta.";
+    return "Keskenerainen ajatus odottaa viela otsikointia ja syventamista.";
   }
 
   return primary.length > 280 ? `${primary.slice(0, 277)}...` : primary;
@@ -220,7 +220,7 @@ function IdeaCard({
       <div className="review-card-head">
         <div className="source-meta">
           <span className="pill" data-variant="primary">
-            Jalostamaton idea
+            Keskenerainen ajatus
           </span>
           <span className="pill">{idea.title}</span>
           {idea.tags?.slice(0, 3).map((tag) => (
@@ -229,20 +229,20 @@ function IdeaCard({
             </span>
           ))}
         </div>
-        <h2 className="review-card-title">Haluatko jalostaa taman ajatuksen valmiiksi?</h2>
+        <h2 className="review-card-title">Haluatko syventaa taman ajatuksen valmiiksi?</h2>
         <p className="review-card-lead">{buildIdeaPreview(idea)}</p>
       </div>
 
       <div className="card review-answer-panel">
         <p className="review-panel-label">Miksi tama on nyt jonossa</p>
         <p style={{ margin: 0 }}>
-          Ajatus on tallessa, mutta sita ei ole viela muokattu valmiiksi eika muutettu korteiksi.
+          Ajatus on tallessa, mutta sita ei ole viela syvennetty riittavasti eika muutettu tehtaviksi.
         </p>
       </div>
 
       <div className="actions review-idea-actions">
         <Link href={`/sources/${idea.id}`} className="button-link primary review-idea-button">
-          Jalosta nyt
+          Syvenny nyt
         </Link>
         <button type="button" className="secondary review-idea-button" onClick={onSkip}>
           Jatka myohemmin
@@ -293,7 +293,7 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
         <h1>Syvenny</h1>
         <p className="muted">
           Yksi asia kerrallaan. Vastaa ensin itse, tarkista sitten suunta tai nosta keskenerainen
-          ajatus jalostukseen.
+          ajatus syvennettavaksi.
         </p>
         <p className="status" style={{ marginBottom: 0 }}>
           {headerMeta}
@@ -335,8 +335,8 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
           </p>
           <h2 className="review-card-title">Jono on tasta eraa tyhja</h2>
           <p className="muted" style={{ marginBottom: 0 }}>
-            Ei uusia tehtavia juuri nyt. Voit tuoda uusia ajatuksia talteen tai jalostaa olemassa
-            olevia lahtenakymassa.
+            Ei uusia tehtavia juuri nyt. Voit tallentaa uusia ajatuksia tai syventaa olemassa
+            olevia ajatuksia.
           </p>
         </article>
       )}

@@ -23,8 +23,8 @@ export default async function ProgressPage() {
   return (
     <section className="grid">
       <div className="page-header">
-        <h1>Ajattelun virta</h1>
-        <p className="muted">Nakyma siihen, miten ajattelu pysyy liikkeessa ja mihin olet palannut viime aikoina.</p>
+        <h1>Eteneminen</h1>
+        <p className="muted">Nakyma siihen, miten ajatuksesi etenevat ja mihin olet palannut viime aikoina.</p>
       </div>
 
       <div className="grid grid-cols-2">
@@ -45,7 +45,7 @@ export default async function ProgressPage() {
       </div>
 
       <article className="card">
-        <h2 style={{ marginTop: 0 }}>Ajattelun virta (90 pv)</h2>
+        <h2 style={{ marginTop: 0 }}>Eteneminen (90 pv)</h2>
         <svg viewBox="0 0 1000 220" width="100%" height="220" role="img" aria-label="LMS trend line">
           <rect x="0" y="0" width="1000" height="220" fill="#f6f9fc" />
           <path d={sparklinePath(lmsValues, 1000, 220)} stroke="#0b4f6c" strokeWidth="3" fill="none" />
