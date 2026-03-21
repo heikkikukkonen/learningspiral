@@ -74,19 +74,22 @@ export function SourceEditorForm({
       right.usageCount - left.usageCount ||
       right.lastUsedAt.localeCompare(left.lastUsedAt)
   );
-  const activeAutocompleteSuggestion = orderedMatchingSuggestions[0] ?? null;
   const exactAutocompleteSuggestion =
     normalizedTagInput
       ? availableTagSuggestions.find(
           (suggestion) => normalizeTagValue(suggestion.tag) === normalizedTagInput
         ) ?? null
       : null;
-  const popularSuggestions = availableTagSuggestions
-    .filter((suggestion) => suggestion.isPopular)
-    .slice(0, 6);
-  const recentSuggestions = [...availableTagSuggestions]
-    .sort((left, right) => right.lastUsedAt.localeCompare(left.lastUsedAt))
-    .slice(0, 6);
+  const recentSuggestions = [...availableTagSuggestions].sort(
+    (left, right) =>
+      right.lastUsedAt.localeCompare(left.lastUsedAt) ||
+      right.usageCount - left.usageCount ||
+      left.tag.localeCompare(right.tag, "fi-FI")
+  );
+  const visibleSuggestions = normalizedTagInput
+    ? orderedMatchingSuggestions.slice(0, 12)
+    : recentSuggestions.slice(0, 12);
+  const suggestionsLabel = normalizedTagInput ? "Vastaavat tunnisteet" : "Aiemmat tunnisteet";
 
   function addResolvedTag(nextValue?: string) {
     const trimmedValue = (nextValue ?? tagInput).trim();
@@ -253,54 +256,16 @@ export function SourceEditorForm({
 
             {tagNote ? <p className="status source-analysis-note">{tagNote}</p> : null}
 
-            {orderedMatchingSuggestions.length > 0 ? (
+            {visibleSuggestions.length > 0 ? (
               <div className="source-tag-section">
-                <span className="source-tag-section-label">Ehdotukset kirjoittaessa</span>
+                <span className="source-tag-section-label">{suggestionsLabel}</span>
                 <div className="source-tag-suggestion-list">
-                  {orderedMatchingSuggestions.slice(0, 6).map((suggestion, index) => (
+                  {visibleSuggestions.map((suggestion, index) => (
                     <button
                       key={`${suggestion.tag}-${suggestion.lastUsedAt}`}
                       type="button"
                       className="source-tag-suggestion"
-                      data-active={index === 0 ? "true" : "false"}
-                      onClick={() => addResolvedTag(suggestion.tag)}
-                    >
-                      <span>#{suggestion.tag}</span>
-                      <span className="source-tag-suggestion-meta">{suggestion.usageCount}x</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {hasTags && popularSuggestions.length > 0 ? (
-              <div className="source-tag-section">
-                <span className="source-tag-section-label">Kaytat paljon</span>
-                <div className="source-tag-suggestion-list">
-                  {popularSuggestions.map((suggestion) => (
-                    <button
-                      key={`${suggestion.tag}-${suggestion.lastUsedAt}`}
-                      type="button"
-                      className="source-tag-suggestion"
-                      onClick={() => addResolvedTag(suggestion.tag)}
-                    >
-                      <span>#{suggestion.tag}</span>
-                      <span className="source-tag-suggestion-meta">Suosittu</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {recentSuggestions.length > 0 ? (
-              <div className="source-tag-section">
-                <span className="source-tag-section-label">Viimeksi kaytetyt</span>
-                <div className="source-tag-suggestion-list">
-                  {recentSuggestions.map((suggestion) => (
-                    <button
-                      key={`${suggestion.tag}-${suggestion.lastUsedAt}`}
-                      type="button"
-                      className="source-tag-suggestion"
+                      data-active={normalizedTagInput && index === 0 ? "true" : "false"}
                       onClick={() => addResolvedTag(suggestion.tag)}
                     >
                       <span>#{suggestion.tag}</span>
