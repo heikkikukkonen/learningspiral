@@ -25,7 +25,7 @@ export default async function SettingsPage({
       <div className="page-header">
         <h1>Asetukset</h1>
         <p className="muted">
-          Määritä oma kieli ja ohjaus, jota käytetään "Tutki tata lisaa" -tekstin paivityksessa,
+          Määritä oma kieli ja ohjaus, jota käytetään &quot;Tutki tata lisaa&quot; -tekstin paivityksessa,
           syventamisessa, tiivistyksessa, tehtavien luonnissa ja tunnisteiden ehdottamisessa.
         </p>
         {saved ? (
