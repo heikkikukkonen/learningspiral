@@ -2,6 +2,7 @@ import { SubmitButton } from "@/app/components/submit-button";
 import { getCurrentUser, getCurrentUserProfile } from "@/lib/auth";
 import { getUserSettings } from "@/lib/db";
 import { getPushPublicKey, isPushConfigured } from "@/lib/push";
+import { signOutAction } from "@/app/login/actions";
 import { saveUserSettingsAction } from "./actions";
 import { NotificationTester } from "./notification-tester";
 
@@ -65,6 +66,12 @@ export default async function SettingsPage({
               {profile?.motivation || user.user_metadata?.motivation || "Ei tallennettua perustelua."}
             </p>
           </div>
+
+          <form action={signOutAction} className="settings-mobile-signout">
+            <SubmitButton className="secondary" pendingText="Kirjaudutaan ulos...">
+              Kirjaudu ulos
+            </SubmitButton>
+          </form>
 
           {!user.email_confirmed_at ? (
             <p className="status" style={{ margin: 0, color: "var(--danger)" }}>

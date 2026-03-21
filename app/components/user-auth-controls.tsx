@@ -49,21 +49,6 @@ export async function UserAuthControls() {
           </button>
         </form>
       </div>
-      <form action={signOutAction} className="auth-header-mobile-form">
-        <button type="submit" className="header-icon auth-header-icon-button" aria-label="Kirjaudu ulos" title="Kirjaudu ulos">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M14 8.25V7a3 3 0 10-6 0v3.25M8 10.25h8a1 1 0 011 1V18a1 1 0 01-1 1H8a1 1 0 01-1-1v-6.75a1 1 0 011-1z"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.8"
-            />
-            <path d="M17 12l2.75 0M18.85 10.15L20.7 12l-1.85 1.85" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-          </svg>
-        </button>
-      </form>
     </>
   );
 }

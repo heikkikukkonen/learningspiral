@@ -265,7 +265,7 @@ export function StoryExperience({ mode = "story" }: StoryExperienceProps) {
       {!isLanding ? (
         <div className="story-intro-bar">
           <Link href="/" className="story-mini-link">
-            Etusivulle
+            Alkuun
           </Link>
           <span className="story-mini-label">Noeman tarina</span>
         </div>

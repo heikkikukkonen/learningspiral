@@ -4296,6 +4296,11 @@ svg path[stroke="#067647"] {
   display: none;
 }
 
+.settings-mobile-signout {
+  display: none;
+  margin-top: 1rem;
+}
+
 .auth-header-icon-button {
   padding: 0;
   border: 1px solid rgba(208, 217, 229, 0.92);
@@ -4492,6 +4497,10 @@ svg path[stroke="#067647"] {
 
   .auth-header-mobile-form {
     margin: 0;
+  }
+
+  .settings-mobile-signout {
+    display: block;
   }
 
   .auth-header-icon-button,

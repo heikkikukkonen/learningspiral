@@ -22,7 +22,7 @@ const homeActions = [
     icon: "mic"
   },
   {
-    title: "Vahvista Noemaasi",
+    title: "Syvenny",
     href: "/review",
     accent: "highlight",
     icon: "brain"
