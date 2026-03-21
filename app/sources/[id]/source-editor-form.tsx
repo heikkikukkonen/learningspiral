@@ -204,14 +204,6 @@ export function SourceEditorForm({
         <div className="form-row source-edit-field">
           <div className="source-analysis-header">
             <span>Tagit</span>
-            <button
-              type="button"
-              className="secondary source-analysis-action"
-              onClick={handleGenerateTags}
-              disabled={isGeneratingTags}
-            >
-              {isGeneratingTags ? "Luodaan..." : "Ehdota tageja"}
-            </button>
           </div>
 
           <div className="source-tag-editor">
@@ -230,15 +222,22 @@ export function SourceEditorForm({
                       type="button"
                     >
                       <span>{tag}</span>
-                      {matchingTag?.isPopular ? (
-                        <span className="source-tag-chip-badge">Suosittu</span>
-                      ) : null}
                       <span aria-hidden="true">x</span>
                     </button>
                   );
                 })
               ) : (
-                <span className="status">Tagit ovat tyhjat, kunnes luot ne tai lisat ne itse.</span>
+                <div className="source-tag-empty">
+                  <span className="status">Tunnisteita ei ole luotu.</span>
+                  <button
+                    type="button"
+                    className="secondary source-tag-inline-action"
+                    onClick={handleGenerateTags}
+                    disabled={isGeneratingTags}
+                  >
+                    {isGeneratingTags ? "Luodaan..." : "Ehdota tageja"}
+                  </button>
+                </div>
               )}
             </div>
 

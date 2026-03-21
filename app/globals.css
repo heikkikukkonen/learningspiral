@@ -746,17 +746,6 @@ button.danger {
     0 8px 18px rgba(62, 147, 171, 0.14);
 }
 
-.source-tag-chip-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.12rem 0.42rem;
-  border-radius: 999px;
-  background: rgba(24, 72, 92, 0.1);
-  color: #18485c;
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
 .source-tag-add {
   display: flex;
   gap: 0.65rem;
@@ -765,6 +754,20 @@ button.danger {
 
 .source-tag-add button {
   flex: 0 0 auto;
+}
+
+.source-tag-empty {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.source-tag-inline-action {
+  min-height: 2rem;
+  padding: 0.3rem 0.62rem;
+  font-size: 0.78rem;
+  line-height: 1;
 }
 
 .source-tag-section {
