@@ -74,6 +74,12 @@ export function SourceEditorForm({
       right.lastUsedAt.localeCompare(left.lastUsedAt)
   );
   const activeAutocompleteSuggestion = orderedMatchingSuggestions[0] ?? null;
+  const exactAutocompleteSuggestion =
+    normalizedTagInput
+      ? availableTagSuggestions.find(
+          (suggestion) => normalizeTagValue(suggestion.tag) === normalizedTagInput
+        ) ?? null
+      : null;
   const popularSuggestions = availableTagSuggestions
     .filter((suggestion) => suggestion.isPopular)
     .slice(0, 6);
@@ -88,7 +94,7 @@ export function SourceEditorForm({
     const exactExistingTag = availableTagSuggestions.find(
       (suggestion) => normalizeTagValue(suggestion.tag) === normalizeTagValue(trimmedValue)
     );
-    const resolvedSuggestion = exactExistingTag ?? (nextValue ? null : activeAutocompleteSuggestion);
+    const resolvedSuggestion = exactExistingTag ?? null;
     const resolvedTag = resolvedSuggestion?.tag ?? trimmedValue.replace(/^#+/, "").trim();
     const normalizedResolvedTag = normalizeTagValue(resolvedTag);
 
@@ -251,7 +257,7 @@ export function SourceEditorForm({
                 placeholder="Lisaa tagi tai hae olemassa olevista"
               />
               <button type="button" className="secondary" onClick={() => addResolvedTag()}>
-                {activeAutocompleteSuggestion ? "Kayta ehdotusta" : "Lisaa tagi"}
+                {exactAutocompleteSuggestion ? "Kayta olemassa olevaa" : "Lisaa tagi"}
               </button>
             </div>
 
