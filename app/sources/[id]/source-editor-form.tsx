@@ -208,6 +208,22 @@ export function SourceEditorForm({
           </div>
 
           <div className="source-tag-editor">
+            {hasTags ? (
+              <div className="source-tag-list">
+                {tags.map((tag) => (
+                  <button
+                    key={tag}
+                    className="source-tag-chip"
+                    onClick={() => removeTag(tag)}
+                    type="button"
+                  >
+                    <span>{tag}</span>
+                    <span aria-hidden="true">x</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
             <div className="source-tag-add">
               <input
                 value={tagInput}
@@ -234,22 +250,6 @@ export function SourceEditorForm({
                 </button>
               ) : null}
             </div>
-
-            {hasTags ? (
-              <div className="source-tag-list">
-                {tags.map((tag) => (
-                  <button
-                    key={tag}
-                    className="source-tag-chip"
-                    onClick={() => removeTag(tag)}
-                    type="button"
-                  >
-                    <span>{tag}</span>
-                    <span aria-hidden="true">x</span>
-                  </button>
-                ))}
-              </div>
-            ) : null}
 
             {tagNote ? <p className="status source-analysis-note">{tagNote}</p> : null}
 
