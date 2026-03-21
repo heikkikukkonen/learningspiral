@@ -108,12 +108,24 @@ function ActionIcon({ icon }: { icon: (typeof homeActions)[number]["icon"] }) {
   return null;
 }
 
-export default async function AppHomePage() {
+export default async function AppHomePage({
+  searchParams
+}: {
+  searchParams?: { captureSaved?: string };
+}) {
   const dueCardsCount = await countDueCards().catch(() => 0);
+  const captureSaved = searchParams?.captureSaved === "1";
 
   return (
     <section className="home-shell home-shell-mobile">
       <div className="home-phone-card">
+        {captureSaved ? (
+          <article className="card" style={{ marginBottom: "1rem" }}>
+            <p className="status" style={{ margin: 0 }}>
+              Ajatus tallennettu. Palaamme tahan myohemmin.
+            </p>
+          </article>
+        ) : null}
         <div className="home-hero">
           <div className="home-visual home-visual-main" aria-hidden="true" />
           <div className="home-hero-overlay">

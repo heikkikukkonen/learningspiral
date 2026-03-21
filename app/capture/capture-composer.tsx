@@ -222,7 +222,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       });
 
       const json = await parseJson<{ sourceId: string }>(response);
-      router.push(intent === "return" ? "/" : `/sources/${json.sourceId}`);
+      router.push(intent === "return" ? "/?captureSaved=1" : `/sources/${json.sourceId}`);
       router.refresh();
       return true;
     } catch (err) {
@@ -382,6 +382,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   const imageTranscriptCharacterCount = rawInputValue.trim().length;
   const voiceRawCharacterCount = rawInputValue.trim().length;
   const isTextProcessing = textSaveStage !== "idle";
+  const captureHeading = "Tallenna se, mika on merkityksellista";
+  const captureSupportText = "Ajatus ei katoa. Voit palata siihen myohemmin tai jatkaa syventamista heti.";
   const imageDropzoneLabel = isImageDragActive ? "Pudota kuva tähän" : "Raahaa tai liitä kuva";
   const textProcessingLabel =
     textSaveStage === "saving" ? "Tallennetaan ajatusta" : "Kasittelen kirjoittamaasi ajatusta";
@@ -423,9 +425,9 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
           <div className="capture-text-shell">
             <div className="capture-text-header">
               <div className="capture-text-copy">
-                <h2 style={{ margin: 0 }}>Kirjoita ajatus</h2>
+                <h2 style={{ margin: 0 }}>{captureHeading}</h2>
                 <p className="status capture-text-status">
-                  Tallenna alkuperainen teksti sellaisenaan. Syventyminen tapahtuu vasta ajatuksen omassa nakymassa.
+                  {captureSupportText}
                 </p>
               </div>
             </div>
@@ -469,7 +471,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                     ? textSaveStage === "saving"
                       ? "Tallennetaan..."
                       : "Kasitellaan..."
-                    : "Tallenna ja palaa"}
+                    : "Tallenna ja palaa myohemmin"}
                 </button>
                 <button
                   type="button"
@@ -483,7 +485,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                       {textSaveStage === "saving" ? "Tallennetaan..." : "Kasittelen..."}
                     </span>
                   ) : (
-                    "Tallenna ja syvenny"
+                    "Jatka syventamista"
                   )}
                 </button>
               </div>
@@ -513,9 +515,9 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
           <div className="capture-image-shell">
             <div className="capture-image-header">
               <div className="capture-image-copy">
-                <h2 style={{ margin: 0 }}>Lisaa kuva</h2>
+                <h2 style={{ margin: 0 }}>{captureHeading}</h2>
                 <p className="status capture-image-status">
-                  Tuo screenshot, muistiinpano tai kuva. Muutan sen tekstiksi, jota voit korjata ennen tallennusta.
+                  {captureSupportText}
                 </p>
               </div>
             </div>
@@ -638,7 +640,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                           })
                         }
                       >
-                        {isSaving && saveIntent === "return" ? "Tallennetaan..." : "Tallenna ja palaa"}
+                        {isSaving && saveIntent === "return" ? "Tallennetaan..." : "Tallenna ja palaa myohemmin"}
                       </button>
                       <button
                         type="button"
@@ -652,7 +654,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                           })
                         }
                       >
-                        {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Tallenna ja syvenny"}
+                        {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Jatka syventamista"}
                       </button>
                       <button type="button" className="capture-image-cancel capture-image-cancel-link" onClick={cancelCapture}>
                         Peruuta
@@ -679,9 +681,9 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
           <div className="capture-voice-shell">
             <div className="capture-voice-header">
               <div className="capture-voice-copy">
-                <h2 style={{ margin: 0 }}>Sanele ajatus</h2>
+                <h2 style={{ margin: 0 }}>{captureHeading}</h2>
                 <p className="status capture-voice-status">
-                  Sanele ajatus talteen tai tuo valmis M4A-, MP3- tai WebM-tiedosto. Litteroin puheen tekstiksi.
+                  {captureSupportText}
                 </p>
               </div>
             </div>
@@ -807,7 +809,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                         })
                       }
                     >
-                      {isSaving && saveIntent === "return" ? "Tallennetaan..." : "Tallenna ja palaa"}
+                      {isSaving && saveIntent === "return" ? "Tallennetaan..." : "Tallenna ja palaa myohemmin"}
                     </button>
                     <button
                       type="button"
@@ -821,7 +823,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                         })
                       }
                     >
-                      {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Tallenna ja syvenny"}
+                      {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Jatka syventamista"}
                     </button>
                   </div>
                 </div>
