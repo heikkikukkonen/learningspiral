@@ -585,7 +585,7 @@ button.danger {
 
 .thoughts-search {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.9rem;
   padding: 1rem;
   border: 1px solid var(--line);
   background:
@@ -613,13 +613,14 @@ button.danger {
   display: grid;
   gap: 0;
   padding: 0;
+  border-top: 1px solid rgba(160, 188, 214, 0.32);
 }
 
 .thoughts-tags-summary {
   position: relative;
   display: grid;
-  gap: 0.2rem;
-  padding: 1rem;
+  gap: 0;
+  padding: 0.9rem 2.9rem 0 0;
   cursor: pointer;
   list-style: none;
 }
@@ -628,17 +629,11 @@ button.danger {
   display: none;
 }
 
-.thoughts-tags-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--foreground);
-}
-
 .thoughts-tags-summary::after {
   content: "+";
   position: absolute;
-  top: 1.1rem;
-  right: 1rem;
+  top: 0.45rem;
+  right: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -659,7 +654,7 @@ button.danger {
 .thoughts-tags-panel {
   display: grid;
   gap: 0.85rem;
-  padding: 0 1rem 1rem;
+  padding: 0.85rem 0 0;
 }
 
 .thoughts-tag-list {
