@@ -169,48 +169,45 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
             </div>
           </form>
 
-          <section className="thoughts-tags card" aria-labelledby="thought-tags-heading">
-            <div className="thoughts-tags-header">
-              <div>
-                <p className="thoughts-eyebrow">Tunnisteet</p>
-                <h2 id="thought-tags-heading">Selaa aihepiireja</h2>
-              </div>
-              <p className="status" style={{ margin: 0 }}>
-                Verkostonakyma voidaan lisata tahan myohemmin.
-              </p>
-            </div>
+          <details className="thoughts-tags card" open={Boolean(activeTag)}>
+            <summary className="thoughts-tags-summary">
+              <span className="thoughts-eyebrow">Tunnisteet</span>
+              <span className="thoughts-tags-title">Selaa aihepiireja tunnisteiden avulla</span>
+            </summary>
 
-            {tags.length ? (
-              <div className="thoughts-tag-list">
-                {tags.map((tag) => {
-                  const isActive = tag.value === normalizedActiveTag;
+            <div className="thoughts-tags-panel">
+              {tags.length ? (
+                <div className="thoughts-tag-list">
+                  {tags.map((tag) => {
+                    const isActive = tag.value === normalizedActiveTag;
 
-                  return (
+                    return (
+                      <Link
+                        key={tag.value}
+                        href={buildSourcesHref(rawQuery, tag.label)}
+                        className="pill"
+                        data-variant={isActive ? "primary" : undefined}
+                      >
+                        #{tag.label} <span className="thoughts-tag-count">{tag.count}</span>
+                      </Link>
+                    );
+                  })}
+                  {activeTag ? (
                     <Link
-                      key={tag.value}
-                      href={buildSourcesHref(rawQuery, tag.label)}
-                      className="pill"
-                      data-variant={isActive ? "primary" : undefined}
+                      href={buildSourcesHref(rawQuery, "")}
+                      className="button-link secondary thoughts-clear-link"
                     >
-                      #{tag.label} <span className="thoughts-tag-count">{tag.count}</span>
+                      Tyhjenna tunnistesuodatus
                     </Link>
-                  );
-                })}
-                {activeTag ? (
-                  <Link
-                    href={buildSourcesHref(rawQuery, "")}
-                    className="button-link secondary thoughts-clear-link"
-                  >
-                    Tyhjenna tunnistesuodatus
-                  </Link>
-                ) : null}
-              </div>
-            ) : (
-              <p className="muted" style={{ margin: 0 }}>
-                Tunnisteet alkavat kertyvat, kun tallennat useampia ajatuksia.
-              </p>
-            )}
-          </section>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="muted" style={{ margin: 0 }}>
+                  Tunnisteet alkavat kertyvat, kun tallennat useampia ajatuksia.
+                </p>
+              )}
+            </div>
+          </details>
         </div>
       ) : null}
 
