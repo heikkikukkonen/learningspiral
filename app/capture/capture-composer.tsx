@@ -384,11 +384,11 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   const isTextProcessing = textSaveStage !== "idle";
   const imageDropzoneLabel = isImageDragActive ? "Pudota kuva tähän" : "Raahaa tai liitä kuva";
   const textProcessingLabel =
-    textSaveStage === "saving" ? "Tallennetaan ideaa" : "Kasittelen kirjoittamaasi ajatusta";
+    textSaveStage === "saving" ? "Tallennetaan ajatusta" : "Kasittelen kirjoittamaasi ajatusta";
   const textProcessingDetail =
     textSaveStage === "saving"
-      ? "Luon idealle uuden merkinnän ja siirrän sinut seuraavaksi muokkausnäkymään."
-      : "Tarkistan tekstin talteen sopivaan muotoon ennen kuin idea tallennetaan.";
+      ? "Luon ajatukselle uuden merkinnän ja siirrän sinut seuraavaksi muokkausnäkymään."
+      : "Tarkistan tekstin talteen sopivaan muotoon ennen kuin ajatus tallennetaan.";
 
   return (
     <div className="grid">
