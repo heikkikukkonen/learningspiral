@@ -90,6 +90,8 @@ export function SourceEditorForm({
     ? orderedMatchingSuggestions.slice(0, 12)
     : recentSuggestions.slice(0, 12);
   const suggestionsLabel = normalizedTagInput ? "Vastaavat tunnisteet" : "Aiemmat tunnisteet";
+  const showInlineSuggestions = normalizedTagInput.length > 0 && visibleSuggestions.length > 0;
+  const showDefaultSuggestions = normalizedTagInput.length === 0 && visibleSuggestions.length > 0;
 
   function addResolvedTag(nextValue?: string) {
     const trimmedValue = (nextValue ?? tagInput).trim();
@@ -239,8 +241,31 @@ export function SourceEditorForm({
                 }}
                 placeholder="Lisaa tagi tai hae olemassa olevista"
               />
+            </div>
+
+            {showInlineSuggestions ? (
+              <div className="source-tag-section source-tag-section-inline">
+                <span className="source-tag-section-label">{suggestionsLabel}</span>
+                <div className="source-tag-suggestion-list">
+                  {visibleSuggestions.map((suggestion, index) => (
+                    <button
+                      key={`${suggestion.tag}-${suggestion.lastUsedAt}`}
+                      type="button"
+                      className="source-tag-suggestion"
+                      data-active={index === 0 ? "true" : "false"}
+                      onClick={() => addResolvedTag(suggestion.tag)}
+                    >
+                      <span>#{suggestion.tag}</span>
+                      <span className="source-tag-suggestion-meta">{suggestion.usageCount}x</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="source-tag-add source-tag-add-actions">
               <button type="button" className="secondary" onClick={() => addResolvedTag()}>
-                {exactAutocompleteSuggestion ? "Kayta olemassa olevaa" : "Lisaa tagi"}
+                {exactAutocompleteSuggestion ? "Kayta olemassa olevaa" : "Lisaa uusi tunniste"}
               </button>
               {!hasTags ? (
                 <button
@@ -256,7 +281,7 @@ export function SourceEditorForm({
 
             {tagNote ? <p className="status source-analysis-note">{tagNote}</p> : null}
 
-            {visibleSuggestions.length > 0 ? (
+            {showDefaultSuggestions ? (
               <div className="source-tag-section">
                 <span className="source-tag-section-label">{suggestionsLabel}</span>
                 <div className="source-tag-suggestion-list">
@@ -265,7 +290,7 @@ export function SourceEditorForm({
                       key={`${suggestion.tag}-${suggestion.lastUsedAt}`}
                       type="button"
                       className="source-tag-suggestion"
-                      data-active={normalizedTagInput && index === 0 ? "true" : "false"}
+                      data-active={index === 0 ? "true" : "false"}
                       onClick={() => addResolvedTag(suggestion.tag)}
                     >
                       <span>#{suggestion.tag}</span>

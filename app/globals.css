@@ -753,6 +753,10 @@ button.danger {
   flex-wrap: wrap;
 }
 
+.source-tag-add-actions {
+  padding-top: 0.15rem;
+}
+
 .source-tag-add button {
   flex: 0 0 auto;
 }
@@ -769,6 +773,11 @@ button.danger {
   gap: 0.45rem;
   padding: 0.9rem 0.95rem 0;
   border-top: 1px solid rgba(214, 223, 234, 0.7);
+}
+
+.source-tag-section-inline {
+  padding: 0.2rem 0 0;
+  border-top: 0;
 }
 
 .source-tag-section-label {
