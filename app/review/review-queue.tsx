@@ -252,6 +252,12 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
   const totalCount = initialItems.length;
   const currentIndex = totalCount - items.length + 1;
   const currentItem = items[0] ?? null;
+  const headerLead =
+    currentItem?.kind === "review"
+      ? "Yksi asia kerrallaan. Yrita vastata ensin tehtavaan itse, nayta vasta sitten tiedot."
+      : currentItem?.kind === "idea"
+        ? "Yksi asia kerrallaan. Nyt on hyva hetki syventaa aiemmin tallentamaasi ajatusta. Lisaa siihen puuttuvat tagit ja luo tehtavat niin saat tehtavat automaattisesti nousemaan talle sivulle."
+        : "Yksi asia kerrallaan. Vastaa ensin itse, nayta sitten tiedot tai nosta keskenerainen ajatus syvennettavaksi.";
 
   function removeCurrentItem() {
     setItems((current) => current.slice(1));
@@ -276,10 +282,7 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
     <>
       <div className="page-header">
         <h1>Syvenny</h1>
-        <p className="muted">
-          Yksi asia kerrallaan. Vastaa ensin itse, nayta sitten tiedot tai nosta keskenerainen
-          ajatus syvennettavaksi.
-        </p>
+        <p className="muted">{headerLead}</p>
       </div>
 
       {errorMessage ? (
