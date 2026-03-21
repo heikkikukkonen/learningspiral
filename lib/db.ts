@@ -36,6 +36,8 @@ export interface SourceRow {
   capture_mode: string;
   idea_status: IdeaStatus;
   created_at: string;
+  summary_content?: string | null;
+  raw_input?: string | null;
   has_cards?: boolean;
 }
 
@@ -348,22 +350,43 @@ export async function markPushSubscriptionSent(endpoint: string, userId?: string
 export async function listSources() {
   const supabase = getSupabaseAdmin();
   const userId = await appUserId();
-  const [{ data: sources, error: sourcesError }, { data: cards, error: cardsError }] =
+  const [
+    { data: sources, error: sourcesError },
+    { data: cards, error: cardsError },
+    { data: summaries, error: summariesError }
+  ] =
     await Promise.all([
       supabase
         .from("sources")
         .select("*")
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
-      supabase.from("cards").select("source_id").eq("user_id", userId)
+      supabase.from("cards").select("source_id").eq("user_id", userId),
+      supabase
+        .from("summaries")
+        .select("source_id, content, raw_input")
+        .eq("user_id", userId)
     ]);
 
   if (sourcesError) throw sourcesError;
   if (cardsError) throw cardsError;
+  if (summariesError) throw summariesError;
 
   const sourceIdsWithCards = new Set((cards ?? []).map((card) => card.source_id));
+  const summaryBySourceId = new Map(
+    (summaries ?? []).map((summary) => [
+      summary.source_id,
+      {
+        content: typeof summary.content === "string" ? summary.content : null,
+        raw_input: typeof summary.raw_input === "string" ? summary.raw_input : null
+      }
+    ])
+  );
+
   return ((sources ?? []) as SourceRow[]).map((source) => ({
     ...source,
+    summary_content: summaryBySourceId.get(source.id)?.content ?? null,
+    raw_input: summaryBySourceId.get(source.id)?.raw_input ?? null,
     has_cards: sourceIdsWithCards.has(source.id)
   }));
 }
