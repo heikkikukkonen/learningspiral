@@ -50,6 +50,7 @@ export function SourceEditorForm({
   const [activeMode, setActiveMode] = useState<(typeof refineModes)[number]["id"] | null>(null);
   const [isRefining, setIsRefining] = useState(false);
   const [isGeneratingTags, setIsGeneratingTags] = useState(false);
+  const hasTags = tags.length > 0;
 
   const selectedTags = new Set(tags.map((tag) => normalizeTagValue(tag)));
   const availableTagSuggestions = tagSuggestions.filter(
@@ -207,42 +208,6 @@ export function SourceEditorForm({
           </div>
 
           <div className="source-tag-editor">
-            <div className="source-tag-list">
-              {tags.length > 0 ? (
-                tags.map((tag) => {
-                  const matchingTag = tagSuggestions.find(
-                    (suggestion) => normalizeTagValue(suggestion.tag) === normalizeTagValue(tag)
-                  );
-
-                  return (
-                    <button
-                      key={tag}
-                      className="source-tag-chip"
-                      onClick={() => removeTag(tag)}
-                      type="button"
-                    >
-                      <span>{tag}</span>
-                      <span aria-hidden="true">x</span>
-                    </button>
-                  );
-                })
-              ) : (
-                <div className="source-tag-empty">
-                  <span className="status">Tunnisteita ei ole luotu.</span>
-                  <button
-                    type="button"
-                    className="secondary source-tag-inline-action"
-                    onClick={handleGenerateTags}
-                    disabled={isGeneratingTags}
-                  >
-                    {isGeneratingTags ? "Luodaan..." : "Ehdota tageja"}
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <p className="status source-analysis-note">{tagNote}</p>
-
             <div className="source-tag-add">
               <input
                 value={tagInput}
@@ -258,7 +223,35 @@ export function SourceEditorForm({
               <button type="button" className="secondary" onClick={() => addResolvedTag()}>
                 {exactAutocompleteSuggestion ? "Kayta olemassa olevaa" : "Lisaa tagi"}
               </button>
+              {!hasTags ? (
+                <button
+                  type="button"
+                  className="secondary source-tag-inline-action"
+                  onClick={handleGenerateTags}
+                  disabled={isGeneratingTags}
+                >
+                  {isGeneratingTags ? "Luodaan..." : "Luo automaattisesti"}
+                </button>
+              ) : null}
             </div>
+
+            {hasTags ? (
+              <div className="source-tag-list">
+                {tags.map((tag) => (
+                  <button
+                    key={tag}
+                    className="source-tag-chip"
+                    onClick={() => removeTag(tag)}
+                    type="button"
+                  >
+                    <span>{tag}</span>
+                    <span aria-hidden="true">x</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {tagNote ? <p className="status source-analysis-note">{tagNote}</p> : null}
 
             {orderedMatchingSuggestions.length > 0 ? (
               <div className="source-tag-section">
@@ -273,16 +266,14 @@ export function SourceEditorForm({
                       onClick={() => addResolvedTag(suggestion.tag)}
                     >
                       <span>#{suggestion.tag}</span>
-                      <span className="source-tag-suggestion-meta">
-                        {suggestion.isPopular ? "Suosittu" : `${suggestion.usageCount}x`}
-                      </span>
+                      <span className="source-tag-suggestion-meta">{suggestion.usageCount}x</span>
                     </button>
                   ))}
                 </div>
               </div>
             ) : null}
 
-            {popularSuggestions.length > 0 ? (
+            {hasTags && popularSuggestions.length > 0 ? (
               <div className="source-tag-section">
                 <span className="source-tag-section-label">Kaytat paljon</span>
                 <div className="source-tag-suggestion-list">

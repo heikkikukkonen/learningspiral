@@ -749,30 +749,26 @@ button.danger {
 .source-tag-add {
   display: flex;
   gap: 0.65rem;
-  align-items: center;
+  align-items: stretch;
+  flex-wrap: wrap;
 }
 
 .source-tag-add button {
   flex: 0 0 auto;
 }
 
-.source-tag-empty {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-}
-
 .source-tag-inline-action {
-  min-height: 2rem;
-  padding: 0.3rem 0.62rem;
-  font-size: 0.78rem;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.84rem;
   line-height: 1;
 }
 
 .source-tag-section {
   display: grid;
   gap: 0.45rem;
+  padding: 0.9rem 0.95rem 0;
+  border-top: 1px solid rgba(214, 223, 234, 0.7);
 }
 
 .source-tag-section-label {
