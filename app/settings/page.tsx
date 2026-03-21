@@ -189,7 +189,7 @@ export default async function SettingsPage({
 
       <NotificationTester pushConfigured={pushConfigured} pushPublicKey={pushPublicKey} />
 
-      <style jsx>{`
+      <style>{`
         .settings-page-heading {
           display: flex;
           align-items: flex-start;
@@ -216,7 +216,7 @@ export default async function SettingsPage({
         .settings-mobile-account-copy span {
           font-size: 0.78rem;
           line-height: 1.35;
-          color: var(--text-muted);
+          color: var(--muted);
         }
 
         .settings-mobile-account-signout {
