@@ -1,3 +1,5 @@
+import type { TagSuggestion } from "@/lib/types";
+
 export type SourceEditorDraft = {
   idea: string;
   analysis: string;
@@ -38,6 +40,28 @@ export function buildSourceSummaryContent(draft: SourceEditorDraft): string {
   }
 
   return analysis || idea;
+}
+
+export function normalizeTagValue(value: string): string {
+  return normalizeBlock(value)
+    .replace(/^#+/, "")
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("fi-FI");
+}
+
+export function dedupeTags(tags: string[]): string[] {
+  const seen = new Set<string>();
+  const unique: string[] = [];
+
+  for (const tag of tags) {
+    const trimmed = normalizeBlock(tag).replace(/^#+/, "").trim();
+    const normalized = normalizeTagValue(trimmed);
+    if (!trimmed || seen.has(normalized)) continue;
+    seen.add(normalized);
+    unique.push(trimmed);
+  }
+
+  return unique;
 }
 
 function titleCaseToken(token: string): string {
@@ -125,6 +149,59 @@ export function suggestSourceTags(input: {
     .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], "fi"))
     .slice(0, 5)
     .map(([token]) => titleCaseToken(token));
+}
+
+function tokenizeForTagMatch(value: string): string[] {
+  return normalizeBlock(value)
+    .toLocaleLowerCase("fi-FI")
+    .match(/\p{L}[\p{L}\p{N}-]{1,}/gu) ?? [];
+}
+
+export function selectRelevantExistingTags(input: {
+  title?: string | null;
+  idea?: string | null;
+  analysis?: string | null;
+  rawInput?: string | null;
+  existingTags?: TagSuggestion[];
+  limit?: number;
+}): string[] {
+  const tagOptions = input.existingTags ?? [];
+  if (!tagOptions.length) return [];
+
+  const combined = [input.title, input.idea, input.analysis, input.rawInput]
+    .map((value) => normalizeBlock(value ?? ""))
+    .filter(Boolean)
+    .join(" ")
+    .toLocaleLowerCase("fi-FI");
+
+  if (!combined) return [];
+
+  const tokens = new Set(tokenizeForTagMatch(combined));
+
+  return [...tagOptions]
+    .map((option) => {
+      const normalizedTag = normalizeTagValue(option.tag);
+      const tagTokens = tokenizeForTagMatch(option.tag);
+      const overlapScore = tagTokens.reduce(
+        (score, token) => score + (tokens.has(token) ? 2 : combined.includes(token) ? 1 : 0),
+        0
+      );
+      const phraseScore = combined.includes(normalizedTag) ? 4 : 0;
+      return {
+        option,
+        score: overlapScore + phraseScore
+      };
+    })
+    .filter((item) => item.score > 0)
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        right.option.usageCount - left.option.usageCount ||
+        right.option.lastUsedAt.localeCompare(left.option.lastUsedAt) ||
+        left.option.tag.localeCompare(right.option.tag, "fi-FI")
+    )
+    .slice(0, input.limit ?? 5)
+    .map((item) => item.option.tag);
 }
 
 export function parseSourceSummaryContent(

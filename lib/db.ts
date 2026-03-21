@@ -14,9 +14,10 @@ import {
   isLlmConfigured,
   transcribeCaptureAudio
 } from "@/lib/llm";
-import { normalizeCaptureSummary } from "@/lib/source-editor";
+import { dedupeTags, normalizeCaptureSummary, normalizeTagValue } from "@/lib/source-editor";
 import { DEFAULT_USER_SETTINGS, sanitizeUserSettings, UserSettings } from "@/lib/user-settings";
 import { requireUserId } from "@/lib/auth";
+import type { TagSuggestion } from "@/lib/types";
 
 async function appUserId(): Promise<string> {
   return requireUserId();
@@ -132,6 +133,12 @@ export interface UserSettingsRow extends UserSettings {
   created_at: string;
   updated_at: string;
 }
+
+type TagAggregate = {
+  tag: string;
+  usageCount: number;
+  lastUsedAt: string;
+};
 
 export interface PushSubscriptionRow {
   id: string;
@@ -360,6 +367,63 @@ export async function listSources() {
   }));
 }
 
+export async function listUserTagStats(limit = 40): Promise<TagSuggestion[]> {
+  const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
+  const { data, error } = await supabase
+    .from("sources")
+    .select("tags, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  const aggregates = new Map<string, TagAggregate>();
+  for (const row of data ?? []) {
+    const createdAt = typeof row.created_at === "string" ? row.created_at : "";
+    const rowTags = Array.isArray(row.tags) ? dedupeTags(row.tags) : [];
+
+    for (const rawTag of rowTags) {
+      const normalized = normalizeTagValue(rawTag);
+      if (!normalized) continue;
+
+      const current = aggregates.get(normalized);
+      if (!current) {
+        aggregates.set(normalized, {
+          tag: rawTag,
+          usageCount: 1,
+          lastUsedAt: createdAt
+        });
+        continue;
+      }
+
+      current.usageCount += 1;
+      if (createdAt > current.lastUsedAt) {
+        current.lastUsedAt = createdAt;
+        current.tag = rawTag;
+      }
+    }
+  }
+
+  const sorted = [...aggregates.values()]
+    .sort(
+      (left, right) =>
+        right.usageCount - left.usageCount ||
+        right.lastUsedAt.localeCompare(left.lastUsedAt) ||
+        left.tag.localeCompare(right.tag, "fi-FI")
+    )
+    .slice(0, limit);
+
+  const popularThreshold = sorted.length > 0 ? sorted[Math.min(5, sorted.length - 1)].usageCount : 0;
+
+  return sorted.map((item, index) => ({
+    tag: item.tag,
+    usageCount: item.usageCount,
+    lastUsedAt: item.lastUsedAt,
+    isPopular: item.usageCount > 1 && index < 6 && item.usageCount >= popularThreshold
+  }));
+}
+
 export async function listUnrefinedIdeas(limit = 20): Promise<UnrefinedIdeaQueueItem[]> {
   const supabase = getSupabaseAdmin();
   const userId = await appUserId();
@@ -422,7 +486,7 @@ export async function createSource(input: {
     origin: input.origin || null,
     published_at: input.publishedAt || null,
     url: input.url || null,
-    tags: input.tags?.length ? input.tags : [],
+    tags: input.tags?.length ? dedupeTags(input.tags) : [],
     capture_mode: input.captureMode ?? "manual"
   };
 
@@ -454,7 +518,7 @@ export async function updateSource(input: {
 
   const baseUpdate = {
     title: input.title,
-    tags: input.tags?.length ? input.tags : []
+    tags: input.tags?.length ? dedupeTags(input.tags) : []
   };
 
   let result = await supabase

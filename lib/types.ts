@@ -15,6 +15,13 @@ export type CaptureMode = "text" | "image" | "voice" | "url";
 export type CaptureAssetKind = "image" | "audio";
 export type IdeaStatus = "draft" | "refined_without_cards" | "refined_with_cards";
 
+export interface TagSuggestion {
+  tag: string;
+  usageCount: number;
+  lastUsedAt: string;
+  isPopular: boolean;
+}
+
 export interface Source {
   id: string;
   type: SourceType;

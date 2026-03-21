@@ -741,6 +741,17 @@ button.danger {
   font-weight: 600;
 }
 
+.source-tag-chip-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(127, 227, 232, 0.2);
+  color: #2f6f7a;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
 .source-tag-add {
   display: flex;
   gap: 0.65rem;
@@ -749,6 +760,54 @@ button.danger {
 
 .source-tag-add button {
   flex: 0 0 auto;
+}
+
+.source-tag-section {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.source-tag-section-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6c7f99;
+}
+
+.source-tag-suggestion-list {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.source-tag-suggestion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 216, 232, 0.95);
+  background: rgba(255, 255, 255, 0.86);
+  color: #48637f;
+  padding: 0.38rem 0.7rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.source-tag-suggestion[data-active="true"] {
+  border-color: rgba(47, 164, 169, 0.42);
+  box-shadow: 0 0 0 3px rgba(127, 227, 232, 0.12);
+}
+
+.source-tag-suggestion-meta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(127, 227, 232, 0.18);
+  color: #2f6f7a;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .source-edit-save {

@@ -1,5 +1,13 @@
 import { CardType } from "@/lib/types";
-import { normalizeBlock, normalizeCaptureSummary, suggestSourceTags } from "@/lib/source-editor";
+import type { TagSuggestion } from "@/lib/types";
+import {
+  dedupeTags,
+  normalizeBlock,
+  normalizeCaptureSummary,
+  normalizeTagValue,
+  selectRelevantExistingTags,
+  suggestSourceTags
+} from "@/lib/source-editor";
 import { buildLanguageInstruction, UserSettings } from "@/lib/user-settings";
 
 interface ChatMessage {
@@ -32,6 +40,20 @@ interface RefinedAnalysisPayload {
 
 interface GeneratedTagsPayload {
   tags: string[];
+}
+
+function alignTagsToExisting(tags: string[], existingTags: TagSuggestion[] = []): string[] {
+  if (!existingTags.length) {
+    return dedupeTags(tags);
+  }
+
+  const existingByNormalized = new Map(
+    existingTags.map((tag) => [normalizeTagValue(tag.tag), tag.tag] as const)
+  );
+
+  return dedupeTags(
+    tags.map((tag) => existingByNormalized.get(normalizeTagValue(tag)) ?? tag)
+  );
 }
 
 function appendOptionalInstruction(lines: string[], instruction?: string) {
@@ -508,16 +530,35 @@ export async function generateReviewCardsFromSummary(input: {
 export async function generateSourceTags(input: {
   title: string;
   idea: string;
+  existingTags?: TagSuggestion[];
   settings?: UserSettings;
 }): Promise<LlmResult<string[]>> {
-  const fallbackTags = suggestSourceTags({
+  const relevantExistingTags = selectRelevantExistingTags({
     title: input.title,
-    idea: input.idea
+    idea: input.idea,
+    existingTags: input.existingTags,
+    limit: 6
   });
+  const fallbackTags = dedupeTags([
+    ...relevantExistingTags,
+    ...suggestSourceTags({
+      title: input.title,
+      idea: input.idea
+    })
+  ]).slice(0, 6);
 
   if (!isLlmConfigured()) {
     return { ok: false, data: fallbackTags };
   }
+
+  const frequentTags = (input.existingTags ?? [])
+    .filter((tag) => tag.isPopular)
+    .slice(0, 10)
+    .map((tag) => `${tag.tag} (${tag.usageCount})`);
+  const recentTags = [...(input.existingTags ?? [])]
+    .sort((left, right) => right.lastUsedAt.localeCompare(left.lastUsedAt))
+    .slice(0, 10)
+    .map((tag) => `${tag.tag} (${tag.usageCount})`);
 
   const systemPrompt = appendOptionalInstruction([
     "You generate concise source tags for a learning capture.",
@@ -529,6 +570,8 @@ export async function generateSourceTags(input: {
     "}",
     "Generate 3 to 6 short tags.",
     "Prefer concrete, searchable topic labels.",
+    "Prefer reusing the user's existing tags when they are relevant.",
+    "When an existing tag fits semantically, return that exact existing spelling instead of inventing a new synonym.",
     "Avoid duplicate or near-duplicate synonyms.",
     "Use only information found in the title and idea."
   ], input.settings?.tagGenerationPrompt).join("\n");
@@ -537,7 +580,17 @@ export async function generateSourceTags(input: {
     { role: "system", content: systemPrompt },
     {
       role: "user",
-      content: [`Title:\n${normalizeBlock(input.title) || "(empty)"}`, "", `Idea:\n${normalizeBlock(input.idea) || "(empty)"}`].join("\n")
+      content: [
+        `Title:\n${normalizeBlock(input.title) || "(empty)"}`,
+        "",
+        `Idea:\n${normalizeBlock(input.idea) || "(empty)"}`,
+        "",
+        `Relevant existing tags to prefer first:\n${relevantExistingTags.join(", ") || "(none)"}`,
+        "",
+        `Frequently used tags:\n${frequentTags.join(", ") || "(none)"}`,
+        "",
+        `Recent tags:\n${recentTags.join(", ") || "(none)"}`
+      ].join("\n")
     }
   ]);
 
@@ -555,7 +608,7 @@ export async function generateSourceTags(input: {
 
   return {
     ok: true,
-    data: sanitized.tags,
+    data: alignTagsToExisting(sanitized.tags, input.existingTags).slice(0, 6),
     model: reply.model
   };
 }

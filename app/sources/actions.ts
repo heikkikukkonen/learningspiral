@@ -9,16 +9,26 @@ import {
   createSource,
   generateSuggestedCards,
   getUserSettings,
+  listUserTagStats,
   updateSource,
   updateCard,
   upsertSummary
 } from "@/lib/db";
 import { CardType, InputModality, SourceType } from "@/lib/types";
-import { buildSourceSummaryContent } from "@/lib/source-editor";
+import { buildSourceSummaryContent, dedupeTags } from "@/lib/source-editor";
 import { generateSourceTags, refineSourceDraft } from "@/lib/llm";
 
 function asString(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
+}
+
+function readTags(value: string): string[] {
+  return dedupeTags(
+    value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+  );
 }
 
 function readCardDrafts(formData: FormData) {
@@ -52,10 +62,7 @@ function readCardDrafts(formData: FormData) {
 }
 
 export async function createSourceAction(formData: FormData) {
-  const tags = asString(formData.get("tags"))
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
+  const tags = readTags(asString(formData.get("tags")));
 
   const source = await createSource({
     type: asString(formData.get("type")) as SourceType,
@@ -106,10 +113,7 @@ export async function saveSourceDraftAction(formData: FormData) {
   const analysis = asString(formData.get("analysis"));
   const rawInput = asString(formData.get("rawInput")) || null;
   const inputModality = asString(formData.get("inputModality")) as InputModality;
-  const tags = asString(formData.get("tags"))
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
+  const tags = readTags(asString(formData.get("tags")));
   const cardDrafts = readCardDrafts(formData);
 
   await updateSource({
@@ -147,10 +151,7 @@ export async function refineSourceDraftAction(formData: FormData) {
   const analysis = asString(formData.get("analysis"));
   const rawInput = asString(formData.get("rawInput"));
   const modeValue = asString(formData.get("mode"));
-  const tags = asString(formData.get("tags"))
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
+  const tags = readTags(asString(formData.get("tags")));
 
   const mode =
     modeValue === "deepen" || modeValue === "summarize" || modeValue === "refresh"
@@ -181,11 +182,12 @@ export async function refineSourceDraftAction(formData: FormData) {
 export async function generateSourceTagsAction(formData: FormData) {
   const title = asString(formData.get("title")).trim();
   const idea = asString(formData.get("idea")).trim();
-  const settings = await getUserSettings();
+  const [settings, existingTags] = await Promise.all([getUserSettings(), listUserTagStats()]);
 
   const generated = await generateSourceTags({
     title,
     idea,
+    existingTags,
     settings
   });
 

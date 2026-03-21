@@ -7,10 +7,10 @@ import {
 } from "@/app/sources/actions";
 import { SourceEditorForm } from "@/app/sources/[id]/source-editor-form";
 import { SourcePageActions } from "@/app/sources/[id]/source-page-actions";
-import { getSourceWithDetails } from "@/lib/db";
+import { getSourceWithDetails, listUserTagStats } from "@/lib/db";
 import { parseSourceSummaryContent } from "@/lib/source-editor";
 import { deriveSourceIdeaStage, sourceIdeaStageLabel } from "@/lib/source-status";
-import { CardType, SourceType } from "@/lib/types";
+import { CardType, SourceType, TagSuggestion } from "@/lib/types";
 
 type SourceDetails = {
   id: string;
@@ -70,14 +70,19 @@ export default async function SourceDetailsPage({
   let summary: SummaryDetails | null = null;
   let cards: CardDetails[] = [];
   let captureAssets: CaptureAsset[] = [];
+  let tagSuggestions: TagSuggestion[] = [];
   let loadError = "";
 
   try {
-    const result = await getSourceWithDetails(params.id);
+    const [result, userTags] = await Promise.all([
+      getSourceWithDetails(params.id),
+      listUserTagStats()
+    ]);
     source = result.source;
     summary = result.summary;
     cards = result.cards;
     captureAssets = result.captureAssets;
+    tagSuggestions = userTags;
   } catch (error) {
     loadError =
       error instanceof Error
@@ -142,6 +147,7 @@ export default async function SourceDetailsPage({
             initialIdea={parsedSummary.idea}
             initialAnalysis={parsedSummary.analysis}
             initialTags={source.tags ?? []}
+            tagSuggestions={tagSuggestions}
             rawInput={summary?.raw_input ?? ""}
             inputModality={summary?.input_modality ?? "text"}
           />
