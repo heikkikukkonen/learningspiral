@@ -77,7 +77,7 @@ function ReviewCard({
             name="draftAnswer"
             value={userAnswer}
             onChange={(event) => setUserAnswer(event.target.value)}
-            placeholder="Kirjoita oma vastauksesi ennen kuin avaat suunnan."
+            placeholder="Kirjoita oma vastauksesi ennen kuin painat 'Näytä tiedot'."
             required
           />
         </label>
@@ -88,7 +88,7 @@ function ReviewCard({
             className="secondary review-reveal-button"
             onClick={() => setShowAnswer((current) => !current)}
           >
-            {showAnswer ? "Piilota suunta" : "Tarkista suunta"}
+            {showAnswer ? "Piilota tiedot" : "Näytä tiedot"}
           </button>
         </div>
 
@@ -292,7 +292,7 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
       <div className="page-header">
         <h1>Syvenny</h1>
         <p className="muted">
-          Yksi asia kerrallaan. Vastaa ensin itse, tarkista sitten suunta tai nosta keskenerainen
+          Yksi asia kerrallaan. Vastaa ensin itse, nayta sitten tiedot tai nosta keskenerainen
           ajatus syvennettavaksi.
         </p>
         <p className="status" style={{ marginBottom: 0 }}>
