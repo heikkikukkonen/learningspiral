@@ -44,9 +44,7 @@ export function SourceEditorForm({
   const [aiNote, setAiNote] = useState(
     "Voin kirkastaa, syventaa tai tiivistaa ajatusta nykyisten kenttien pohjalta."
   );
-  const [tagNote, setTagNote] = useState(
-    "Voit lisata tunnisteita itse tai valita aiemmista ehdotuksista."
-  );
+  const [tagNote, setTagNote] = useState("");
   const [activeMode, setActiveMode] = useState<(typeof refineModes)[number]["id"] | null>(null);
   const [isRefining, setIsRefining] = useState(false);
   const [isGeneratingTags, setIsGeneratingTags] = useState(false);
