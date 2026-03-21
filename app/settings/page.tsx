@@ -19,11 +19,33 @@ export default async function SettingsPage({
   const saved = searchParams?.saved === "1";
   const pushConfigured = isPushConfigured();
   const pushPublicKey = pushConfigured ? getPushPublicKey() : "";
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email || "Noema user";
+  const accountDetails = [user?.email, user?.email_confirmed_at ? "Tili aktiivinen" : "Vahvista email"]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <section className="review-shell">
       <div className="page-header">
-        <h1>Asetukset</h1>
+        <div className="settings-page-heading">
+          <div>
+            <h1>Asetukset</h1>
+            <p className="muted">Hallitse omaa Noemaasi ja sovelluksen asetuksia</p>
+          </div>
+          {user ? (
+            <div className="settings-mobile-account">
+              <div className="settings-mobile-account-copy">
+                <strong>{displayName}</strong>
+                <span>{accountDetails || "Noema user"}</span>
+              </div>
+              <form action={signOutAction} className="settings-mobile-account-signout">
+                <SubmitButton className="secondary" pendingText="Kirjaudutaan ulos...">
+                  Kirjaudu ulos
+                </SubmitButton>
+              </form>
+            </div>
+          ) : null}
+        </div>
         <p className="muted">
           Määritä oma kieli ja ohjaus, jota käytetään &quot;Tutki tata lisaa&quot; -tekstin paivityksessa,
           syventamisessa, tiivistyksessa, tehtavien luonnissa ja tunnisteiden ehdottamisessa.
@@ -39,9 +61,9 @@ export default async function SettingsPage({
         <article className="card settings-card">
           <div className="settings-section-header">
             <div>
-              <h2 style={{ margin: 0 }}>Tili</h2>
+              <h2 style={{ margin: 0 }}>Käyttäjän tiedot</h2>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Rekisteröityminen, aktivointi ja Noema-tarinasi syy.
+                Nimi, yhteystieto ja muut tilin perustiedot.
               </p>
             </div>
             <span className="pill" data-variant="primary">
@@ -51,27 +73,21 @@ export default async function SettingsPage({
 
           <div className="grid grid-cols-2">
             <div className="form-row">
-              <span>Nimi</span>
-              <strong>{profile?.full_name || user.user_metadata?.full_name || "-"}</strong>
+              <span>Käyttäjän nimi</span>
+              <strong>{displayName}</strong>
             </div>
             <div className="form-row">
-              <span>Email</span>
+              <span>Käyttäjän tiedot</span>
               <strong>{user.email || "-"}</strong>
             </div>
           </div>
 
           <div className="form-row">
-            <span>Miksi haluat olla osa Noema-tarinaa?</span>
+            <span>Lisätiedot</span>
             <p className="status" style={{ margin: 0, color: "var(--text)" }}>
-              {profile?.motivation || user.user_metadata?.motivation || "Ei tallennettua perustelua."}
+              {profile?.motivation || user.user_metadata?.motivation || "Ei muita tallennettuja käyttäjätietoja."}
             </p>
           </div>
-
-          <form action={signOutAction} className="settings-mobile-signout">
-            <SubmitButton className="secondary" pendingText="Kirjaudutaan ulos...">
-              Kirjaudu ulos
-            </SubmitButton>
-          </form>
 
           {!user.email_confirmed_at ? (
             <p className="status" style={{ margin: 0, color: "var(--danger)" }}>
@@ -87,8 +103,7 @@ export default async function SettingsPage({
             <div>
               <h2 style={{ margin: 0 }}>Kieli</h2>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Kaikki sinulle näkyvä sisältö pyydetään
-                tällä kielellä.
+                Kaikki sinulle näkyvä sisältö pyydetään tällä kielellä.
               </p>
             </div>
             <span className="pill" data-variant="primary">
@@ -112,8 +127,7 @@ export default async function SettingsPage({
             <div>
               <h2 style={{ margin: 0 }}>Prompt-ohjaus</h2>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Näitä kenttiä lisätään sellaisenaan mukaan kyseisen toiminnon
-                ohjaukseen.
+                Näitä kenttiä lisätään sellaisenaan mukaan kyseisen toiminnon ohjaukseen.
               </p>
             </div>
           </div>
@@ -174,6 +188,54 @@ export default async function SettingsPage({
       </form>
 
       <NotificationTester pushConfigured={pushConfigured} pushPublicKey={pushPublicKey} />
+
+      <style jsx>{`
+        .settings-page-heading {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 1rem;
+        }
+
+        .settings-mobile-account {
+          display: none;
+        }
+
+        .settings-mobile-account-copy {
+          display: grid;
+          gap: 0.15rem;
+          text-align: right;
+        }
+
+        .settings-mobile-account-copy strong {
+          font-size: 0.95rem;
+          line-height: 1.2;
+          color: var(--text);
+        }
+
+        .settings-mobile-account-copy span {
+          font-size: 0.78rem;
+          line-height: 1.35;
+          color: var(--text-muted);
+        }
+
+        .settings-mobile-account-signout {
+          margin: 0;
+        }
+
+        @media (max-width: 760px) {
+          .settings-mobile-account {
+            display: grid;
+            justify-items: end;
+            gap: 0.55rem;
+            margin-left: auto;
+          }
+
+          .settings-mobile-account-copy {
+            max-width: 12rem;
+          }
+        }
+      `}</style>
     </section>
   );
 }
