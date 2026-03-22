@@ -53,47 +53,50 @@ export default async function SettingsPage({
         ) : null}
       </div>
 
-      {user ? (
-        <article className="card settings-card">
-          <div className="settings-section-header">
-            <div>
-              <h2 style={{ margin: 0 }}>Käyttäjän tiedot</h2>
-              <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Nimi, yhteystieto ja muut tilin perustiedot.
-              </p>
-            </div>
-            <span className="pill" data-variant="primary">
-              {user.email_confirmed_at ? "Aktiivinen" : "Vahvistus kesken"}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2">
-            <div className="form-row">
-              <span>Käyttäjän nimi</span>
-              <strong>{displayName}</strong>
-            </div>
-            <div className="form-row">
-              <span>Käyttäjän tiedot</span>
-              <strong>{user.email || "-"}</strong>
-            </div>
-          </div>
-
-          <div className="form-row">
-            <span>Lisätiedot</span>
-            <p className="status" style={{ margin: 0, color: "var(--text)" }}>
-              {profile?.motivation || user.user_metadata?.motivation || "Ei muita tallennettuja käyttäjätietoja."}
-            </p>
-          </div>
-
-          {!user.email_confirmed_at ? (
-            <p className="status" style={{ margin: 0, color: "var(--danger)" }}>
-              Tili aktivoituu vasta, kun sähköpostissa oleva vahvistuslinkki on avattu.
-            </p>
-          ) : null}
-        </article>
-      ) : null}
-
       <form action={saveUserSettingsAction} className="form settings-form">
+        {user ? (
+          <article className="card settings-card">
+            <div className="settings-section-header">
+              <div>
+                <h2 style={{ margin: 0 }}>Käyttäjän tiedot</h2>
+                <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+                  Nimi, yhteystieto ja muut tilin perustiedot.
+                </p>
+              </div>
+              <span className="pill" data-variant="primary">
+                {user.email_confirmed_at ? "Aktiivinen" : "Vahvistus kesken"}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2">
+              <div className="form-row">
+                <span>Käyttäjän nimi</span>
+                <strong>{displayName}</strong>
+              </div>
+              <div className="form-row">
+                <span>Käyttäjän tiedot</span>
+                <strong>{user.email || "-"}</strong>
+              </div>
+            </div>
+
+            <label className="form-row">
+              <span>Miksi haluat olla osa Noema-tarinaa?</span>
+              <textarea
+                name="motivation"
+                defaultValue={profile?.motivation || user.user_metadata?.motivation || ""}
+                placeholder="Kirjoita tähän, mikä kutsuu sinua mukaan Noeman tarinaan."
+                rows={4}
+              />
+            </label>
+
+            {!user.email_confirmed_at ? (
+              <p className="status" style={{ margin: 0, color: "var(--danger)" }}>
+                Tili aktivoituu vasta, kun sähköpostissa oleva vahvistuslinkki on avattu.
+              </p>
+            ) : null}
+          </article>
+        ) : null}
+
         <article className="card settings-card">
           <div className="settings-section-header">
             <div>

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   deletePushSubscription,
   listPushSubscriptions,
@@ -17,6 +18,7 @@ function asString(value: FormDataEntryValue | null): string {
 }
 
 export async function saveUserSettingsAction(formData: FormData) {
+  const motivation = asString(formData.get("motivation"));
   const settings = sanitizeUserSettings({
     responseLanguage: asString(formData.get("responseLanguage")),
     analysisPromptRefresh: asString(formData.get("analysisPromptRefresh")),
@@ -25,6 +27,24 @@ export async function saveUserSettingsAction(formData: FormData) {
     cardGenerationPrompt: asString(formData.get("cardGenerationPrompt")),
     tagGenerationPrompt: asString(formData.get("tagGenerationPrompt"))
   });
+
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    const { error } = await supabase.auth.updateUser({
+      data: {
+        ...user.user_metadata,
+        motivation
+      }
+    });
+
+    if (error) {
+      throw error;
+    }
+  }
 
   await upsertUserSettings(settings);
 
