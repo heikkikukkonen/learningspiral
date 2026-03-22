@@ -102,22 +102,26 @@ export default async function SettingsPage({
         <article className="card settings-card">
           <div className="settings-section-header">
             <div>
-              <h2 style={{ margin: 0 }}>Prompt-ohjaus</h2>
+              <h2 style={{ margin: 0 }}>Ajattelun suunta</h2>
+              <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+                Määritä, millaiset kysymykset auttavat sinua syventämään ajatuksiasi ja näkemään asioita
+                uudella tavalla.
+              </p>
             </div>
           </div>
 
           <div className="settings-subsection">
             <div className="settings-subsection-copy">
-              <h3 style={{ margin: 0 }}>Noeman antamien vastausten kieli</h3>
+              <h3 style={{ margin: 0 }}>Kieli</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Kirjoita kielen nimi alle ja saat Noeman antamat ehdotukset kyseisellä kielellä.
+                Ajattelun kieli
               </p>
             </div>
             <label className="form-row">
               <input
                 name="responseLanguage"
                 defaultValue={settings.responseLanguage}
-                placeholder="Finnish, English, Swedish..."
+                placeholder="Esim. Suomi, English"
                 required
               />
             </label>
@@ -125,31 +129,33 @@ export default async function SettingsPage({
 
           <div className="settings-subsection">
             <div className="settings-subsection-copy">
-              <h3 style={{ margin: 0 }}>Tunnisteiden luonti ohjaus</h3>
+              <h3 style={{ margin: 0 }}>Tunnisteet</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Kirjoita haluamasi ohjeistus automaattiselle tunnisteiden luonnille.
+                Miten haluat jäsentää ajatuksiasi? Tunnisteet auttavat ajatuksia löytämään toisensa ja
+                muodostamaan yhteyksiä.
               </p>
             </div>
             <label className="form-row">
-              <span>Tunnisteiden luonti</span>
+              <span>Tunnisteet</span>
               <textarea
                 name="tagGenerationPrompt"
                 defaultValue={settings.tagGenerationPrompt}
-                placeholder="Esim. luo 3-6 lyhyttä, hakukelpoista tunnistetta ilman päällekkäisiä synonyymeja."
+                placeholder="Esim. 3–6 selkeää, toisistaan erottuvaa tunnistetta, jotka kuvaavat ajatuksen ydintä."
               />
             </label>
           </div>
 
           <div className="settings-subsection">
             <div className="settings-subsection-copy">
-              <h3 style={{ margin: 0 }}>Tutki tätä lisää ohjaus</h3>
+              <h3 style={{ margin: 0 }}>Syvennä näkökulmaa</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Kirjoita haluamasi ohjeistus Tutki tätä lisää -ohjeistuksen toiminnoille.
+                Millaiset kysymykset auttavat sinua tarkastelemaan ajatusta eri kulmista ja viemään sitä
+                eteenpäin?
               </p>
             </div>
             <div className="grid settings-grid">
               <label className="form-row">
-                <span>Tutki tätä lisää / kirkasta</span>
+                <span>Kirkasta ajattelua</span>
                 <textarea
                   name="analysisPromptRefresh"
                   defaultValue={settings.analysisPromptRefresh}
@@ -158,7 +164,7 @@ export default async function SettingsPage({
               </label>
 
               <label className="form-row">
-                <span>Tutki tätä lisää / syvennä</span>
+                <span>Syvennä ajattelua</span>
                 <textarea
                   name="analysisPromptDeepen"
                   defaultValue={settings.analysisPromptDeepen}
@@ -167,7 +173,7 @@ export default async function SettingsPage({
               </label>
 
               <label className="form-row">
-                <span>Tutki tätä lisää / tiivistä</span>
+                <span>Tiivistä</span>
                 <textarea
                   name="analysisPromptSummarize"
                   defaultValue={settings.analysisPromptSummarize}
@@ -179,13 +185,13 @@ export default async function SettingsPage({
 
           <div className="settings-subsection">
             <div className="settings-subsection-copy">
-              <h3 style={{ margin: 0 }}>Tehtävien luonnin ohjaus</h3>
+              <h3 style={{ margin: 0 }}>Tehtävät</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Kirjoita haluamasi ohjeistus luo tehtävät -toiminnoille.
+                Millaiset tehtävät auttavat sinua viemään ajatuksen käytäntöön tai syventämään ajatteluasi?
               </p>
             </div>
             <label className="form-row">
-              <span>Luo tehtävät</span>
+              <span>Tehtävät</span>
               <textarea
                 name="cardGenerationPrompt"
                 defaultValue={settings.cardGenerationPrompt}
