@@ -613,7 +613,6 @@ button.danger {
   display: grid;
   gap: 0;
   padding: 0;
-  border-top: 1px solid rgba(160, 188, 214, 0.32);
 }
 
 .thoughts-tags-summary {
@@ -676,11 +675,6 @@ button.danger {
   font-size: 0.74rem;
   font-weight: 700;
 }
-
-.thoughts-clear-link {
-  padding-inline: 0.9rem;
-}
-
 .thoughts-card-copy {
   min-width: 0;
 }

@@ -177,11 +177,12 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
                   <div className="thoughts-tag-list">
                     {tags.map((tag) => {
                       const isActive = tag.value === normalizedActiveTag;
+                      const nextTag = isActive ? "" : tag.label;
 
                       return (
                         <Link
                           key={tag.value}
-                          href={buildSourcesHref(rawQuery, tag.label)}
+                          href={buildSourcesHref(rawQuery, nextTag)}
                           className="pill"
                           data-variant={isActive ? "primary" : undefined}
                         >
@@ -189,14 +190,6 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
                         </Link>
                       );
                     })}
-                    {activeTag ? (
-                      <Link
-                        href={buildSourcesHref(rawQuery, "")}
-                        className="button-link secondary thoughts-clear-link"
-                      >
-                        Tyhjenna tunnistesuodatus
-                      </Link>
-                    ) : null}
                   </div>
                 ) : (
                   <p className="muted" style={{ margin: 0 }}>
