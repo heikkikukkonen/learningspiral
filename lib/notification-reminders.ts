@@ -78,7 +78,7 @@ export function isReminderDueNow(
     "morningReminderTime" | "morningReminderTimezone" | "lastMorningReminderSentFor"
   >,
   now: Date,
-  toleranceMinutes = 5
+  toleranceMinutes = 15
 ) {
   const local = getLocalDateParts(now, settings.morningReminderTimezone);
   const nowTotalMinutes = Number(local.hour) * 60 + Number(local.minute);
