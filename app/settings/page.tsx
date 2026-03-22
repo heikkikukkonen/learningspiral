@@ -105,11 +105,10 @@ export default async function SettingsPage({
             <div className="settings-subsection-copy">
               <h3 style={{ margin: 0 }}>Noeman antamien vastausten kieli</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Vastauksessa käytetty kieli. Kirjoita kielen nimi alle ja saata Noeman antamat ehdotukset kyseisellä kielellä.
+                Kirjoita kielen nimi alle ja saat Noeman antamat ehdotukset kyseisellä kielellä.
               </p>
             </div>
             <label className="form-row">
-              <span>Vastauskieli</span>
               <input
                 name="responseLanguage"
                 defaultValue={settings.responseLanguage}
