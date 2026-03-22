@@ -156,6 +156,37 @@ export async function GET(request: Request) {
   }
 
   const settingsRows = await listUsersWithMorningReminderEnabled();
+  const preflightUsers = await Promise.all(
+    settingsRows.map(async (settings) => {
+      const subscriptions = await listPushSubscriptions(settings.user_id);
+      return {
+        userId: settings.user_id,
+        reminder: {
+          enabled: settings.morningReminderEnabled,
+          targetTime: settings.morningReminderTime,
+          timezone: settings.morningReminderTimezone,
+          lastSentFor: settings.lastMorningReminderSentFor
+        },
+        subscriptionCount: subscriptions.length,
+        subscriptions: subscriptions.map((item) => ({
+          endpoint: item.endpoint,
+          deviceLabel: item.device_label,
+          lastSentAt: item.last_sent_at,
+          lastMorningReminderSentFor: item.last_morning_reminder_sent_for,
+          lastErrorAt: item.last_error_at,
+          lastErrorMessage: item.last_error_message
+        }))
+      };
+    })
+  );
+  console.info(
+    "[cron] morning-reminders.preflight",
+    JSON.stringify({
+      runtime,
+      processedUsers: settingsRows.length,
+      users: preflightUsers
+    })
+  );
   const results = await Promise.all(settingsRows.map((settings) => processMorningReminder(settings)));
   const handledUsers = settingsRows.map((settings, index) => {
     const result = results[index];
