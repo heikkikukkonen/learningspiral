@@ -21,6 +21,15 @@ import {
 import { isPushConfigured } from "@/lib/push";
 import { sanitizeUserSettings } from "@/lib/user-settings";
 
+function getPushAuditContext() {
+  return {
+    vercelEnv: process.env.VERCEL_ENV ?? null,
+    vercelUrl: process.env.VERCEL_URL ?? null,
+    vercelDeploymentId: process.env.VERCEL_DEPLOYMENT_ID ?? null,
+    nodeEnv: process.env.NODE_ENV ?? null
+  };
+}
+
 function asString(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
 }
@@ -96,22 +105,77 @@ export async function savePushSubscriptionAction(input: {
     throw new Error("Push subscription endpoint is missing.");
   }
 
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const endpoint = input.endpoint.trim();
+  const beforeSubscriptions = await listPushSubscriptions(user.id);
   await upsertPushSubscription({
-    endpoint: input.endpoint.trim(),
+    endpoint,
     subscription: input.subscription,
-    deviceLabel: input.deviceLabel
+    deviceLabel: input.deviceLabel,
+    userId: user.id
   });
+  const afterSubscriptions = await listPushSubscriptions(user.id);
+  console.info(
+    "[push] save-subscription",
+    JSON.stringify({
+      runtime: getPushAuditContext(),
+      userId: user.id,
+      endpoint,
+      deviceLabel: input.deviceLabel?.trim() || null,
+      beforeCount: beforeSubscriptions.length,
+      afterCount: afterSubscriptions.length,
+      endpointsAfter: afterSubscriptions.map((item) => ({
+        endpoint: item.endpoint,
+        deviceLabel: item.device_label
+      }))
+    })
+  );
 
   revalidatePath("/settings");
   return { ok: true };
 }
 
 export async function deletePushSubscriptionAction(endpoint: string) {
-  if (!endpoint.trim()) {
+  const trimmedEndpoint = endpoint.trim();
+  if (!trimmedEndpoint) {
     return { ok: true };
   }
 
-  await deletePushSubscription(endpoint.trim());
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const beforeSubscriptions = await listPushSubscriptions(user.id);
+  await deletePushSubscription(trimmedEndpoint, user.id);
+  const afterSubscriptions = await listPushSubscriptions(user.id);
+  console.info(
+    "[push] delete-subscription",
+    JSON.stringify({
+      runtime: getPushAuditContext(),
+      userId: user.id,
+      endpoint: trimmedEndpoint,
+      beforeCount: beforeSubscriptions.length,
+      afterCount: afterSubscriptions.length,
+      endpointsAfter: afterSubscriptions.map((item) => ({
+        endpoint: item.endpoint,
+        deviceLabel: item.device_label
+      }))
+    })
+  );
+
   revalidatePath("/settings");
   return { ok: true };
 }
