@@ -53,7 +53,10 @@ function detectDeviceLabel() {
   return `${browser} / ${os}`;
 }
 
-type DeviceItem = Pick<PushSubscriptionRow, "endpoint" | "device_label" | "last_sent_at">;
+type DeviceItem = Pick<
+  PushSubscriptionRow,
+  "endpoint" | "device_label" | "last_sent_at" | "last_morning_reminder_sent_for" | "last_error_at" | "last_error_message"
+>;
 
 export function NotificationTester({
   pushConfigured,
@@ -146,7 +149,17 @@ export function NotificationTester({
     setCurrentEndpoint(subscription.endpoint);
     setDeviceItems((current) => {
       const next = current.filter((item) => item.endpoint !== subscription.endpoint);
-      return [{ endpoint: subscription.endpoint, device_label: deviceLabel, last_sent_at: null }, ...next];
+      return [
+        {
+          endpoint: subscription.endpoint,
+          device_label: deviceLabel,
+          last_sent_at: null,
+          last_morning_reminder_sent_for: null,
+          last_error_at: null,
+          last_error_message: null
+        },
+        ...next
+      ];
     });
   }
 
@@ -166,6 +179,26 @@ export function NotificationTester({
     await subscription.unsubscribe();
     setCurrentEndpoint("");
     setDeviceItems((current) => current.filter((item) => item.endpoint !== subscription.endpoint));
+  }
+
+  async function removeDevice(endpoint: string) {
+    setIsToggling(true);
+    setStatus("");
+
+    try {
+      if (endpoint === currentEndpoint) {
+        await disableCurrentDevice();
+      } else {
+        await deletePushSubscriptionAction(endpoint);
+        setDeviceItems((current) => current.filter((item) => item.endpoint !== endpoint));
+      }
+      setStatus("Laite poistettiin ilmoituslistasta.");
+    } catch (error) {
+      console.error("[push] remove device failed", error);
+      setStatus(error instanceof Error ? error.message : "Laitteen poisto epäonnistui.");
+    } finally {
+      setIsToggling(false);
+    }
   }
 
   async function handleToggle() {
@@ -197,7 +230,7 @@ export function NotificationTester({
     try {
       const result = await sendMorningReminderPreviewAction();
       setStatus(
-        `Testi-ilmoitus lähetettiin ${result.sentCount} laitteelle. Viestissä kerrottiin ${result.queueCount} syvennettävää asiaa.`
+        `Testi-ilmoitus lähetettiin ${result.sentCount} laitteelle. Epäonnistuneita lähetyksiä: ${result.failureCount}. Viestissä kerrottiin ${result.queueCount} syvennettävää asiaa.`
       );
     } catch (error) {
       console.error("[push] preview send failed", error);
@@ -228,19 +261,36 @@ export function NotificationTester({
         <p className="status" style={{ margin: "0.5rem 0 0" }}>
           Aktiivisia ilmoituslaitteita: {deviceItems.length}
         </p>
-        <p className="status" style={{ margin: "0.5rem 0 0" }}>
-          lastSentFor: {initialSettings.lastMorningReminderSentFor || "ei vielä lähetettyä päivää"}
-        </p>
         {deviceItems.length > 0 ? (
           <div className="notification-device-list">
             {deviceItems.map((item) => (
-              <span
+              <article
                 key={item.endpoint}
-                className={`pill${item.endpoint === currentEndpoint ? " notification-device-pill-current" : ""}`}
+                className={`card notification-device-card${item.endpoint === currentEndpoint ? " notification-device-card-current" : ""}`}
               >
-                {item.device_label || "Tuntematon laite"}
-                {item.endpoint === currentEndpoint ? " (tämä laite)" : ""}
-              </span>
+                <div className="notification-device-card-head">
+                  <strong>
+                    {item.device_label || "Tuntematon laite"}
+                    {item.endpoint === currentEndpoint ? " (tämä laite)" : ""}
+                  </strong>
+                  <button type="button" className="secondary" onClick={() => void removeDevice(item.endpoint)} disabled={isToggling}>
+                    Poista
+                  </button>
+                </div>
+                <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+                  Viimeisin onnistunut lähetys:{" "}
+                  {item.last_sent_at ? new Date(item.last_sent_at).toLocaleString("fi-FI") : "ei vielä onnistunutta lähetystä"}
+                </p>
+                <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+                  Päivä merkitty lähetetyksi: {item.last_morning_reminder_sent_for || "ei vielä merkitty"}
+                </p>
+                {item.last_error_message ? (
+                  <p className="status" style={{ margin: "0.35rem 0 0", color: "var(--danger)" }}>
+                    Viimeisin virhe{item.last_error_at ? ` (${new Date(item.last_error_at).toLocaleString("fi-FI")})` : ""}:{" "}
+                    {item.last_error_message}
+                  </p>
+                ) : null}
+              </article>
             ))}
           </div>
         ) : null}
@@ -259,6 +309,9 @@ export function NotificationTester({
                   <strong>{item.device_label || "Tuntematon laite"}</strong>
                   <p className="muted" style={{ margin: "0.35rem 0 0" }}>
                     Viimeisin lähetys: {new Date(item.last_sent_at as string).toLocaleString("fi-FI")}
+                  </p>
+                  <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+                    Päivä merkitty lähetetyksi: {item.last_morning_reminder_sent_for || "ei vielä merkitty"}
                   </p>
                 </article>
               ))}
@@ -348,15 +401,29 @@ export function NotificationTester({
         }
 
         .notification-device-list {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.5rem;
+          display: grid;
+          gap: 0.75rem;
           margin-top: 0.6rem;
         }
 
-        .notification-device-pill-current {
+        .notification-device-card {
+          padding: 0.9rem 1rem;
+        }
+
+        .notification-device-card-current {
           border-color: rgba(11, 79, 108, 0.22);
           background: rgba(11, 79, 108, 0.08);
+        }
+
+        .notification-device-card-head {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 0.75rem;
+        }
+
+        .notification-device-card-head strong {
+          color: var(--text);
         }
 
         .notification-send-history {

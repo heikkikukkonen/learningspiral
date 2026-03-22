@@ -45,7 +45,10 @@ export async function GET(request: Request) {
       subscriptions: subscriptions.map((item) => ({
         endpoint: item.endpoint,
         deviceLabel: item.device_label,
-        lastSentAt: item.last_sent_at
+        lastSentAt: item.last_sent_at,
+        lastMorningReminderSentFor: item.last_morning_reminder_sent_for,
+        lastErrorAt: item.last_error_at,
+        lastErrorMessage: item.last_error_message
       })),
       reminder: getReminderDebugSnapshot(settings)
     });

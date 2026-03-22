@@ -2,8 +2,9 @@ import {
   countReviewQueueItemsForUser,
   deletePushSubscription,
   listPushSubscriptions,
-  markMorningReminderSent,
+  markPushSubscriptionError,
   markPushSubscriptionSent,
+  type PushSubscriptionRow,
   type UserNotificationSettingsRow
 } from "@/lib/db";
 import { sendWebPush, type PushPayload } from "@/lib/push";
@@ -66,15 +67,22 @@ export function buildMorningReminderPayload(queueCount: number): PushPayload {
 export async function sendPushToUserDevices(userId: string, payload: PushPayload) {
   const subscriptions = await listPushSubscriptions(userId);
   if (subscriptions.length === 0) {
-    return { sentCount: 0 };
+    return { sentCount: 0, failureCount: 0, results: [] as Array<Record<string, unknown>> };
   }
 
   let sentCount = 0;
+  let failureCount = 0;
+  const results: Array<Record<string, unknown>> = [];
   for (const subscription of subscriptions) {
     try {
       await sendWebPush(subscription.subscription_json, payload);
       await markPushSubscriptionSent(subscription.endpoint, userId);
       sentCount += 1;
+      results.push({
+        endpoint: subscription.endpoint,
+        deviceLabel: subscription.device_label,
+        status: "sent"
+      });
     } catch (error) {
       const statusCode =
         typeof error === "object" &&
@@ -86,14 +94,29 @@ export async function sendPushToUserDevices(userId: string, payload: PushPayload
 
       if (statusCode === 404 || statusCode === 410) {
         await deletePushSubscription(subscription.endpoint, userId);
+        results.push({
+          endpoint: subscription.endpoint,
+          deviceLabel: subscription.device_label,
+          status: "deleted",
+          statusCode
+        });
         continue;
       }
 
-      throw error;
+      failureCount += 1;
+      const message = error instanceof Error ? error.message : String(error);
+      await markPushSubscriptionError(subscription.endpoint, message, userId);
+      results.push({
+        endpoint: subscription.endpoint,
+        deviceLabel: subscription.device_label,
+        status: "failed",
+        statusCode,
+        error: message
+      });
     }
   }
 
-  return { sentCount };
+  return { sentCount, failureCount, results };
 }
 
 export function isReminderDueNow(
@@ -115,11 +138,80 @@ export function isReminderDueNow(
   };
 }
 
-export async function sendMorningReminderToUser(userId: string) {
+function getPendingReminderSubscriptions(subscriptions: PushSubscriptionRow[], localDate: string) {
+  return subscriptions.filter((subscription) => subscription.last_morning_reminder_sent_for !== localDate);
+}
+
+export async function sendMorningReminderToUser(userId: string, localDate: string) {
   const queueCount = await countReviewQueueItemsForUser(userId);
   const payload = buildMorningReminderPayload(queueCount);
-  const result = await sendPushToUserDevices(userId, payload);
-  return { queueCount, sentCount: result.sentCount, payload };
+  const subscriptions = await listPushSubscriptions(userId);
+  const pendingSubscriptions = getPendingReminderSubscriptions(subscriptions, localDate);
+
+  if (!pendingSubscriptions.length) {
+    return {
+      queueCount,
+      sentCount: 0,
+      failureCount: 0,
+      skippedCount: subscriptions.length,
+      payload,
+      results: [] as Array<Record<string, unknown>>
+    };
+  }
+
+  let sentCount = 0;
+  let failureCount = 0;
+  let skippedCount = subscriptions.length - pendingSubscriptions.length;
+  const results: Array<Record<string, unknown>> = [];
+
+  for (const subscription of pendingSubscriptions) {
+    try {
+      await sendWebPush(subscription.subscription_json, payload);
+      await markPushSubscriptionSent(subscription.endpoint, userId, {
+        reminderSentFor: localDate
+      });
+      sentCount += 1;
+      results.push({
+        endpoint: subscription.endpoint,
+        deviceLabel: subscription.device_label,
+        status: "sent",
+        sentFor: localDate
+      });
+    } catch (error) {
+      const statusCode =
+        typeof error === "object" &&
+        error &&
+        "statusCode" in error &&
+        typeof error.statusCode === "number"
+          ? error.statusCode
+          : undefined;
+
+      if (statusCode === 404 || statusCode === 410) {
+        await deletePushSubscription(subscription.endpoint, userId);
+        skippedCount += 1;
+        results.push({
+          endpoint: subscription.endpoint,
+          deviceLabel: subscription.device_label,
+          status: "deleted",
+          statusCode
+        });
+        continue;
+      }
+
+      failureCount += 1;
+      const message = error instanceof Error ? error.message : String(error);
+      await markPushSubscriptionError(subscription.endpoint, message, userId);
+      results.push({
+        endpoint: subscription.endpoint,
+        deviceLabel: subscription.device_label,
+        status: "failed",
+        statusCode,
+        error: message
+      });
+    }
+  }
+
+  return { queueCount, sentCount, failureCount, skippedCount, payload, results };
 }
 
 export async function processMorningReminder(
@@ -142,14 +234,25 @@ export async function processMorningReminder(
     return { processed: false, reason: "not_due" as const, localDate };
   }
 
-  const { queueCount, sentCount } = await sendMorningReminderToUser(settings.user_id);
-  await markMorningReminderSent(settings.user_id, localDate);
+  const subscriptions = await listPushSubscriptions(settings.user_id);
+  const pendingSubscriptions = getPendingReminderSubscriptions(subscriptions, localDate);
+  if (!pendingSubscriptions.length) {
+    return { processed: false, reason: "all_devices_already_sent" as const, localDate };
+  }
+
+  const { queueCount, sentCount, failureCount, skippedCount, results } = await sendMorningReminderToUser(
+    settings.user_id,
+    localDate
+  );
 
   return {
-    processed: true,
+    processed: sentCount > 0 || failureCount > 0 || skippedCount > 0,
     reason: "sent" as const,
     localDate,
     queueCount,
-    sentCount
+    sentCount,
+    failureCount,
+    skippedCount,
+    results
   };
 }

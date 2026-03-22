@@ -151,6 +151,9 @@ export interface PushSubscriptionRow {
   created_at: string;
   updated_at: string;
   last_sent_at: string | null;
+  last_morning_reminder_sent_for: string | null;
+  last_error_at: string | null;
+  last_error_message: string | null;
 }
 
 export interface UserNotificationSettings {
@@ -477,12 +480,47 @@ export async function deletePushSubscription(endpoint: string, userId?: string) 
   if (error) throw error;
 }
 
-export async function markPushSubscriptionSent(endpoint: string, userId?: string) {
+export async function markPushSubscriptionSent(
+  endpoint: string,
+  userId?: string,
+  opts?: {
+    reminderSentFor?: string | null;
+  }
+) {
+  const supabase = getSupabaseAdmin();
+  const resolvedUserId = userId ?? (await appUserId());
+  const update: Record<string, unknown> = {
+    last_sent_at: new Date().toISOString(),
+    last_error_at: null,
+    last_error_message: null
+  };
+
+  if (typeof opts?.reminderSentFor !== "undefined") {
+    update.last_morning_reminder_sent_for = opts.reminderSentFor;
+  }
+
+  const { error } = await supabase
+    .from("push_subscriptions")
+    .update(update)
+    .eq("user_id", resolvedUserId)
+    .eq("endpoint", endpoint);
+
+  if (error) throw error;
+}
+
+export async function markPushSubscriptionError(
+  endpoint: string,
+  message: string,
+  userId?: string
+) {
   const supabase = getSupabaseAdmin();
   const resolvedUserId = userId ?? (await appUserId());
   const { error } = await supabase
     .from("push_subscriptions")
-    .update({ last_sent_at: new Date().toISOString() })
+    .update({
+      last_error_at: new Date().toISOString(),
+      last_error_message: message
+    })
     .eq("user_id", resolvedUserId)
     .eq("endpoint", endpoint);
 

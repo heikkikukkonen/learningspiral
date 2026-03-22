@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
+  countReviewQueueItemsForUser,
   deletePushSubscription,
   getUserNotificationSettings,
   listPushSubscriptions,
@@ -12,7 +13,7 @@ import {
   upsertUserSettings
 } from "@/lib/db";
 import {
-  sendMorningReminderToUser,
+  buildMorningReminderPayload,
   sendPushToUserDevices
 } from "@/lib/notification-reminders";
 import { isPushConfigured } from "@/lib/push";
@@ -144,7 +145,7 @@ export async function sendPushTestAction(input: { message: string }) {
   });
 
   revalidatePath("/settings");
-  return { ok: true, sentCount: result.sentCount };
+  return { ok: true, sentCount: result.sentCount, failureCount: result.failureCount, results: result.results };
 }
 
 export async function sendMorningReminderPreviewAction() {
@@ -166,7 +167,14 @@ export async function sendMorningReminderPreviewAction() {
     throw new Error("Tälle käyttäjälle ei ole vielä yhtään aktiivista ilmoituslaitetta.");
   }
 
-  const result = await sendMorningReminderToUser(user.id);
+  const queueCount = await countReviewQueueItemsForUser(user.id);
+  const result = await sendPushToUserDevices(user.id, buildMorningReminderPayload(queueCount));
   revalidatePath("/settings");
-  return { ok: true, sentCount: result.sentCount, queueCount: result.queueCount };
+  return {
+    ok: true,
+    sentCount: result.sentCount,
+    failureCount: result.failureCount,
+    queueCount,
+    results: result.results
+  };
 }
