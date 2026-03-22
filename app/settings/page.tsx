@@ -46,10 +46,6 @@ export default async function SettingsPage({
             </div>
           ) : null}
         </div>
-        <p className="muted">
-          Määritä oma kieli ja ohjaus, jota käytetään &quot;Tutki tata lisaa&quot; -tekstin paivityksessa,
-          syventamisessa, tiivistyksessa, tehtavien luonnissa ja tunnisteiden ehdottamisessa.
-        </p>
         {saved ? (
           <p className="status" style={{ margin: "0.5rem 0 0", color: "var(--success)" }}>
             Asetukset tallennettu onnistuneesti.
