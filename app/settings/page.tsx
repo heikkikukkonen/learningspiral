@@ -102,9 +102,6 @@ export default async function SettingsPage({
                 Kaikki sinulle näkyvä sisältö pyydetään tällä kielellä.
               </p>
             </div>
-            <span className="pill" data-variant="primary">
-              User level
-            </span>
           </div>
 
           <label className="form-row">
