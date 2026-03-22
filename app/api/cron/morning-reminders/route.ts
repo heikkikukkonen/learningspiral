@@ -155,7 +155,39 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: true, skipped: true, reason: "push_not_configured" });
   }
 
+  const admin = getSupabaseAdmin();
   const settingsRows = await listUsersWithMorningReminderEnabled();
+  const rawEnabledSettingsResult = await admin
+    .from("user_notification_settings")
+    .select("*")
+    .eq("morning_reminder_enabled", true);
+  const rawEnabledSettings = rawEnabledSettingsResult.data ?? [];
+  const rawSubscriptionsByUser = await Promise.all(
+    rawEnabledSettings.map(async (row) => {
+      const subscriptionsResult = await admin
+        .from("push_subscriptions")
+        .select("*")
+        .eq("user_id", row.user_id)
+        .order("created_at", { ascending: false });
+
+      return {
+        userId: row.user_id,
+        reminderRow: row,
+        subscriptions: subscriptionsResult.data ?? [],
+        subscriptionsError: subscriptionsResult.error?.message ?? null
+      };
+    })
+  );
+  console.info(
+    "[cron] morning-reminders.raw-admin",
+    JSON.stringify({
+      runtime,
+      enabledSettingsCount: rawEnabledSettings.length,
+      enabledSettingsError: rawEnabledSettingsResult.error?.message ?? null,
+      enabledSettings: rawEnabledSettings,
+      subscriptionsByUser: rawSubscriptionsByUser
+    })
+  );
   const preflightUsers = await Promise.all(
     settingsRows.map(async (settings) => {
       const subscriptions = await listPushSubscriptions(settings.user_id);
