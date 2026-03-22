@@ -36,13 +36,12 @@ export function getReminderDebugSnapshot(
     UserNotificationSettingsRow,
     "morningReminderEnabled" | "morningReminderTime" | "morningReminderTimezone" | "lastMorningReminderSentFor"
   >,
-  now = new Date(),
-  toleranceMinutes = 15
+  now = new Date()
 ) {
   const local = getLocalDateParts(now, settings.morningReminderTimezone);
   const localDate = `${local.year}-${local.month}-${local.day}`;
   const localTime = `${local.hour}:${local.minute}`;
-  const dueCheck = isReminderDueNow(settings, now, toleranceMinutes);
+  const dueCheck = isReminderDueNow(settings, now);
 
   return {
     enabled: settings.morningReminderEnabled,
@@ -52,7 +51,6 @@ export function getReminderDebugSnapshot(
     nowUtc: now.toISOString(),
     localDate,
     localTime,
-    toleranceMinutes,
     dueNow: dueCheck.due
   };
 }
@@ -103,8 +101,7 @@ export function isReminderDueNow(
     UserNotificationSettingsRow,
     "morningReminderTime" | "morningReminderTimezone" | "lastMorningReminderSentFor"
   >,
-  now: Date,
-  toleranceMinutes = 15
+  now: Date
 ) {
   const local = getLocalDateParts(now, settings.morningReminderTimezone);
   const nowTotalMinutes = Number(local.hour) * 60 + Number(local.minute);
@@ -114,10 +111,7 @@ export function isReminderDueNow(
 
   return {
     localDate,
-    due:
-      nowTotalMinutes >= targetTotalMinutes &&
-      nowTotalMinutes < targetTotalMinutes + toleranceMinutes &&
-      settings.lastMorningReminderSentFor !== localDate
+    due: nowTotalMinutes >= targetTotalMinutes && settings.lastMorningReminderSentFor !== localDate
   };
 }
 
