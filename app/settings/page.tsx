@@ -24,7 +24,7 @@ export default async function SettingsPage({
   const accountDetails = [user?.email, user?.email_confirmed_at ? "Tili aktiivinen" : "Vahvista email"]
     .filter(Boolean)
     .join(" · ");
-  const pushDeviceCount = user ? (await listPushSubscriptions()).length : 0;
+  const pushSubscriptions = user ? await listPushSubscriptions() : [];
 
   return (
     <section className="review-shell">
@@ -195,19 +195,19 @@ export default async function SettingsPage({
           </div>
         </article>
 
+        <NotificationTester
+          pushConfigured={pushConfigured}
+          pushPublicKey={pushPublicKey}
+          initialSettings={notificationSettings}
+          initialDevices={pushSubscriptions}
+        />
+
         <div className="actions settings-form-actions">
           <SubmitButton className="primary" pendingText="Tallennetaan asetuksia...">
             Tallenna asetukset
           </SubmitButton>
         </div>
       </form>
-
-      <NotificationTester
-        pushConfigured={pushConfigured}
-        pushPublicKey={pushPublicKey}
-        initialSettings={notificationSettings}
-        pushDeviceCount={pushDeviceCount}
-      />
 
       <style>{`
         .settings-page-heading {

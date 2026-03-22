@@ -22,8 +22,15 @@ function asString(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
 }
 
+function asBoolean(value: FormDataEntryValue | null): boolean {
+  return value === "true";
+}
+
 export async function saveUserSettingsAction(formData: FormData) {
   const motivation = asString(formData.get("motivation"));
+  const morningReminderEnabled = asBoolean(formData.get("morningReminderEnabled"));
+  const morningReminderTime = asString(formData.get("morningReminderTime"));
+  const morningReminderTimezone = asString(formData.get("morningReminderTimezone"));
   const settings = sanitizeUserSettings({
     responseLanguage: asString(formData.get("responseLanguage")),
     analysisPromptRefresh: asString(formData.get("analysisPromptRefresh")),
@@ -52,6 +59,16 @@ export async function saveUserSettingsAction(formData: FormData) {
   }
 
   await upsertUserSettings(settings);
+  const currentNotificationSettings = await getUserNotificationSettings(user?.id);
+  await upsertUserNotificationSettings(
+    {
+      ...currentNotificationSettings,
+      morningReminderEnabled,
+      morningReminderTime,
+      morningReminderTimezone
+    },
+    user?.id
+  );
 
   revalidatePath("/settings");
   revalidatePath("/login");
@@ -63,6 +80,7 @@ export async function saveUserSettingsAction(formData: FormData) {
 export async function savePushSubscriptionAction(input: {
   endpoint: string;
   subscription: Record<string, unknown>;
+  deviceLabel?: string;
 }) {
   if (!isPushConfigured()) {
     throw new Error("Push notifications are not configured on the server.");
@@ -74,28 +92,12 @@ export async function savePushSubscriptionAction(input: {
 
   await upsertPushSubscription({
     endpoint: input.endpoint.trim(),
-    subscription: input.subscription
+    subscription: input.subscription,
+    deviceLabel: input.deviceLabel
   });
 
   revalidatePath("/settings");
   return { ok: true };
-}
-
-export async function saveMorningReminderSettingsAction(input: {
-  enabled: boolean;
-  time: string;
-  timezone: string;
-}) {
-  const current = await getUserNotificationSettings();
-  const settings = await upsertUserNotificationSettings({
-    ...current,
-    morningReminderEnabled: input.enabled,
-    morningReminderTime: input.time,
-    morningReminderTimezone: input.timezone
-  });
-
-  revalidatePath("/settings");
-  return settings;
 }
 
 export async function deletePushSubscriptionAction(endpoint: string) {

@@ -146,6 +146,7 @@ export interface PushSubscriptionRow {
   id: string;
   user_id: string;
   endpoint: string;
+  device_label: string | null;
   subscription_json: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -441,6 +442,7 @@ export async function markMorningReminderSent(userId: string, localDate: string)
 export async function upsertPushSubscription(input: {
   endpoint: string;
   subscription: Record<string, unknown>;
+  deviceLabel?: string | null;
   userId?: string;
 }) {
   const supabase = getSupabaseAdmin();
@@ -448,11 +450,12 @@ export async function upsertPushSubscription(input: {
   const { data, error } = await supabase
     .from("push_subscriptions")
     .upsert(
-      {
-        user_id: userId,
-        endpoint: input.endpoint,
-        subscription_json: input.subscription
-      },
+        {
+          user_id: userId,
+          endpoint: input.endpoint,
+          device_label: input.deviceLabel?.trim() || null,
+          subscription_json: input.subscription
+        },
       { onConflict: "endpoint" }
     )
     .select("*")

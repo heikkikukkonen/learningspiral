@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { UserNotificationSettings } from "@/lib/db";
+import { useEffect, useMemo, useState } from "react";
+import type { PushSubscriptionRow, UserNotificationSettings } from "@/lib/db";
 import {
   deletePushSubscriptionAction,
-  saveMorningReminderSettingsAction,
   savePushSubscriptionAction,
   sendMorningReminderPreviewAction
 } from "./actions";
@@ -22,24 +21,63 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
+function detectDeviceLabel() {
+  const userAgent = navigator.userAgent;
+  const platform =
+    (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ||
+    navigator.platform ||
+    "";
+
+  const browser = userAgent.includes("Edg/")
+    ? "Edge"
+    : userAgent.includes("Chrome/")
+      ? "Chrome"
+      : userAgent.includes("Firefox/")
+        ? "Firefox"
+        : userAgent.includes("Safari/")
+          ? "Safari"
+          : "Selain";
+
+  const os = /iPhone|iPad|iPod/.test(userAgent)
+    ? "iOS"
+    : /Android/.test(userAgent)
+      ? "Android"
+      : /Windows/.test(platform) || /Windows/.test(userAgent)
+        ? "Windows"
+        : /Mac/.test(platform) || /Mac OS X/.test(userAgent)
+          ? "macOS"
+          : /Linux/.test(platform) || /Linux/.test(userAgent)
+            ? "Linux"
+            : "laite";
+
+  return `${browser} / ${os}`;
+}
+
+type DeviceItem = Pick<PushSubscriptionRow, "endpoint" | "device_label">;
+
 export function NotificationTester({
   pushConfigured,
   pushPublicKey,
   initialSettings,
-  pushDeviceCount
+  initialDevices
 }: {
   pushConfigured: boolean;
   pushPublicKey: string;
   initialSettings: UserNotificationSettings;
-  pushDeviceCount: number;
+  initialDevices: DeviceItem[];
 }) {
   const [morningTime, setMorningTime] = useState(initialSettings.morningReminderTime);
   const [isReminderEnabled, setIsReminderEnabled] = useState(initialSettings.morningReminderEnabled);
   const [status, setStatus] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const [hasDeviceSubscription, setHasDeviceSubscription] = useState(false);
-  const [deviceCount, setDeviceCount] = useState(pushDeviceCount);
+  const [currentEndpoint, setCurrentEndpoint] = useState("");
+  const [deviceItems, setDeviceItems] = useState<DeviceItem[]>(initialDevices);
+
+  const detectedTimezone = useMemo(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone || initialSettings.morningReminderTimezone,
+    [initialSettings.morningReminderTimezone]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -51,11 +89,11 @@ export function NotificationTester({
         const registration = await navigator.serviceWorker.ready;
         const subscription = await registration.pushManager.getSubscription();
         if (!cancelled) {
-          setHasDeviceSubscription(Boolean(subscription));
+          setCurrentEndpoint(subscription?.endpoint ?? "");
         }
       } catch {
         if (!cancelled) {
-          setHasDeviceSubscription(false);
+          setCurrentEndpoint("");
         }
       }
     }
@@ -93,9 +131,11 @@ export function NotificationTester({
         applicationServerKey: urlBase64ToUint8Array(pushPublicKey)
       }));
 
+    const deviceLabel = detectDeviceLabel();
     const subscriptionJson = subscription.toJSON();
     await savePushSubscriptionAction({
       endpoint: subscription.endpoint,
+      deviceLabel,
       subscription: {
         endpoint: subscription.endpoint,
         expirationTime: subscription.expirationTime,
@@ -103,108 +143,50 @@ export function NotificationTester({
       }
     });
 
-    setHasDeviceSubscription(true);
-    if (!existingSubscription) {
-      setDeviceCount((current) => current + 1);
-    }
+    setCurrentEndpoint(subscription.endpoint);
+    setDeviceItems((current) => {
+      const next = current.filter((item) => item.endpoint !== subscription.endpoint);
+      return [{ endpoint: subscription.endpoint, device_label: deviceLabel }, ...next];
+    });
   }
 
-  async function enableMorningReminder() {
-    setIsSaving(true);
-    setStatus("");
-
-    try {
-      await ensurePushSubscription();
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-      await saveMorningReminderSettingsAction({
-        enabled: true,
-        time: morningTime,
-        timezone
-      });
-      setIsReminderEnabled(true);
-      setStatus(`Aamu-ilmoitus on käytössä. Lähetys tulee joka aamu klo ${morningTime}.`);
-    } catch (error) {
-      console.error("[push] enable morning reminder failed", error);
-      setStatus(error instanceof Error ? error.message : "Ilmoituksen käyttöönotto epäonnistui.");
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  async function disableMorningReminder() {
-    setIsSaving(true);
-    setStatus("");
-
-    try {
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || initialSettings.morningReminderTimezone;
-      await saveMorningReminderSettingsAction({
-        enabled: false,
-        time: morningTime,
-        timezone
-      });
-      setIsReminderEnabled(false);
-      setStatus("Aamu-ilmoitus poistettiin käytöstä.");
-    } catch (error) {
-      console.error("[push] disable morning reminder failed", error);
-      setStatus(error instanceof Error ? error.message : "Ilmoituksen poistaminen epäonnistui.");
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  async function saveMorningTime() {
-    setIsSaving(true);
-    setStatus("");
-
-    try {
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || initialSettings.morningReminderTimezone;
-      await saveMorningReminderSettingsAction({
-        enabled: isReminderEnabled,
-        time: morningTime,
-        timezone
-      });
-      setStatus(
-        isReminderEnabled
-          ? `Aamu-ilmoituksen uusi kellonaika tallennettiin. Lähetys tulee joka aamu klo ${morningTime}.`
-          : `Kellonaika tallennettiin valmiiksi. Ilmoitus on nyt pois päältä.`
-      );
-    } catch (error) {
-      console.error("[push] save morning time failed", error);
-      setStatus(error instanceof Error ? error.message : "Kellonajan tallennus epäonnistui.");
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  async function disablePushNotifications() {
+  async function disableCurrentDevice() {
     if (!("serviceWorker" in navigator)) {
-      setStatus("Service worker ei ole saatavilla.");
       return;
     }
 
-    setIsSaving(true);
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+    if (!subscription) {
+      setCurrentEndpoint("");
+      return;
+    }
+
+    await deletePushSubscriptionAction(subscription.endpoint);
+    await subscription.unsubscribe();
+    setCurrentEndpoint("");
+    setDeviceItems((current) => current.filter((item) => item.endpoint !== subscription.endpoint));
+  }
+
+  async function handleToggle() {
+    setIsToggling(true);
     setStatus("");
 
     try {
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
-
-      if (!subscription) {
-        setHasDeviceSubscription(false);
-        setStatus("Tällä laitteella ei ollut aktiivista ilmoituslaitetta.");
-        return;
+      if (isReminderEnabled) {
+        await disableCurrentDevice();
+        setIsReminderEnabled(false);
+        setStatus("Ilmoitus on nyt pois päältä tälle laitteelle. Tallenna asetukset, jos haluat säilyttää muutoksen.");
+      } else {
+        await ensurePushSubscription();
+        setIsReminderEnabled(true);
+        setStatus("Ilmoitus on nyt päällä tälle laitteelle. Tallenna asetukset, jotta aamu-ilmoitus jää käyttöön.");
       }
-
-      await deletePushSubscriptionAction(subscription.endpoint);
-      await subscription.unsubscribe();
-      setHasDeviceSubscription(false);
-      setDeviceCount((current) => Math.max(0, current - 1));
-      setStatus("Ilmoitukset poistettiin tältä laitteelta.");
     } catch (error) {
-      console.error("[push] disable failed", error);
-      setStatus("Ilmoitusten poisto tältä laitteelta epäonnistui.");
+      console.error("[push] toggle failed", error);
+      setStatus(error instanceof Error ? error.message : "Ilmoituksen tilan vaihto epäonnistui.");
     } finally {
-      setIsSaving(false);
+      setIsToggling(false);
     }
   }
 
@@ -227,6 +209,9 @@ export function NotificationTester({
 
   return (
     <article className="card settings-card">
+      <input type="hidden" name="morningReminderEnabled" value={String(isReminderEnabled)} />
+      <input type="hidden" name="morningReminderTimezone" value={detectedTimezone} />
+
       <div className="settings-section-header">
         <div>
           <h2 style={{ margin: 0 }}>Sovelluksen ilmoitukset</h2>
@@ -241,8 +226,21 @@ export function NotificationTester({
           Ilmoitus lähetetään vain tämän käyttäjän omille laitteille, joilla push-ilmoitukset on otettu käyttöön.
         </p>
         <p className="status" style={{ margin: "0.5rem 0 0" }}>
-          Aktiivisia ilmoituslaitteita: {deviceCount}
+          Aktiivisia ilmoituslaitteita: {deviceItems.length}
         </p>
+        {deviceItems.length > 0 ? (
+          <div className="notification-device-list">
+            {deviceItems.map((item) => (
+              <span
+                key={item.endpoint}
+                className={`pill${item.endpoint === currentEndpoint ? " notification-device-pill-current" : ""}`}
+              >
+                {item.device_label || "Tuntematon laite"}
+                {item.endpoint === currentEndpoint ? " (tämä laite)" : ""}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div className="notification-toggle-shell">
@@ -262,8 +260,8 @@ export function NotificationTester({
           role="switch"
           aria-checked={isReminderEnabled}
           className={`notification-toggle${isReminderEnabled ? " is-on" : ""}`}
-          onClick={() => void (isReminderEnabled ? disableMorningReminder() : enableMorningReminder())}
-          disabled={isSaving || !pushConfigured}
+          onClick={() => void handleToggle()}
+          disabled={isToggling || !pushConfigured}
         >
           <span className="notification-toggle-knob" />
           <span className="sr-only">{isReminderEnabled ? "Poista ilmoitus käytöstä" : "Ota ilmoitus käyttöön"}</span>
@@ -274,34 +272,18 @@ export function NotificationTester({
         <span>Aamu-ilmoituksen kellonaika</span>
         <input
           type="time"
+          name="morningReminderTime"
           value={morningTime}
           onChange={(event) => setMorningTime(event.target.value)}
-          disabled={isSaving}
+          disabled={isToggling}
         />
       </label>
 
       <div className="actions" style={{ justifyContent: "flex-start" }}>
-        <button
-          type="button"
-          className="primary"
-          onClick={() => void saveMorningTime()}
-          disabled={isSaving}
-        >
-          {isSaving ? "Tallennetaan..." : "Tallenna kellonaika"}
-        </button>
-        <button type="button" className="secondary" onClick={() => void disablePushNotifications()} disabled={isSaving}>
-          Poista ilmoitukset tältä laitteelta
-        </button>
         <button type="button" className="primary" onClick={() => void sendPreview()} disabled={isSending || !pushConfigured}>
           {isSending ? "Lähetetään..." : "Testaa ilmoituksen lähetystä"}
         </button>
       </div>
-
-      {hasDeviceSubscription ? (
-        <p className="status" style={{ margin: "0.75rem 0 0" }}>
-          Tämä laite on liitetty ilmoituksiin.
-        </p>
-      ) : null}
 
       {status ? (
         <p className="status" style={{ margin: "0.75rem 0 0" }}>
@@ -336,6 +318,18 @@ export function NotificationTester({
           font-size: 1rem;
           line-height: 1.2;
           color: var(--text);
+        }
+
+        .notification-device-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          margin-top: 0.6rem;
+        }
+
+        .notification-device-pill-current {
+          border-color: rgba(11, 79, 108, 0.22);
+          background: rgba(11, 79, 108, 0.08);
         }
 
         .notification-toggle {
