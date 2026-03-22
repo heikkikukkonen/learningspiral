@@ -190,8 +190,8 @@ export default async function SettingsPage({
           </div>
         </article>
 
-        <div className="actions">
-          <SubmitButton pendingText="Tallennetaan asetuksia...">
+        <div className="actions settings-form-actions">
+          <SubmitButton className="primary" pendingText="Tallennetaan asetuksia...">
             Tallenna asetukset
           </SubmitButton>
         </div>
@@ -241,6 +241,11 @@ export default async function SettingsPage({
 
         .settings-subsection-copy {
           margin-bottom: 0.85rem;
+        }
+
+        .settings-form-actions {
+          justify-content: flex-end;
+          margin-top: 0.25rem;
         }
 
         @media (max-width: 760px) {
