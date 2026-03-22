@@ -3,15 +3,32 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getUserNotificationSettings, upsertUserNotificationSettings, upsertUserSettings } from "@/lib/db";
+import {
+  countReviewQueueItemsForUser,
+  getUserNotificationSettings,
+  listPushSubscriptions,
+  upsertPushSubscription,
+  deletePushSubscription,
+  upsertUserNotificationSettings,
+  upsertUserSettings
+} from "@/lib/db";
+import { buildMorningReminderPayload, sendPushToUserDevices } from "@/lib/notification-reminders";
+import { isPushConfigured } from "@/lib/push";
 import { sanitizeUserSettings } from "@/lib/user-settings";
 
 function asString(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
 }
 
+function asBoolean(value: FormDataEntryValue | null): boolean {
+  return value === "true";
+}
+
 export async function saveUserSettingsAction(formData: FormData) {
   const motivation = asString(formData.get("motivation"));
+  const morningReminderEnabled = asBoolean(formData.get("morningReminderEnabled"));
+  const morningReminderTime = asString(formData.get("morningReminderTime"));
+  const morningReminderTimezone = asString(formData.get("morningReminderTimezone"));
   const settings = sanitizeUserSettings({
     responseLanguage: asString(formData.get("responseLanguage")),
     analysisPromptRefresh: asString(formData.get("analysisPromptRefresh")),
@@ -44,8 +61,12 @@ export async function saveUserSettingsAction(formData: FormData) {
   await upsertUserNotificationSettings(
     {
       ...currentNotificationSettings,
-      morningReminderEnabled: false,
-      lastMorningReminderSentFor: null
+      morningReminderEnabled,
+      morningReminderTime,
+      morningReminderTimezone,
+      lastMorningReminderSentFor: morningReminderEnabled
+        ? currentNotificationSettings.lastMorningReminderSentFor
+        : null
     },
     user?.id
   );
@@ -55,4 +76,89 @@ export async function saveUserSettingsAction(formData: FormData) {
   revalidatePath("/capture");
   revalidatePath("/sources");
   redirect("/settings?saved=1");
+}
+
+export async function savePushSubscriptionAction(input: {
+  endpoint: string;
+  subscription: Record<string, unknown>;
+  deviceLabel?: string;
+}) {
+  if (!isPushConfigured()) {
+    throw new Error("Push notifications are not configured on the server.");
+  }
+
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const endpoint = input.endpoint.trim();
+  if (!endpoint) {
+    throw new Error("Push subscription endpoint is missing.");
+  }
+
+  await upsertPushSubscription({
+    endpoint,
+    subscription: input.subscription,
+    deviceLabel: input.deviceLabel,
+    userId: user.id
+  });
+
+  revalidatePath("/settings");
+  return { ok: true };
+}
+
+export async function deletePushSubscriptionAction(endpoint: string) {
+  const trimmedEndpoint = endpoint.trim();
+  if (!trimmedEndpoint) {
+    return { ok: true };
+  }
+
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  await deletePushSubscription(trimmedEndpoint, user.id);
+  revalidatePath("/settings");
+  return { ok: true };
+}
+
+export async function sendQueueReminderTestAction() {
+  if (!isPushConfigured()) {
+    throw new Error("Push notifications are not configured on the server.");
+  }
+
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const subscriptions = await listPushSubscriptions(user.id);
+  if (!subscriptions.length) {
+    throw new Error("Ilmoituksia ei ole otettu käyttöön yhdelläkään laitteella.");
+  }
+
+  const queueCount = await countReviewQueueItemsForUser(user.id);
+  const result = await sendPushToUserDevices(user.id, buildMorningReminderPayload(queueCount));
+
+  revalidatePath("/settings");
+  return {
+    ok: true,
+    queueCount,
+    sentCount: result.sentCount,
+    failureCount: result.failureCount
+  };
 }

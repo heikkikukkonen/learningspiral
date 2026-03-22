@@ -1,8 +1,10 @@
 import { SubmitButton } from "@/app/components/submit-button";
 import { getCurrentUser, getCurrentUserProfile } from "@/lib/auth";
-import { getUserSettings } from "@/lib/db";
+import { getUserNotificationSettings, getUserSettings, listPushSubscriptions } from "@/lib/db";
+import { getPushPublicKey, isPushConfigured } from "@/lib/push";
 import { signOutAction } from "@/app/login/actions";
 import { saveUserSettingsAction } from "./actions";
+import { NotificationSettings } from "./notification-settings";
 
 export const dynamic = "force-dynamic";
 
@@ -14,11 +16,15 @@ export default async function SettingsPage({
   const user = await getCurrentUser();
   const profile = await getCurrentUserProfile();
   const settings = await getUserSettings();
+  const notificationSettings = await getUserNotificationSettings();
   const saved = searchParams?.saved === "1";
+  const pushConfigured = isPushConfigured();
+  const pushPublicKey = pushConfigured ? getPushPublicKey() : "";
   const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email || "Noema user";
   const accountDetails = [user?.email, user?.email_confirmed_at ? "Tili aktiivinen" : "Vahvista email"]
     .filter(Boolean)
     .join(" · ");
+  const pushSubscriptions = user ? await listPushSubscriptions() : [];
 
   return (
     <section className="review-shell">
@@ -194,6 +200,13 @@ export default async function SettingsPage({
             </label>
           </div>
         </article>
+
+        <NotificationSettings
+          pushConfigured={pushConfigured}
+          pushPublicKey={pushPublicKey}
+          initialSettings={notificationSettings}
+          initialDevices={pushSubscriptions}
+        />
 
         <div className="actions settings-form-actions">
           <SubmitButton className="primary" pendingText="Tallennetaan asetuksia...">
