@@ -31,6 +31,32 @@ function getLocalDateParts(date: Date, timeZone: string) {
   };
 }
 
+export function getReminderDebugSnapshot(
+  settings: Pick<
+    UserNotificationSettingsRow,
+    "morningReminderEnabled" | "morningReminderTime" | "morningReminderTimezone" | "lastMorningReminderSentFor"
+  >,
+  now = new Date(),
+  toleranceMinutes = 15
+) {
+  const local = getLocalDateParts(now, settings.morningReminderTimezone);
+  const localDate = `${local.year}-${local.month}-${local.day}`;
+  const localTime = `${local.hour}:${local.minute}`;
+  const dueCheck = isReminderDueNow(settings, now, toleranceMinutes);
+
+  return {
+    enabled: settings.morningReminderEnabled,
+    targetTime: settings.morningReminderTime,
+    timezone: settings.morningReminderTimezone,
+    lastSentFor: settings.lastMorningReminderSentFor,
+    nowUtc: now.toISOString(),
+    localDate,
+    localTime,
+    toleranceMinutes,
+    dueNow: dueCheck.due
+  };
+}
+
 export function buildMorningReminderPayload(queueCount: number): PushPayload {
   return {
     title: "Noema",
