@@ -64,9 +64,24 @@ export async function GET(request: Request) {
 
   const settingsRows = await listUsersWithMorningReminderEnabled();
   const results = await Promise.all(settingsRows.map((settings) => processMorningReminder(settings)));
+  const handledUsers = settingsRows.map((settings, index) => {
+    const result = results[index];
+
+    return {
+      userId: settings.user_id,
+      processed: result.processed,
+      reason: result.reason,
+      localDate: "localDate" in result ? result.localDate : null,
+      queueCount: "queueCount" in result ? result.queueCount : null,
+      sentCount: "sentCount" in result ? result.sentCount : 0,
+      failureCount: "failureCount" in result ? result.failureCount : 0,
+      skippedCount: "skippedCount" in result ? result.skippedCount : 0,
+      deviceResults: "results" in result ? result.results : []
+    };
+  });
   console.info("[cron] morning-reminders", {
     processedUsers: settingsRows.length,
-    results
+    handledUsers
   });
 
   return NextResponse.json({
