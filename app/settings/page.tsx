@@ -119,55 +119,76 @@ export default async function SettingsPage({
           <div className="settings-section-header">
             <div>
               <h2 style={{ margin: 0 }}>Prompt-ohjaus</h2>
-              <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Näitä kenttiä lisätään sellaisenaan mukaan kyseisen toiminnon ohjaukseen.
-              </p>
             </div>
           </div>
 
-          <div className="grid settings-grid">
+          <div className="settings-subsection">
+            <div className="settings-subsection-copy">
+              <h3 style={{ margin: 0 }}>Tunnisteiden luonti ohjaus</h3>
+              <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+                Kirjoita haluamasi ohjeistus automaattiselle tunnisteiden luonnille.
+              </p>
+            </div>
             <label className="form-row">
-              <span>Tutki tata lisaa / kirkasta</span>
-              <textarea
-                name="analysisPromptRefresh"
-                defaultValue={settings.analysisPromptRefresh}
-                placeholder="Esim. pidä näkökulma käytännöllisenä ja tuo esiin päätösvaikutus."
-              />
-            </label>
-
-            <label className="form-row">
-              <span>Tutki tata lisaa / syvenna</span>
-              <textarea
-                name="analysisPromptDeepen"
-                defaultValue={settings.analysisPromptDeepen}
-                placeholder="Esim. syvennä trade-offit, riskit ja seuraava konkreettinen askel."
-              />
-            </label>
-
-            <label className="form-row">
-              <span>Tutki tata lisaa / tiivista</span>
-              <textarea
-                name="analysisPromptSummarize"
-                defaultValue={settings.analysisPromptSummarize}
-                placeholder="Esim. tiivistä ydinväite, älä menetä toimintaehdotusta."
-              />
-            </label>
-
-            <label className="form-row">
-              <span>Tehtavien luonti prompt</span>
-              <textarea
-                name="cardGenerationPrompt"
-                defaultValue={settings.cardGenerationPrompt}
-                placeholder="Esim. tee korteista päätöksentekoa ja soveltamista tukevia."
-              />
-            </label>
-
-            <label className="form-row">
-              <span>Tunnisteiden luonnin prompt</span>
+              <span>Tunnisteiden luonti</span>
               <textarea
                 name="tagGenerationPrompt"
                 defaultValue={settings.tagGenerationPrompt}
                 placeholder="Esim. luo 3-6 lyhyttä, hakukelpoista tunnistetta ilman päällekkäisiä synonyymeja."
+              />
+            </label>
+          </div>
+
+          <div className="settings-subsection">
+            <div className="settings-subsection-copy">
+              <h3 style={{ margin: 0 }}>Tutki tätä lisää ohjaus</h3>
+              <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+                Kirjoita haluamasi ohjeistus Tutki tätä lisää -ohjeistuksen toiminnoille.
+              </p>
+            </div>
+            <div className="grid settings-grid">
+              <label className="form-row">
+                <span>Tutki tätä lisää / kirkasta</span>
+                <textarea
+                  name="analysisPromptRefresh"
+                  defaultValue={settings.analysisPromptRefresh}
+                  placeholder="Esim. pidä näkökulma käytännöllisenä ja tuo esiin päätösvaikutus."
+                />
+              </label>
+
+              <label className="form-row">
+                <span>Tutki tätä lisää / syvennä</span>
+                <textarea
+                  name="analysisPromptDeepen"
+                  defaultValue={settings.analysisPromptDeepen}
+                  placeholder="Esim. syvennä trade-offit, riskit ja seuraava konkreettinen askel."
+                />
+              </label>
+
+              <label className="form-row">
+                <span>Tutki tätä lisää / tiivistä</span>
+                <textarea
+                  name="analysisPromptSummarize"
+                  defaultValue={settings.analysisPromptSummarize}
+                  placeholder="Esim. tiivistä ydinväite, älä menetä toimintaehdotusta."
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="settings-subsection">
+            <div className="settings-subsection-copy">
+              <h3 style={{ margin: 0 }}>Tehtävien luonnin ohjaus</h3>
+              <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+                Kirjoita haluamasi ohjeistus luo tehtävät -toiminnoille.
+              </p>
+            </div>
+            <label className="form-row">
+              <span>Luo tehtävät</span>
+              <textarea
+                name="cardGenerationPrompt"
+                defaultValue={settings.cardGenerationPrompt}
+                placeholder="Esim. tee korteista päätöksentekoa ja soveltamista tukevia."
               />
             </label>
           </div>
@@ -214,6 +235,16 @@ export default async function SettingsPage({
 
         .settings-mobile-account-signout {
           margin: 0;
+        }
+
+        .settings-subsection + .settings-subsection {
+          margin-top: 1.5rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid var(--border);
+        }
+
+        .settings-subsection-copy {
+          margin-bottom: 0.85rem;
         }
 
         @media (max-width: 760px) {
