@@ -167,7 +167,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
                 Hae
               </button>
             </div>
-            <details className="thoughts-tags" open={Boolean(activeTag)}>
+            <details className="thoughts-tags" open>
               <summary className="thoughts-tags-summary">
                 <span className="thoughts-search-label">Selaa aihepiireja tunnisteiden avulla</span>
               </summary>
