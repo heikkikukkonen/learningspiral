@@ -76,6 +76,7 @@ export async function GET(request: Request) {
       sentCount: "sentCount" in result ? result.sentCount : 0,
       failureCount: "failureCount" in result ? result.failureCount : 0,
       skippedCount: "skippedCount" in result ? result.skippedCount : 0,
+      deletedCount: "deletedCount" in result ? result.deletedCount : 0,
       deviceResults: "results" in result ? result.results : []
     };
   });
@@ -83,6 +84,21 @@ export async function GET(request: Request) {
     processedUsers: settingsRows.length,
     handledUsers
   });
+  console.info("[cron] morning-reminders.json", JSON.stringify(handledUsers));
+  for (const handledUser of handledUsers) {
+    console.info("[cron] morning-reminders.user", JSON.stringify(handledUser));
+    for (const deviceResult of handledUser.deviceResults ?? []) {
+      console.info(
+        "[cron] morning-reminders.device",
+        JSON.stringify({
+          userId: handledUser.userId,
+          localDate: handledUser.localDate,
+          reason: handledUser.reason,
+          ...deviceResult
+        })
+      );
+    }
+  }
 
   return NextResponse.json({
     ok: true,

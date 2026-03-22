@@ -142,27 +142,39 @@ function getPendingReminderSubscriptions(subscriptions: PushSubscriptionRow[], l
   return subscriptions.filter((subscription) => subscription.last_morning_reminder_sent_for !== localDate);
 }
 
+function getAlreadySentReminderSubscriptions(subscriptions: PushSubscriptionRow[], localDate: string) {
+  return subscriptions.filter((subscription) => subscription.last_morning_reminder_sent_for === localDate);
+}
+
 export async function sendMorningReminderToUser(userId: string, localDate: string) {
   const queueCount = await countReviewQueueItemsForUser(userId);
   const payload = buildMorningReminderPayload(queueCount);
   const subscriptions = await listPushSubscriptions(userId);
+  const alreadySentSubscriptions = getAlreadySentReminderSubscriptions(subscriptions, localDate);
   const pendingSubscriptions = getPendingReminderSubscriptions(subscriptions, localDate);
+  const results: Array<Record<string, unknown>> = alreadySentSubscriptions.map((subscription) => ({
+    endpoint: subscription.endpoint,
+    deviceLabel: subscription.device_label,
+    status: "skipped_already_sent",
+    sentFor: localDate
+  }));
 
   if (!pendingSubscriptions.length) {
     return {
       queueCount,
       sentCount: 0,
       failureCount: 0,
-      skippedCount: subscriptions.length,
+      skippedCount: alreadySentSubscriptions.length,
+      deletedCount: 0,
       payload,
-      results: [] as Array<Record<string, unknown>>
+      results
     };
   }
 
   let sentCount = 0;
   let failureCount = 0;
-  let skippedCount = subscriptions.length - pendingSubscriptions.length;
-  const results: Array<Record<string, unknown>> = [];
+  let skippedCount = alreadySentSubscriptions.length;
+  let deletedCount = 0;
 
   for (const subscription of pendingSubscriptions) {
     try {
@@ -188,7 +200,7 @@ export async function sendMorningReminderToUser(userId: string, localDate: strin
 
       if (statusCode === 404 || statusCode === 410) {
         await deletePushSubscription(subscription.endpoint, userId);
-        skippedCount += 1;
+        deletedCount += 1;
         results.push({
           endpoint: subscription.endpoint,
           deviceLabel: subscription.device_label,
@@ -211,7 +223,7 @@ export async function sendMorningReminderToUser(userId: string, localDate: strin
     }
   }
 
-  return { queueCount, sentCount, failureCount, skippedCount, payload, results };
+  return { queueCount, sentCount, failureCount, skippedCount, deletedCount, payload, results };
 }
 
 export async function processMorningReminder(
@@ -235,12 +247,28 @@ export async function processMorningReminder(
   }
 
   const subscriptions = await listPushSubscriptions(settings.user_id);
+  const alreadySentSubscriptions = getAlreadySentReminderSubscriptions(subscriptions, localDate);
   const pendingSubscriptions = getPendingReminderSubscriptions(subscriptions, localDate);
   if (!pendingSubscriptions.length) {
-    return { processed: false, reason: "all_devices_already_sent" as const, localDate };
+    return {
+      processed: false,
+      reason: "all_devices_already_sent" as const,
+      localDate,
+      queueCount: null,
+      sentCount: 0,
+      failureCount: 0,
+      skippedCount: alreadySentSubscriptions.length,
+      deletedCount: 0,
+      results: alreadySentSubscriptions.map((subscription) => ({
+        endpoint: subscription.endpoint,
+        deviceLabel: subscription.device_label,
+        status: "skipped_already_sent",
+        sentFor: localDate
+      }))
+    };
   }
 
-  const { queueCount, sentCount, failureCount, skippedCount, results } = await sendMorningReminderToUser(
+  const { queueCount, sentCount, failureCount, skippedCount, deletedCount, results } = await sendMorningReminderToUser(
     settings.user_id,
     localDate
   );
@@ -253,6 +281,7 @@ export async function processMorningReminder(
     sentCount,
     failureCount,
     skippedCount,
+    deletedCount,
     results
   };
 }
