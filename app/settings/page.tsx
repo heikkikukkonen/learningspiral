@@ -97,29 +97,26 @@ export default async function SettingsPage({
         <article className="card settings-card">
           <div className="settings-section-header">
             <div>
-              <h2 style={{ margin: 0 }}>Noeman antamien vastausten kieli</h2>
+              <h2 style={{ margin: 0 }}>Prompt-ohjaus</h2>
+            </div>
+          </div>
+
+          <div className="settings-subsection">
+            <div className="settings-subsection-copy">
+              <h3 style={{ margin: 0 }}>Noeman antamien vastausten kieli</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
                 Vastauksessa käytetty kieli. Kirjoita kielen nimi alle ja saata Noeman antamat ehdotukset kyseisellä kielellä.
               </p>
             </div>
-          </div>
-
-          <label className="form-row">
-            <span>Vastauskieli</span>
-            <input
-              name="responseLanguage"
-              defaultValue={settings.responseLanguage}
-              placeholder="Finnish, English, Swedish..."
-              required
-            />
-          </label>
-        </article>
-
-        <article className="card settings-card">
-          <div className="settings-section-header">
-            <div>
-              <h2 style={{ margin: 0 }}>Prompt-ohjaus</h2>
-            </div>
+            <label className="form-row">
+              <span>Vastauskieli</span>
+              <input
+                name="responseLanguage"
+                defaultValue={settings.responseLanguage}
+                placeholder="Finnish, English, Swedish..."
+                required
+              />
+            </label>
           </div>
 
           <div className="settings-subsection">
