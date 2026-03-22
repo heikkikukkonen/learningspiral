@@ -5,6 +5,7 @@ import type { PushSubscriptionRow, UserNotificationSettings } from "@/lib/db";
 import {
   deletePushSubscriptionAction,
   savePushSubscriptionAction,
+  sendMorningReminderToDeviceAction,
   sendMorningReminderPreviewAction
 } from "./actions";
 
@@ -74,6 +75,7 @@ export function NotificationTester({
   const [status, setStatus] = useState("");
   const [isToggling, setIsToggling] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [sendingEndpoint, setSendingEndpoint] = useState("");
   const [currentEndpoint, setCurrentEndpoint] = useState("");
   const [deviceItems, setDeviceItems] = useState<DeviceItem[]>(initialDevices);
 
@@ -240,6 +242,47 @@ export function NotificationTester({
     }
   }
 
+  async function sendToDevice(item: DeviceItem) {
+    setSendingEndpoint(item.endpoint);
+    setStatus("");
+
+    try {
+      const result = await sendMorningReminderToDeviceAction(item.endpoint);
+      setDeviceItems((current) =>
+        current.map((device) =>
+          device.endpoint === item.endpoint
+            ? {
+                ...device,
+                last_sent_at: new Date().toISOString(),
+                last_error_at: null,
+                last_error_message: null
+              }
+            : device
+        )
+      );
+      setStatus(
+        `Lähetin muistutuksen laitteelle ${result.deviceLabel || "Tuntematon laite"}. Viestissä kerrottiin ${result.queueCount} syvennettävää asiaa.`
+      );
+    } catch (error) {
+      console.error("[push] device send failed", error);
+      const message = error instanceof Error ? error.message : "Laitekohtainen lähetys epäonnistui.";
+      setDeviceItems((current) =>
+        current.map((device) =>
+          device.endpoint === item.endpoint
+            ? {
+                ...device,
+                last_error_at: new Date().toISOString(),
+                last_error_message: message
+              }
+            : device
+        )
+      );
+      setStatus(message);
+    } finally {
+      setSendingEndpoint("");
+    }
+  }
+
   return (
     <article className="card settings-card">
       <input type="hidden" name="morningReminderEnabled" value={String(isReminderEnabled)} />
@@ -273,9 +316,19 @@ export function NotificationTester({
                     {item.device_label || "Tuntematon laite"}
                     {item.endpoint === currentEndpoint ? " (tämä laite)" : ""}
                   </strong>
-                  <button type="button" className="secondary" onClick={() => void removeDevice(item.endpoint)} disabled={isToggling}>
-                    Poista
-                  </button>
+                  <div className="notification-device-card-actions">
+                    <button
+                      type="button"
+                      className="primary"
+                      onClick={() => void sendToDevice(item)}
+                      disabled={Boolean(sendingEndpoint) || isToggling || !pushConfigured}
+                    >
+                      {sendingEndpoint === item.endpoint ? "Lähetetään..." : "Lähetä tälle laitteelle"}
+                    </button>
+                    <button type="button" className="secondary" onClick={() => void removeDevice(item.endpoint)} disabled={isToggling}>
+                      Poista
+                    </button>
+                  </div>
                 </div>
                 <p className="muted" style={{ margin: "0.35rem 0 0" }}>
                   Viimeisin onnistunut lähetys:{" "}
@@ -420,6 +473,13 @@ export function NotificationTester({
           align-items: flex-start;
           justify-content: space-between;
           gap: 0.75rem;
+        }
+
+        .notification-device-card-actions {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          gap: 0.5rem;
         }
 
         .notification-device-card-head strong {

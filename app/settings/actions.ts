@@ -8,6 +8,8 @@ import {
   deletePushSubscription,
   getUserNotificationSettings,
   listPushSubscriptions,
+  markPushSubscriptionError,
+  markPushSubscriptionSent,
   upsertPushSubscription,
   upsertUserNotificationSettings,
   upsertUserSettings
@@ -176,5 +178,50 @@ export async function sendMorningReminderPreviewAction() {
     failureCount: result.failureCount,
     queueCount,
     results: result.results
+  };
+}
+
+export async function sendMorningReminderToDeviceAction(endpoint: string) {
+  if (!isPushConfigured()) {
+    throw new Error("Push notifications are not configured on the server.");
+  }
+
+  const trimmedEndpoint = endpoint.trim();
+  if (!trimmedEndpoint) {
+    throw new Error("Push subscription endpoint is missing.");
+  }
+
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const subscriptions = await listPushSubscriptions(user.id);
+  const subscription = subscriptions.find((item) => item.endpoint === trimmedEndpoint);
+  if (!subscription) {
+    throw new Error("Valittua laitetta ei löytynyt.");
+  }
+
+  const queueCount = await countReviewQueueItemsForUser(user.id);
+  try {
+    const { sendWebPush } = await import("@/lib/push");
+    await sendWebPush(subscription.subscription_json, buildMorningReminderPayload(queueCount));
+    await markPushSubscriptionSent(subscription.endpoint, user.id);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await markPushSubscriptionError(subscription.endpoint, message, user.id);
+    throw error;
+  }
+
+  revalidatePath("/settings");
+  return {
+    ok: true,
+    queueCount,
+    endpoint: subscription.endpoint,
+    deviceLabel: subscription.device_label
   };
 }
