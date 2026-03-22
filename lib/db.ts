@@ -152,6 +152,26 @@ export interface PushSubscriptionRow {
   last_sent_at: string | null;
 }
 
+export interface UserNotificationSettings {
+  morningReminderEnabled: boolean;
+  morningReminderTime: string;
+  morningReminderTimezone: string;
+  lastMorningReminderSentFor: string | null;
+}
+
+export interface UserNotificationSettingsRow extends UserNotificationSettings {
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const DEFAULT_USER_NOTIFICATION_SETTINGS: UserNotificationSettings = {
+  morningReminderEnabled: false,
+  morningReminderTime: "08:00",
+  morningReminderTimezone: "UTC",
+  lastMorningReminderSentFor: null
+};
+
 const CARD_GENERATION_MODEL = "rule-v1";
 const UNREFINED_IDEA_QUEUE_LIMIT = 20;
 
@@ -179,6 +199,40 @@ function shiftMinutes(base: Date, delta: number): Date {
 
 function randomIntInclusive(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function sanitizeTime(value: string | null | undefined): string {
+  const trimmed = (value ?? "").trim();
+  return /^\d{2}:\d{2}$/.test(trimmed) ? trimmed : DEFAULT_USER_NOTIFICATION_SETTINGS.morningReminderTime;
+}
+
+function sanitizeTimezone(value: string | null | undefined): string {
+  const trimmed = (value ?? "").trim();
+  if (!trimmed) return DEFAULT_USER_NOTIFICATION_SETTINGS.morningReminderTimezone;
+
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: trimmed });
+    return trimmed;
+  } catch {
+    return DEFAULT_USER_NOTIFICATION_SETTINGS.morningReminderTimezone;
+  }
+}
+
+export function sanitizeUserNotificationSettings(
+  input: Partial<UserNotificationSettings> | null | undefined
+): UserNotificationSettings {
+  return {
+    morningReminderEnabled:
+      typeof input?.morningReminderEnabled === "boolean"
+        ? input.morningReminderEnabled
+        : DEFAULT_USER_NOTIFICATION_SETTINGS.morningReminderEnabled,
+    morningReminderTime: sanitizeTime(input?.morningReminderTime),
+    morningReminderTimezone: sanitizeTimezone(input?.morningReminderTimezone),
+    lastMorningReminderSentFor:
+      typeof input?.lastMorningReminderSentFor === "string" && input.lastMorningReminderSentFor.trim()
+        ? input.lastMorningReminderSentFor.trim()
+        : null
+  };
 }
 
 function buildFallbackAssistantSummary(text: string): string {
@@ -297,6 +351,91 @@ export async function listPushSubscriptions(userId?: string) {
 
   if (error) throw error;
   return (data ?? []) as PushSubscriptionRow[];
+}
+
+export async function getUserNotificationSettings(userId?: string): Promise<UserNotificationSettings> {
+  const supabase = getSupabaseAdmin();
+  const resolvedUserId = userId ?? (await appUserId());
+  const { data, error } = await supabase
+    .from("user_notification_settings")
+    .select("*")
+    .eq("user_id", resolvedUserId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return DEFAULT_USER_NOTIFICATION_SETTINGS;
+
+  return sanitizeUserNotificationSettings({
+    morningReminderEnabled: data.morning_reminder_enabled,
+    morningReminderTime: data.morning_reminder_time,
+    morningReminderTimezone: data.morning_reminder_timezone,
+    lastMorningReminderSentFor: data.last_morning_reminder_sent_for
+  });
+}
+
+export async function upsertUserNotificationSettings(
+  input: UserNotificationSettings,
+  userId?: string
+) {
+  const supabase = getSupabaseAdmin();
+  const resolvedUserId = userId ?? (await appUserId());
+  const settings = sanitizeUserNotificationSettings(input);
+
+  const { data, error } = await supabase
+    .from("user_notification_settings")
+    .upsert({
+      user_id: resolvedUserId,
+      morning_reminder_enabled: settings.morningReminderEnabled,
+      morning_reminder_time: settings.morningReminderTime,
+      morning_reminder_timezone: settings.morningReminderTimezone,
+      last_morning_reminder_sent_for: settings.lastMorningReminderSentFor
+    })
+    .select("*")
+    .single();
+
+  if (error) throw error;
+
+  return {
+    user_id: data.user_id,
+    morningReminderEnabled: Boolean(data.morning_reminder_enabled),
+    morningReminderTime: data.morning_reminder_time,
+    morningReminderTimezone: data.morning_reminder_timezone,
+    lastMorningReminderSentFor: data.last_morning_reminder_sent_for ?? null,
+    created_at: data.created_at,
+    updated_at: data.updated_at
+  } as UserNotificationSettingsRow;
+}
+
+export async function listUsersWithMorningReminderEnabled() {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("user_notification_settings")
+    .select("*")
+    .eq("morning_reminder_enabled", true);
+
+  if (error) throw error;
+
+  return (data ?? []).map((row) =>
+    ({
+      user_id: row.user_id,
+      morningReminderEnabled: Boolean(row.morning_reminder_enabled),
+      morningReminderTime: row.morning_reminder_time,
+      morningReminderTimezone: row.morning_reminder_timezone,
+      lastMorningReminderSentFor: row.last_morning_reminder_sent_for ?? null,
+      created_at: row.created_at,
+      updated_at: row.updated_at
+    }) as UserNotificationSettingsRow
+  );
+}
+
+export async function markMorningReminderSent(userId: string, localDate: string) {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from("user_notification_settings")
+    .update({ last_morning_reminder_sent_for: localDate })
+    .eq("user_id", userId);
+
+  if (error) throw error;
 }
 
 export async function upsertPushSubscription(input: {
@@ -499,6 +638,23 @@ export async function countReviewQueueItems(): Promise<number> {
   ]);
 
   return dueCardsCount + unrefinedIdeas.length;
+}
+
+export async function countUnrefinedIdeas(userId?: string): Promise<number> {
+  const supabase = getSupabaseAdmin();
+  const resolvedUserId = userId ?? (await appUserId());
+
+  const [{ data: sources, error: sourcesError }, { data: cards, error: cardsError }] =
+    await Promise.all([
+      supabase.from("sources").select("id").eq("user_id", resolvedUserId),
+      supabase.from("cards").select("source_id").eq("user_id", resolvedUserId)
+    ]);
+
+  if (sourcesError) throw sourcesError;
+  if (cardsError) throw cardsError;
+
+  const sourceIdsWithCards = new Set((cards ?? []).map((card) => card.source_id));
+  return (sources ?? []).filter((source) => !sourceIdsWithCards.has(source.id)).length;
 }
 
 export async function createSource(input: {
@@ -1265,20 +1421,29 @@ export async function listDueCards() {
   return (data ?? []) as CardRow[];
 }
 
-export async function countDueCards(): Promise<number> {
+export async function countDueCards(userId?: string): Promise<number> {
   const supabase = getSupabaseAdmin();
-  const userId = await appUserId();
+  const resolvedUserId = userId ?? (await appUserId());
   const nowIso = new Date().toISOString();
 
   const { count, error } = await supabase
     .from("cards")
     .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
+    .eq("user_id", resolvedUserId)
     .eq("status", "active")
     .lte("due_at", nowIso);
 
   if (error) throw error;
   return count ?? 0;
+}
+
+export async function countReviewQueueItemsForUser(userId: string): Promise<number> {
+  const [dueCardsCount, unrefinedIdeasCount] = await Promise.all([
+    countDueCards(userId),
+    countUnrefinedIdeas(userId)
+  ]);
+
+  return dueCardsCount + unrefinedIdeasCount;
 }
 
 export async function listDueCardsWithContext(): Promise<DueReviewCard[]> {

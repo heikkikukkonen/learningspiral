@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { UserNotificationSettings } from "@/lib/db";
 import {
   deletePushSubscriptionAction,
+  saveMorningReminderSettingsAction,
   savePushSubscriptionAction,
-  sendPushTestAction
+  sendMorningReminderPreviewAction
 } from "./actions";
 
 function urlBase64ToUint8Array(base64String: string) {
@@ -22,111 +24,128 @@ function urlBase64ToUint8Array(base64String: string) {
 
 export function NotificationTester({
   pushConfigured,
-  pushPublicKey
+  pushPublicKey,
+  initialSettings,
+  pushDeviceCount
 }: {
   pushConfigured: boolean;
   pushPublicKey: string;
+  initialSettings: UserNotificationSettings;
+  pushDeviceCount: number;
 }) {
-  const [message, setMessage] = useState("Muista tarkistaa päivän tehtävät");
+  const [morningTime, setMorningTime] = useState(initialSettings.morningReminderTime);
   const [status, setStatus] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const [isEnablingPush, setIsEnablingPush] = useState(false);
+  const [hasDeviceSubscription, setHasDeviceSubscription] = useState(false);
+  const [deviceCount, setDeviceCount] = useState(pushDeviceCount);
 
-  async function sendTestNotification() {
-    if (!message.trim()) {
-      setStatus("Kirjoita ensin testiviesti.");
-      return;
-    }
+  useEffect(() => {
+    let cancelled = false;
 
-    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-      setStatus("Tämä selain tai laite ei tue PWA-ilmoituksia.");
-      return;
-    }
+    async function loadSubscriptionState() {
+      if (!("serviceWorker" in navigator)) return;
 
-    setIsSending(true);
-    setStatus("");
-
-    try {
-      let permission = Notification.permission;
-      if (permission === "default") {
-        permission = await Notification.requestPermission();
-      }
-
-      if (permission !== "granted") {
-        setStatus("Ilmoituslupaa ei myönnetty.");
-        return;
-      }
-
-      const registration = await navigator.serviceWorker.ready;
-      await registration.showNotification("Noema", {
-        body: message.trim(),
-        tag: "settings-test-notification",
-        badge: "/pwa-icon-192.png",
-        icon: "/pwa-icon-192.png",
-        data: {
-          url: "/settings"
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (!cancelled) {
+          setHasDeviceSubscription(Boolean(subscription));
         }
-      });
-
-      setStatus("Testi-ilmoitus lähetetty.");
-    } catch (error) {
-      console.error("[notifications] test send failed", error);
-      setStatus("Testi-ilmoituksen lähetys epäonnistui.");
-    } finally {
-      setIsSending(false);
+      } catch {
+        if (!cancelled) {
+          setHasDeviceSubscription(false);
+        }
+      }
     }
-  }
 
-  async function enablePushNotifications() {
+    void loadSubscriptionState();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function ensurePushSubscription() {
     if (!pushConfigured || !pushPublicKey) {
-      setStatus("Push-asetukset puuttuvat palvelimelta.");
-      return;
+      throw new Error("Push-asetukset puuttuvat palvelimelta.");
     }
 
     if (!("PushManager" in window) || !("serviceWorker" in navigator)) {
-      setStatus("Tämä selain tai laite ei tue push-ilmoituksia.");
-      return;
+      throw new Error("Tämä selain tai laite ei tue push-ilmoituksia.");
     }
 
-    setIsEnablingPush(true);
+    let permission = Notification.permission;
+    if (permission === "default") {
+      permission = await Notification.requestPermission();
+    }
+
+    if (permission !== "granted") {
+      throw new Error("Ilmoituslupaa ei myönnetty.");
+    }
+
+    const registration = await navigator.serviceWorker.ready;
+    const existingSubscription = await registration.pushManager.getSubscription();
+    const subscription =
+      existingSubscription ||
+      (await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(pushPublicKey)
+      }));
+
+    const subscriptionJson = subscription.toJSON();
+    await savePushSubscriptionAction({
+      endpoint: subscription.endpoint,
+      subscription: {
+        endpoint: subscription.endpoint,
+        expirationTime: subscription.expirationTime,
+        ...subscriptionJson
+      }
+    });
+
+    setHasDeviceSubscription(true);
+    if (!existingSubscription) {
+      setDeviceCount((current) => current + 1);
+    }
+  }
+
+  async function enableMorningReminder() {
+    setIsSaving(true);
     setStatus("");
 
     try {
-      let permission = Notification.permission;
-      if (permission === "default") {
-        permission = await Notification.requestPermission();
-      }
-
-      if (permission !== "granted") {
-        setStatus("Ilmoituslupaa ei myönnetty.");
-        return;
-      }
-
-      const registration = await navigator.serviceWorker.ready;
-      const existingSubscription = await registration.pushManager.getSubscription();
-      const subscription =
-        existingSubscription ||
-        (await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(pushPublicKey)
-        }));
-
-      const subscriptionJson = subscription.toJSON();
-      await savePushSubscriptionAction({
-        endpoint: subscription.endpoint,
-        subscription: {
-          endpoint: subscription.endpoint,
-          expirationTime: subscription.expirationTime,
-          ...subscriptionJson
-        }
+      await ensurePushSubscription();
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+      await saveMorningReminderSettingsAction({
+        enabled: true,
+        time: morningTime,
+        timezone
       });
-
-      setStatus("Push-ilmoitukset otettu käyttöön tälle laitteelle.");
+      setStatus(`Aamu-ilmoitus on käytössä. Lähetys tulee joka aamu klo ${morningTime}.`);
     } catch (error) {
-      console.error("[push] enable failed", error);
-      setStatus("Push-ilmoitusten käyttöönotto epäonnistui.");
+      console.error("[push] enable morning reminder failed", error);
+      setStatus(error instanceof Error ? error.message : "Ilmoituksen käyttöönotto epäonnistui.");
     } finally {
-      setIsEnablingPush(false);
+      setIsSaving(false);
+    }
+  }
+
+  async function disableMorningReminder() {
+    setIsSaving(true);
+    setStatus("");
+
+    try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || initialSettings.morningReminderTimezone;
+      await saveMorningReminderSettingsAction({
+        enabled: false,
+        time: morningTime,
+        timezone
+      });
+      setStatus("Aamu-ilmoitus poistettiin käytöstä.");
+    } catch (error) {
+      console.error("[push] disable morning reminder failed", error);
+      setStatus(error instanceof Error ? error.message : "Ilmoituksen poistaminen epäonnistui.");
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -136,7 +155,7 @@ export function NotificationTester({
       return;
     }
 
-    setIsEnablingPush(true);
+    setIsSaving(true);
     setStatus("");
 
     try {
@@ -144,36 +163,36 @@ export function NotificationTester({
       const subscription = await registration.pushManager.getSubscription();
 
       if (!subscription) {
-        setStatus("Tällä laitteella ei ollut aktiivista push-tilausta.");
+        setHasDeviceSubscription(false);
+        setStatus("Tällä laitteella ei ollut aktiivista ilmoituslaitetta.");
         return;
       }
 
       await deletePushSubscriptionAction(subscription.endpoint);
       await subscription.unsubscribe();
-      setStatus("Push-ilmoitukset poistettu tämän laitteen osalta.");
+      setHasDeviceSubscription(false);
+      setDeviceCount((current) => Math.max(0, current - 1));
+      setStatus("Ilmoitukset poistettiin tältä laitteelta.");
     } catch (error) {
       console.error("[push] disable failed", error);
-      setStatus("Push-ilmoitusten poisto epäonnistui.");
+      setStatus("Ilmoitusten poisto tältä laitteelta epäonnistui.");
     } finally {
-      setIsEnablingPush(false);
+      setIsSaving(false);
     }
   }
 
-  async function sendServerPush() {
-    if (!message.trim()) {
-      setStatus("Kirjoita ensin push-viesti.");
-      return;
-    }
-
+  async function sendPreview() {
     setIsSending(true);
     setStatus("");
 
     try {
-      const result = await sendPushTestAction({ message });
-      setStatus(`Server-push lähetetty ${result.sentCount} laitteelle.`);
+      const result = await sendMorningReminderPreviewAction();
+      setStatus(
+        `Testi-ilmoitus lähetettiin ${result.sentCount} laitteelle. Viestissä kerrottiin ${result.queueCount} syvennettävää asiaa.`
+      );
     } catch (error) {
-      console.error("[push] send failed", error);
-      setStatus(error instanceof Error ? error.message : "Server-push epäonnistui.");
+      console.error("[push] preview send failed", error);
+      setStatus(error instanceof Error ? error.message : "Testi-ilmoituksen lähetys epäonnistui.");
     } finally {
       setIsSending(false);
     }
@@ -183,54 +202,52 @@ export function NotificationTester({
     <article className="card settings-card">
       <div className="settings-section-header">
         <div>
-          <h2 style={{ margin: 0 }}>PWA-ilmoitukset</h2>
+          <h2 style={{ margin: 0 }}>Sovelluksen ilmoitukset</h2>
           <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-            Ota pushit käyttöön tälle laitteelle ja lähetä testiviesti palvelimelta.
+            Saat joka aamu valitsemaasi aikaan ilmoituksen, joka kertoo montako asiaa sinulla on syvennettävänä.
           </p>
         </div>
-        <span className="pill" data-variant="primary">
-          Beta
-        </span>
+      </div>
+
+      <div className="settings-subsection-copy">
+        <p className="muted" style={{ margin: 0 }}>
+          Ilmoitus lähetetään vain tämän käyttäjän omille laitteille, joilla push-ilmoitukset on otettu käyttöön.
+        </p>
+        <p className="status" style={{ margin: "0.5rem 0 0" }}>
+          Aktiivisia ilmoituslaitteita: {deviceCount}
+        </p>
       </div>
 
       <label className="form-row">
-        <span>Testiviesti</span>
-        <input
-          value={message}
-          onChange={(event) => setMessage(event.target.value)}
-          placeholder="Esim. Muista tarkistaa päivän tehtävät"
-        />
+        <span>Aamu-ilmoituksen kellonaika</span>
+        <input type="time" value={morningTime} onChange={(event) => setMorningTime(event.target.value)} />
       </label>
 
       <div className="actions" style={{ justifyContent: "flex-start" }}>
         <button
           type="button"
-          className="secondary"
-          onClick={() => void enablePushNotifications()}
-          disabled={isEnablingPush || !pushConfigured}
-        >
-          {isEnablingPush ? "Otetaan käyttöön..." : "Ota pushit käyttöön"}
-        </button>
-        <button
-          type="button"
-          className="secondary"
-          onClick={() => void disablePushNotifications()}
-          disabled={isEnablingPush}
-        >
-          Poista pushit tältä laitteelta
-        </button>
-        <button type="button" className="primary" onClick={() => void sendTestNotification()} disabled={isSending}>
-          {isSending ? "Lähetetään..." : "Lähetä testi-ilmoitus"}
-        </button>
-        <button
-          type="button"
           className="primary"
-          onClick={() => void sendServerPush()}
-          disabled={isSending || !pushConfigured}
+          onClick={() => void enableMorningReminder()}
+          disabled={isSaving || !pushConfigured}
         >
-          {isSending ? "Lähetetään..." : "Lähetä server-push"}
+          {isSaving ? "Tallennetaan..." : "Ota ilmoitus käyttöön"}
+        </button>
+        <button type="button" className="secondary" onClick={() => void disableMorningReminder()} disabled={isSaving}>
+          Poista ilmoitus käytöstä
+        </button>
+        <button type="button" className="secondary" onClick={() => void disablePushNotifications()} disabled={isSaving}>
+          Poista ilmoitukset tältä laitteelta
+        </button>
+        <button type="button" className="primary" onClick={() => void sendPreview()} disabled={isSending || !pushConfigured}>
+          {isSending ? "Lähetetään..." : "Testaa ilmoituksen lähetystä"}
         </button>
       </div>
+
+      {hasDeviceSubscription ? (
+        <p className="status" style={{ margin: "0.75rem 0 0" }}>
+          Tämä laite on liitetty ilmoituksiin.
+        </p>
+      ) : null}
 
       {status ? (
         <p className="status" style={{ margin: "0.75rem 0 0" }}>
@@ -240,7 +257,7 @@ export function NotificationTester({
 
       {!pushConfigured ? (
         <p className="status" style={{ margin: "0.75rem 0 0" }}>
-          Aseta ympäristömuuttujat `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` ja `VAPID_SUBJECT`, jotta server-push toimii.
+          Aseta ympäristömuuttujat `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` ja `CRON_SECRET`, jotta ajastetut ilmoitukset toimivat tuotannossa.
         </p>
       ) : null}
     </article>

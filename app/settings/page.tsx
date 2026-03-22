@@ -1,6 +1,6 @@
 import { SubmitButton } from "@/app/components/submit-button";
 import { getCurrentUser, getCurrentUserProfile } from "@/lib/auth";
-import { getUserSettings } from "@/lib/db";
+import { getUserNotificationSettings, getUserSettings, listPushSubscriptions } from "@/lib/db";
 import { getPushPublicKey, isPushConfigured } from "@/lib/push";
 import { signOutAction } from "@/app/login/actions";
 import { saveUserSettingsAction } from "./actions";
@@ -16,6 +16,7 @@ export default async function SettingsPage({
   const user = await getCurrentUser();
   const profile = await getCurrentUserProfile();
   const settings = await getUserSettings();
+  const notificationSettings = await getUserNotificationSettings();
   const saved = searchParams?.saved === "1";
   const pushConfigured = isPushConfigured();
   const pushPublicKey = pushConfigured ? getPushPublicKey() : "";
@@ -23,6 +24,7 @@ export default async function SettingsPage({
   const accountDetails = [user?.email, user?.email_confirmed_at ? "Tili aktiivinen" : "Vahvista email"]
     .filter(Boolean)
     .join(" · ");
+  const pushDeviceCount = user ? (await listPushSubscriptions()).length : 0;
 
   return (
     <section className="review-shell">
@@ -200,7 +202,12 @@ export default async function SettingsPage({
         </div>
       </form>
 
-      <NotificationTester pushConfigured={pushConfigured} pushPublicKey={pushPublicKey} />
+      <NotificationTester
+        pushConfigured={pushConfigured}
+        pushPublicKey={pushPublicKey}
+        initialSettings={notificationSettings}
+        pushDeviceCount={pushDeviceCount}
+      />
 
       <style>{`
         .settings-page-heading {
