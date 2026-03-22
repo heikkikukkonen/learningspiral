@@ -75,10 +75,8 @@ export function SiteNav() {
       </HeaderIcon>
       <HeaderIcon href="/sources" label="Ajatukset" active={sourcesActive}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M8 8.5h4" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-          <path d="M12 15.5H8" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-          <path d="M10 12a3 3 0 013-3h2a3 3 0 010 6h-2" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-          <path d="M14 12a3 3 0 01-3 3H9a3 3 0 010-6h2" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+          <circle cx="10.5" cy="10.5" r="4.6" fill="none" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M14 14l4.2 4.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
         </svg>
       </HeaderIcon>
       <HeaderIcon href="/settings" label="Asetukset" active={settingsActive}>
