@@ -10,6 +10,18 @@ import { getReminderDebugSnapshot, processMorningReminder } from "@/lib/notifica
 
 export const dynamic = "force-dynamic";
 
+function getCronRuntimeContext() {
+  return {
+    vercelEnv: process.env.VERCEL_ENV ?? null,
+    vercelUrl: process.env.VERCEL_URL ?? null,
+    vercelProjectProductionUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL ?? null,
+    vercelBranchUrl: process.env.VERCEL_BRANCH_URL ?? null,
+    vercelDeploymentId: process.env.VERCEL_DEPLOYMENT_ID ?? null,
+    nodeEnv: process.env.NODE_ENV ?? null,
+    region: process.env.VERCEL_REGION ?? null
+  };
+}
+
 function isAuthorized(request: Request) {
   const configuredSecret = process.env.CRON_SECRET?.trim();
   if (!configuredSecret) {
@@ -22,6 +34,7 @@ function isAuthorized(request: Request) {
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
+  const runtime = getCronRuntimeContext();
   if (url.searchParams.get("debug") === "1") {
     const supabase = createSupabaseServerClient();
     const {
@@ -41,6 +54,7 @@ export async function GET(request: Request) {
       ok: true,
       debug: true,
       userId: user.id,
+      runtime,
       pushConfigured: isPushConfigured(),
       subscriptions: subscriptions.map((item) => ({
         endpoint: item.endpoint,
@@ -81,9 +95,11 @@ export async function GET(request: Request) {
     };
   });
   console.info("[cron] morning-reminders", {
+    runtime,
     processedUsers: settingsRows.length,
     handledUsers
   });
+  console.info("[cron] morning-reminders.runtime", JSON.stringify(runtime));
   console.info("[cron] morning-reminders.json", JSON.stringify(handledUsers));
   for (const handledUser of handledUsers) {
     console.info("[cron] morning-reminders.user", JSON.stringify(handledUser));

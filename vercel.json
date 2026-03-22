@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/morning-reminders",
-      "schedule": "* * * * *"
+      "schedule": "*/1 * * * *"
     }
   ]
 }
