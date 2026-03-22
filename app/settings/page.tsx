@@ -97,9 +97,9 @@ export default async function SettingsPage({
         <article className="card settings-card">
           <div className="settings-section-header">
             <div>
-              <h2 style={{ margin: 0 }}>Kieli</h2>
+              <h2 style={{ margin: 0 }}>Noeman antamien vastausten kieli</h2>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Kaikki sinulle näkyvä sisältö pyydetään tällä kielellä.
+                Vastauksessa käytetty kieli. Kirjoita kielen nimi alle ja saata Noeman antamat ehdotukset kyseisellä kielellä.
               </p>
             </div>
           </div>
