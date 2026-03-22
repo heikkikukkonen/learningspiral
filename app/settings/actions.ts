@@ -65,7 +65,10 @@ export async function saveUserSettingsAction(formData: FormData) {
       ...currentNotificationSettings,
       morningReminderEnabled,
       morningReminderTime,
-      morningReminderTimezone
+      morningReminderTimezone,
+      lastMorningReminderSentFor: morningReminderEnabled
+        ? currentNotificationSettings.lastMorningReminderSentFor
+        : null
     },
     user?.id
   );

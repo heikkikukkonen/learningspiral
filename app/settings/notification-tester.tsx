@@ -53,7 +53,7 @@ function detectDeviceLabel() {
   return `${browser} / ${os}`;
 }
 
-type DeviceItem = Pick<PushSubscriptionRow, "endpoint" | "device_label">;
+type DeviceItem = Pick<PushSubscriptionRow, "endpoint" | "device_label" | "last_sent_at">;
 
 export function NotificationTester({
   pushConfigured,
@@ -146,7 +146,7 @@ export function NotificationTester({
     setCurrentEndpoint(subscription.endpoint);
     setDeviceItems((current) => {
       const next = current.filter((item) => item.endpoint !== subscription.endpoint);
-      return [{ endpoint: subscription.endpoint, device_label: deviceLabel }, ...next];
+      return [{ endpoint: subscription.endpoint, device_label: deviceLabel, last_sent_at: null }, ...next];
     });
   }
 
@@ -228,6 +228,9 @@ export function NotificationTester({
         <p className="status" style={{ margin: "0.5rem 0 0" }}>
           Aktiivisia ilmoituslaitteita: {deviceItems.length}
         </p>
+        <p className="status" style={{ margin: "0.5rem 0 0" }}>
+          lastSentFor: {initialSettings.lastMorningReminderSentFor || "ei vielä lähetettyä päivää"}
+        </p>
         {deviceItems.length > 0 ? (
           <div className="notification-device-list">
             {deviceItems.map((item) => (
@@ -241,6 +244,30 @@ export function NotificationTester({
             ))}
           </div>
         ) : null}
+      </div>
+
+      <div className="notification-send-history">
+        <p className="status" style={{ margin: 0 }}>
+          Tehdyt lähetykset
+        </p>
+        {deviceItems.some((item) => item.last_sent_at) ? (
+          <div className="list" style={{ marginTop: "0.6rem" }}>
+            {deviceItems
+              .filter((item) => item.last_sent_at)
+              .map((item) => (
+                <article key={`${item.endpoint}-sent`} className="card notification-history-card">
+                  <strong>{item.device_label || "Tuntematon laite"}</strong>
+                  <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+                    Viimeisin lähetys: {new Date(item.last_sent_at as string).toLocaleString("fi-FI")}
+                  </p>
+                </article>
+              ))}
+          </div>
+        ) : (
+          <p className="muted" style={{ margin: "0.6rem 0 0" }}>
+            Ei vielä kirjattuja ajastettuja lähetyksiä.
+          </p>
+        )}
       </div>
 
       <div className="notification-toggle-shell">
@@ -330,6 +357,16 @@ export function NotificationTester({
         .notification-device-pill-current {
           border-color: rgba(11, 79, 108, 0.22);
           background: rgba(11, 79, 108, 0.08);
+        }
+
+        .notification-send-history {
+          margin-top: 1rem;
+          padding-top: 1rem;
+          border-top: 1px solid var(--border);
+        }
+
+        .notification-history-card strong {
+          color: var(--text);
         }
 
         .notification-toggle {
