@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import {
+  DEFAULT_USER_NOTIFICATION_SETTINGS,
   getUserNotificationSettings,
   listPushSubscriptions,
   listUsersWithMorningReminderEnabled
 } from "@/lib/db";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isPushConfigured } from "@/lib/push";
 import { getReminderDebugSnapshot, processMorningReminder } from "@/lib/notification-reminders";
@@ -37,6 +39,7 @@ export async function GET(request: Request) {
   const runtime = getCronRuntimeContext();
   if (url.searchParams.get("debug") === "1") {
     const supabase = createSupabaseServerClient();
+    const admin = getSupabaseAdmin();
     const {
       data: { user }
     } = await supabase.auth.getUser();
@@ -45,10 +48,84 @@ export async function GET(request: Request) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const [settings, subscriptions] = await Promise.all([
+    const [
+      settings,
+      subscriptions,
+      sessionSubscriptionsResult,
+      sessionSettingsResult,
+      adminSubscriptionsResult,
+      adminSettingsResult
+    ] = await Promise.all([
       getUserNotificationSettings(user.id),
-      listPushSubscriptions(user.id)
+      listPushSubscriptions(user.id),
+      supabase.from("push_subscriptions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("user_notification_settings").select("*").eq("user_id", user.id).maybeSingle(),
+      admin.from("push_subscriptions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      admin.from("user_notification_settings").select("*").eq("user_id", user.id).maybeSingle()
     ]);
+    const sessionSubscriptions = sessionSubscriptionsResult.data ?? [];
+    const adminSubscriptions = adminSubscriptionsResult.data ?? [];
+    const sessionSettings = sessionSettingsResult.data;
+    const adminSettings = adminSettingsResult.data;
+    const adminDebug = {
+      subscriptionCount: adminSubscriptions.length,
+      subscriptions: adminSubscriptions.map((item) => ({
+        endpoint: item.endpoint,
+        deviceLabel: item.device_label,
+        lastSentAt: item.last_sent_at,
+        lastMorningReminderSentFor: item.last_morning_reminder_sent_for,
+        lastErrorAt: item.last_error_at,
+        lastErrorMessage: item.last_error_message
+      })),
+      reminder: getReminderDebugSnapshot(
+        adminSettings
+          ? {
+              morningReminderEnabled: Boolean(adminSettings.morning_reminder_enabled),
+              morningReminderTime: adminSettings.morning_reminder_time,
+              morningReminderTimezone: adminSettings.morning_reminder_timezone,
+              lastMorningReminderSentFor: adminSettings.last_morning_reminder_sent_for ?? null
+            }
+          : DEFAULT_USER_NOTIFICATION_SETTINGS
+      ),
+      errors: {
+        subscriptions: adminSubscriptionsResult.error?.message ?? null,
+        settings: adminSettingsResult.error?.message ?? null
+      }
+    };
+    const sessionDebug = {
+      subscriptionCount: sessionSubscriptions.length,
+      subscriptions: sessionSubscriptions.map((item) => ({
+        endpoint: item.endpoint,
+        deviceLabel: item.device_label,
+        lastSentAt: item.last_sent_at,
+        lastMorningReminderSentFor: item.last_morning_reminder_sent_for,
+        lastErrorAt: item.last_error_at,
+        lastErrorMessage: item.last_error_message
+      })),
+      reminder: getReminderDebugSnapshot(
+        sessionSettings
+          ? {
+              morningReminderEnabled: Boolean(sessionSettings.morning_reminder_enabled),
+              morningReminderTime: sessionSettings.morning_reminder_time,
+              morningReminderTimezone: sessionSettings.morning_reminder_timezone,
+              lastMorningReminderSentFor: sessionSettings.last_morning_reminder_sent_for ?? null
+            }
+          : DEFAULT_USER_NOTIFICATION_SETTINGS
+      ),
+      errors: {
+        subscriptions: sessionSubscriptionsResult.error?.message ?? null,
+        settings: sessionSettingsResult.error?.message ?? null
+      }
+    };
+    console.info(
+      "[cron] morning-reminders.debug-views",
+      JSON.stringify({
+        userId: user.id,
+        runtime,
+        sessionView: sessionDebug,
+        adminView: adminDebug
+      })
+    );
 
     return NextResponse.json({
       ok: true,
@@ -56,6 +133,8 @@ export async function GET(request: Request) {
       userId: user.id,
       runtime,
       pushConfigured: isPushConfigured(),
+      sessionView: sessionDebug,
+      adminView: adminDebug,
       subscriptions: subscriptions.map((item) => ({
         endpoint: item.endpoint,
         deviceLabel: item.device_label,
