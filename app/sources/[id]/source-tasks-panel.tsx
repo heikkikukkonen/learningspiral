@@ -185,6 +185,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
                   <option value="recall">Kertaustehtava</option>
                   <option value="apply">Soveltamistehtava</option>
                   <option value="reflect">Reflektiotehtava</option>
+                  <option value="custom">Oma tehtava</option>
                   <option value="decision">Paatostehtava</option>
                 </select>
               </label>

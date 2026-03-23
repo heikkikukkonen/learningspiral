@@ -7,7 +7,7 @@ export type SourceType =
   | "video"
   | "other";
 
-export type CardType = "recall" | "apply" | "reflect" | "decision";
+export type CardType = "recall" | "apply" | "reflect" | "decision" | "custom";
 export type CardStatus = "suggested" | "active" | "rejected";
 export type InputModality = "text" | "image" | "audio" | "mixed";
 export type CaptureRole = "user" | "assistant" | "system";
@@ -67,5 +67,6 @@ export function cardTypeLabel(cardType: CardType): string {
   if (cardType === "recall") return "Kertaustehtava";
   if (cardType === "apply") return "Soveltamistehtava";
   if (cardType === "reflect") return "Reflektiotehtava";
+  if (cardType === "custom") return "Oma tehtava";
   return "Paatostehtava";
 }

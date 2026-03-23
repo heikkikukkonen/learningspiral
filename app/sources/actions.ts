@@ -214,7 +214,10 @@ export async function generateCardAction(formData: FormData) {
   const variantValue = asString(formData.get("variant"));
   const instruction = asString(formData.get("instruction")).trim();
   const cardType =
-    variantValue === "recall" || variantValue === "apply" || variantValue === "reflect"
+    variantValue === "recall" ||
+    variantValue === "apply" ||
+    variantValue === "reflect" ||
+    variantValue === "custom"
       ? variantValue
       : undefined;
 

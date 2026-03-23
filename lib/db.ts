@@ -369,32 +369,10 @@ function getTaskTypeInstruction(settings: UserSettings, cardType: CardType) {
   return "";
 }
 
-function inferCustomCardType(instruction: string): CardType {
-  const normalized = instruction.trim().toLowerCase();
-  if (!normalized) return "apply";
-  if (
-    normalized.includes("kertaus") ||
-    normalized.includes("muist") ||
-    normalized.includes("recall") ||
-    normalized.includes("palauta")
-  ) {
-    return "recall";
-  }
-  if (
-    normalized.includes("reflekt") ||
-    normalized.includes("pohdi") ||
-    normalized.includes("oletus") ||
-    normalized.includes("ajattel") ||
-    normalized.includes("tunne")
-  ) {
-    return "reflect";
-  }
-  return "apply";
-}
-
 function buildFallbackGeneratedCard(input: {
   summary: string;
   cardType: CardType;
+  instruction?: string;
 }) {
   const preview = input.summary.trim().slice(0, 280);
 
@@ -411,6 +389,15 @@ function buildFallbackGeneratedCard(input: {
       cardType: "reflect" as const,
       prompt: "Mita tama ajatus haastaa sinussa tai tavassasi ajatella?",
       answer: "Kirjaa yksi oletus, tulkinta tai tapa, jota haluat paivittaa taman ajatuksen pohjalta."
+    };
+  }
+
+  if (input.cardType === "custom") {
+    const instruction = (input.instruction || "").trim();
+    return {
+      cardType: "custom" as const,
+      prompt: instruction || "Luo oma tehtava taman ajatuksen pohjalta.",
+      answer: preview
     };
   }
 
@@ -1396,10 +1383,13 @@ export async function generateSuggestedCard(params: {
   if (!summary?.content?.trim()) return;
 
   const trimmed = summary.content.trim();
-  const requestedCardType = params.cardType ?? inferCustomCardType(params.instruction || "");
+  const requestedCardType = params.cardType ?? "custom";
   const instruction = joinInstructions(
     settings.cardGenerationPrompt,
     params.cardType ? getTaskTypeInstruction(settings, params.cardType) : "",
+    requestedCardType === "custom"
+      ? "Create one custom task. The user's instruction is the main brief for what kind of task to generate."
+      : "",
     params.instruction
   );
   let rawInput = (summary.raw_input || "").trim();
@@ -1422,7 +1412,7 @@ export async function generateSuggestedCard(params: {
     settings,
     summary: trimmed,
     rawInput,
-    cardType: params.cardType,
+    cardType: requestedCardType,
     instruction
   }).catch((error) => {
     logLlmError("generateSuggestedCard.generateReviewCardFromSummary", error, {
@@ -1444,7 +1434,8 @@ export async function generateSuggestedCard(params: {
     ? llmCard.data
     : buildFallbackGeneratedCard({
         summary: trimmed,
-        cardType: requestedCardType
+        cardType: requestedCardType,
+        instruction: params.instruction
       });
 
   const { data: insertedCard, error } = await supabase
