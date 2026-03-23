@@ -5,6 +5,11 @@ import { isPushConfigured } from "@/lib/push";
 
 export const dynamic = "force-dynamic";
 
+function isLikelyValidVapidSubject(value: string | undefined) {
+  if (!value) return false;
+  return value.startsWith("mailto:") || value.startsWith("https://");
+}
+
 function isAuthorized(request: Request) {
   const configuredSecret = process.env.CRON_SECRET?.trim();
   if (!configuredSecret) {
@@ -24,6 +29,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: true, skipped: true, reason: "push_not_configured" });
   }
 
+  const envSnapshot = {
+    pushConfigured: isPushConfigured(),
+    vapidSubject: process.env.VAPID_SUBJECT ?? null,
+    hasValidVapidSubject: isLikelyValidVapidSubject(process.env.VAPID_SUBJECT)
+  };
+  console.info("[cron] morning-reminders.env", JSON.stringify(envSnapshot));
   const settingsRows = await listUsersWithMorningReminderEnabled();
   const dbSnapshot = await Promise.all(
     settingsRows.map(async (settings) => {
@@ -57,6 +68,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     ok: true,
+    ...envSnapshot,
     processedUsers: settingsRows.length,
     sentUsers: results.filter((result) => result.processed).length,
     sentDevices: results.reduce(
