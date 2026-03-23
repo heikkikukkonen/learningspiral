@@ -124,7 +124,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
           />
           <button
             type="button"
-            className="primary source-task-create-button"
+            className="secondary source-task-create-button"
             disabled={isPending}
             onClick={() => handleGenerateTask("custom")}
           >

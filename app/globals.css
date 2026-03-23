@@ -998,18 +998,21 @@ button.danger {
 }
 
 .source-task-create-button {
+  min-width: 13.5rem;
   min-height: 48px;
+  justify-content: center;
 }
 
 .source-task-custom {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  flex: 1 1 320px;
+  flex: 0 1 auto;
 }
 
 .source-task-custom input {
-  flex: 1 1 auto;
+  width: clamp(14rem, 20vw, 19rem);
+  min-width: 14rem;
 }
 
 .source-task-info,
@@ -3012,6 +3015,11 @@ button.danger {
   .source-page-delete,
   .source-edit-later {
     width: 100%;
+  }
+
+  .source-task-custom input {
+    width: 100%;
+    min-width: 0;
   }
 
   .source-analysis-actions {
