@@ -628,6 +628,13 @@ button.danger {
   display: none;
 }
 
+.thoughts-tags-summary-note {
+  margin-top: 0.25rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
 .thoughts-tags-summary::after {
   content: "+";
   position: absolute;

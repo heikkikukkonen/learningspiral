@@ -3,6 +3,7 @@ import Link from "next/link";
 import { listSources } from "@/lib/db";
 import { deriveSourceIdeaStage, sourceIdeaStageLabel } from "@/lib/source-status";
 import { SourceType } from "@/lib/types";
+import { ThoughtsTagBrowser } from "./thoughts-tag-browser";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -109,6 +110,19 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
       (left, right) =>
         right.count - left.count || left.label.localeCompare(right.label, "fi-FI")
     );
+  const activeTagLabel = tags.find((tag) => tag.value === normalizedActiveTag)?.label ?? activeTag;
+  const tagItems = tags.map((tag) => {
+    const isActive = tag.value === normalizedActiveTag;
+    const nextTag = isActive ? "" : tag.label;
+
+    return {
+      value: tag.value,
+      label: tag.label,
+      count: tag.count,
+      href: buildSourcesHref(rawQuery, nextTag),
+      isActive
+    };
+  });
 
   const filteredSources = sources.filter((source) => {
     const matchesTag =
@@ -167,37 +181,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
                 Hae
               </button>
             </div>
-            <details className="thoughts-tags" open>
-              <summary className="thoughts-tags-summary">
-                <span className="thoughts-search-label">Selaa aihepiireja tunnisteiden avulla</span>
-              </summary>
-
-              <div className="thoughts-tags-panel">
-                {tags.length ? (
-                  <div className="thoughts-tag-list">
-                    {tags.map((tag) => {
-                      const isActive = tag.value === normalizedActiveTag;
-                      const nextTag = isActive ? "" : tag.label;
-
-                      return (
-                        <Link
-                          key={tag.value}
-                          href={buildSourcesHref(rawQuery, nextTag)}
-                          className="pill"
-                          data-variant={isActive ? "primary" : undefined}
-                        >
-                          #{tag.label} <span className="thoughts-tag-count">{tag.count}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="muted" style={{ margin: 0 }}>
-                    Tunnisteet alkavat kertyvat, kun tallennat useampia ajatuksia.
-                  </p>
-                )}
-              </div>
-            </details>
+            <ThoughtsTagBrowser items={tagItems} activeTagLabel={activeTagLabel} />
           </form>
         </div>
       ) : null}
