@@ -247,10 +247,10 @@ export function CaptureComposer({
           sharedUrl: sharedImport.sharedUrl
         });
         if (sharedImport.fileSize <= 0 || !sharedImport.base64Data || /^text\//i.test(sharedImport.mimeType)) {
-          setSharedCaptureContext(nextSharedCaptureContext);
+          setSharedCaptureContext(null);
           setMode("text");
           setTextValue(buildSharedTextDraft(nextSharedCaptureContext));
-          setTitleValue(nextSharedCaptureContext?.sharedTitle ?? "");
+          setTitleValue("");
 
           void fetch(`/api/capture/shared-import/${encodeURIComponent(activeSharedImportId)}`, {
             method: "DELETE"
@@ -380,12 +380,13 @@ export function CaptureComposer({
     setIsSaving(true);
     setError("");
     try {
+      const sharedMetadata = inputModality === "text" ? null : sharedCaptureContext;
       const payload = {
         title: overrides?.title ?? titleValue,
         rawInput: overrides?.rawInput ?? rawInputValue,
         inputModality,
-        origin: overrides?.origin ?? (sharedCaptureContext ? "Shared from device" : undefined),
-        url: overrides?.url ?? sharedCaptureContext?.sharedUrl,
+        origin: overrides?.origin ?? (sharedMetadata ? "Shared from device" : undefined),
+        url: overrides?.url ?? sharedMetadata?.sharedUrl,
         asset: overrides?.asset ?? asset
       };
 
