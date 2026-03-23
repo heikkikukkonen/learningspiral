@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default async function CapturePage({
   searchParams
 }: {
-  searchParams: { sourceId?: string; mode?: string; shareError?: string };
+  searchParams: { sourceId?: string; mode?: string; shareError?: string; sharedImport?: string };
 }) {
   const sourceId = searchParams.sourceId;
   const requestedMode =
@@ -17,6 +17,7 @@ export default async function CapturePage({
     searchParams.shareError === "missing-file" || searchParams.shareError === "import-failed"
       ? searchParams.shareError
       : undefined;
+  const sharedImportId = searchParams.sharedImport?.trim() || undefined;
 
   if (sourceId) {
     redirect(`/sources/${sourceId}`);
@@ -33,7 +34,7 @@ export default async function CapturePage({
           </p>
         </article>
       ) : null}
-      <CaptureComposer initialMode={requestedMode} />
+      <CaptureComposer initialMode={requestedMode} initialSharedImportId={sharedImportId} />
     </section>
   );
 }

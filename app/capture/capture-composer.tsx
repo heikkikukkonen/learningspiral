@@ -4,6 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IdeaNetworkLoader } from "@/app/components/idea-network-loader";
 import { inferCaptureTitle } from "@/lib/source-editor";
+import {
+  buildSharedImageRawInput,
+  buildSharedImageUserContext,
+  hasSharedImageCaptureContext,
+  normalizeSharedImageCaptureContext,
+  type SharedImageCaptureContext
+} from "@/lib/shared-image-capture";
 
 type Mode = "idle" | "text" | "image" | "voice";
 
@@ -22,10 +29,23 @@ type AnalysisResult = {
 
 type CaptureComposerProps = {
   initialMode?: Mode;
+  initialSharedImportId?: string;
 };
 
 type TextSaveStage = "idle" | "analyzing" | "saving";
 type SaveIntent = "return" | "refine";
+
+type SharedImageImportPayload = {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  base64Data: string;
+  sharedTitle?: string;
+  sharedText?: string;
+  sharedUrl?: string;
+};
+
 async function parseJson<T>(response: Response): Promise<T> {
   const responseText = await response.text();
   let json: (T & { error?: string; message?: string }) | null = null;
@@ -93,7 +113,60 @@ function hasFileInDataTransfer(dataTransfer: DataTransfer | null): boolean {
   return Array.from(dataTransfer.items).some((item) => item.kind === "file");
 }
 
-export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) {
+function fileFromBase64(base64Data: string, fileName: string, mimeType: string): File {
+  const binary = window.atob(base64Data);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return new File([bytes], fileName, { type: mimeType || "image/png" });
+}
+
+async function requestImageAnalysis(file: File, note?: string) {
+  const formData = new FormData();
+  formData.append("imageFile", file);
+
+  if (note?.trim()) {
+    formData.append("note", note.trim());
+  }
+
+  const response = await fetch("/api/capture/analyze-image", {
+    method: "POST",
+    body: formData
+  });
+
+  return parseJson<AnalysisResult>(response);
+}
+
+function inferImageCaptureTitle(
+  file: File,
+  extractedText: string,
+  sharedContext?: SharedImageCaptureContext | null
+) {
+  const fallback = file.name.replace(/\.[^.]+$/, "") || "Kuvakaappaus";
+  return sharedContext?.sharedTitle || inferCaptureTitle(extractedText, fallback);
+}
+
+function sharedImportErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : "";
+
+  if (/not found/i.test(message)) {
+    return "Jaetun kuvan luonnosta ei loytynyt. Jaa kuva uudelleen tai valitse kuva manuaalisesti.";
+  }
+
+  if (/unauthorized/i.test(message)) {
+    return "Kirjaudu sisaan ja yrita jakaa kuva uudelleen.";
+  }
+
+  return message || "Jaetun kuvan avaaminen epaonnistui.";
+}
+
+export function CaptureComposer({
+  initialMode = "text",
+  initialSharedImportId
+}: CaptureComposerProps) {
   const router = useRouter();
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const audioFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -103,12 +176,17 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const initialSharedImportIdRef = useRef(initialSharedImportId);
+  const analyzeImageRef = useRef<
+    (file: File, contextOverride?: SharedImageCaptureContext | null) => Promise<boolean>
+  >(async () => false);
 
   const [mode, setMode] = useState<Mode>(initialMode);
   const [textValue, setTextValue] = useState("");
   const [titleValue, setTitleValue] = useState("");
   const [rawInputValue, setRawInputValue] = useState("");
   const [asset, setAsset] = useState<AssetPayload | null>(null);
+  const [sharedImageContext, setSharedImageContext] = useState<SharedImageCaptureContext | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [textSaveStage, setTextSaveStage] = useState<TextSaveStage>("idle");
@@ -132,6 +210,80 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
   }, [mode]);
 
   useEffect(() => {
+    const sharedImportId = initialSharedImportIdRef.current;
+    if (!sharedImportId) {
+      return;
+    }
+    const activeSharedImportId = sharedImportId;
+
+    let cancelled = false;
+
+    async function loadSharedImageImport() {
+      setMode("image");
+      setIsImageDragActive(false);
+      setIsAnalyzing(true);
+      setError("");
+      setAsset(null);
+      setRawInputValue("");
+
+      try {
+        const response = await fetch(
+          `/api/capture/shared-import/${encodeURIComponent(activeSharedImportId)}`,
+          {
+            cache: "no-store"
+          }
+        );
+        const sharedImport = await parseJson<SharedImageImportPayload>(response);
+        if (cancelled) return;
+
+        const nextSharedImageContext = normalizeSharedImageCaptureContext({
+          sharedTitle: sharedImport.sharedTitle,
+          sharedText: sharedImport.sharedText,
+          sharedUrl: sharedImport.sharedUrl
+        });
+        const file = fileFromBase64(
+          sharedImport.base64Data,
+          sharedImport.fileName,
+          sharedImport.mimeType
+        );
+        const analysis = await requestImageAnalysis(
+          file,
+          buildSharedImageUserContext(nextSharedImageContext)
+        );
+        if (cancelled) return;
+
+        setSharedImageContext(nextSharedImageContext);
+        setAsset(analysis.asset ?? null);
+        setRawInputValue(
+          hasSharedImageCaptureContext(nextSharedImageContext)
+            ? buildSharedImageRawInput(nextSharedImageContext, analysis.rawInput)
+            : analysis.rawInput
+        );
+        setTitleValue(inferImageCaptureTitle(file, analysis.rawInput, nextSharedImageContext));
+
+        void fetch(`/api/capture/shared-import/${encodeURIComponent(activeSharedImportId)}`, {
+          method: "DELETE"
+        }).catch(() => undefined);
+
+        router.replace("/capture?mode=image");
+      } catch (err) {
+        if (cancelled) return;
+        setError(sharedImportErrorMessage(err));
+      } finally {
+        if (!cancelled) {
+          setIsAnalyzing(false);
+        }
+      }
+    }
+
+    void loadSharedImageImport();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  useEffect(() => {
     if (mode !== "image" || asset || isAnalyzing) {
       return;
     }
@@ -140,7 +292,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       const imageFile = extractImageFileFromDataTransfer(event.clipboardData);
       if (!imageFile) return;
       event.preventDefault();
-      void analyzeImage(imageFile);
+      void analyzeImageRef.current(imageFile);
     }
 
     window.addEventListener("paste", handlePaste);
@@ -178,6 +330,7 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     setTitleValue("");
     setRawInputValue("");
     setAsset(null);
+    setSharedImageContext(null);
     setTextSaveStage("idle");
     setError("");
     if (audioPreviewUrl) {
@@ -200,6 +353,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
       rawInput?: string;
       summary?: string;
       asset?: AssetPayload | null;
+      origin?: string;
+      url?: string;
     }
   ): Promise<boolean> {
     setSaveIntent(intent);
@@ -210,6 +365,8 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
         title: overrides?.title ?? titleValue,
         rawInput: overrides?.rawInput ?? rawInputValue,
         inputModality,
+        origin: overrides?.origin ?? (sharedImageContext ? "Shared from device" : undefined),
+        url: overrides?.url ?? sharedImageContext?.sharedUrl,
         asset: overrides?.asset ?? asset
       };
 
@@ -235,7 +392,10 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     }
   }
 
-  async function analyzeImage(file: File) {
+  async function analyzeImage(file: File, contextOverride?: SharedImageCaptureContext | null) {
+    const activeSharedImageContext =
+      contextOverride === undefined ? sharedImageContext : contextOverride;
+
     setIsImageDragActive(false);
     setIsAnalyzing(true);
     setError("");
@@ -243,26 +403,28 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
     setAsset(null);
     setRawInputValue("");
     try {
-      const formData = new FormData();
-      formData.append("imageFile", file);
-
-      const response = await fetch("/api/capture/analyze-image", {
-        method: "POST",
-        body: formData
-      });
-
-      const json = await parseJson<AnalysisResult>(response);
-      setAsset(json.asset ?? null);
-      setRawInputValue(json.rawInput);
-      setTitleValue((current) =>
-        current || inferCaptureTitle(json.rawInput, file.name.replace(/\.[^.]+$/, "") || "Kuvakaappaus")
+      const json = await requestImageAnalysis(
+        file,
+        buildSharedImageUserContext(activeSharedImageContext)
       );
+      const nextRawInput = hasSharedImageCaptureContext(activeSharedImageContext)
+        ? buildSharedImageRawInput(activeSharedImageContext, json.rawInput)
+        : json.rawInput;
+
+      setSharedImageContext(activeSharedImageContext ?? null);
+      setAsset(json.asset ?? null);
+      setRawInputValue(nextRawInput);
+      setTitleValue(inferImageCaptureTitle(file, json.rawInput, activeSharedImageContext));
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Image analysis failed.");
+      return false;
     } finally {
       setIsAnalyzing(false);
     }
   }
+
+  analyzeImageRef.current = analyzeImage;
 
   async function analyzeAudio(file: File) {
     setIsAnalyzing(true);
@@ -641,9 +803,11 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                         disabled={!rawInputValue.trim() || isSaving}
                         onClick={() =>
                           void saveCapture("image", "return", {
-                            title: inferEditedCaptureTitle(
-                              asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus"
-                            )
+                            title:
+                              titleValue ||
+                              inferEditedCaptureTitle(
+                                asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus"
+                              )
                           })
                         }
                       >
@@ -655,9 +819,11 @@ export function CaptureComposer({ initialMode = "text" }: CaptureComposerProps) 
                         disabled={!rawInputValue.trim() || isSaving}
                         onClick={() =>
                           void saveCapture("image", "refine", {
-                            title: inferEditedCaptureTitle(
-                              asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus"
-                            )
+                            title:
+                              titleValue ||
+                              inferEditedCaptureTitle(
+                                asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus"
+                              )
                           })
                         }
                       >
