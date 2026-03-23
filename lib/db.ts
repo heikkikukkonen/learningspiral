@@ -169,6 +169,32 @@ export interface UserNotificationSettingsRow extends UserNotificationSettings {
   updated_at: string;
 }
 
+export interface PushSubscriptionDebugRow {
+  id: string;
+  endpoint: string;
+  deviceLabel: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lastSentAt: string | null;
+  lastReminderSentFor: string | null;
+  lastErrorAt: string | null;
+  lastErrorMessage: string | null;
+}
+
+export interface UserPushDebugSnapshot {
+  userId: string;
+  reminder: {
+    enabled: boolean;
+    targetTime: string;
+    timezone: string;
+    lastSentFor: string | null;
+    createdAt: string | null;
+    updatedAt: string | null;
+  };
+  subscriptionCount: number;
+  subscriptions: PushSubscriptionDebugRow[];
+}
+
 export const DEFAULT_USER_NOTIFICATION_SETTINGS: UserNotificationSettings = {
   morningReminderEnabled: false,
   morningReminderTime: "08:00",
@@ -236,6 +262,71 @@ export function sanitizeUserNotificationSettings(
       typeof input?.lastMorningReminderSentFor === "string" && input.lastMorningReminderSentFor.trim()
         ? input.lastMorningReminderSentFor.trim()
         : null
+  };
+}
+
+function mapUserNotificationSettingsRow(row: {
+  user_id: string;
+  morning_reminder_enabled: boolean;
+  morning_reminder_time: string;
+  morning_reminder_timezone: string;
+  last_morning_reminder_sent_for: string | null;
+  created_at: string;
+  updated_at: string;
+}): UserNotificationSettingsRow {
+  return {
+    user_id: row.user_id,
+    morningReminderEnabled: Boolean(row.morning_reminder_enabled),
+    morningReminderTime: row.morning_reminder_time,
+    morningReminderTimezone: row.morning_reminder_timezone,
+    lastMorningReminderSentFor: row.last_morning_reminder_sent_for ?? null,
+    created_at: row.created_at,
+    updated_at: row.updated_at
+  };
+}
+
+function toPushSubscriptionDebugRow(row: PushSubscriptionRow): PushSubscriptionDebugRow {
+  return {
+    id: row.id,
+    endpoint: row.endpoint,
+    deviceLabel: row.device_label,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    lastSentAt: row.last_sent_at,
+    lastReminderSentFor: row.last_morning_reminder_sent_for,
+    lastErrorAt: row.last_error_at,
+    lastErrorMessage: row.last_error_message
+  };
+}
+
+function toUserPushDebugSnapshot(
+  userId: string,
+  settings: UserNotificationSettingsRow | null,
+  subscriptions: PushSubscriptionRow[]
+): UserPushDebugSnapshot {
+  const reminder = settings
+    ? {
+        enabled: settings.morningReminderEnabled,
+        targetTime: settings.morningReminderTime,
+        timezone: settings.morningReminderTimezone,
+        lastSentFor: settings.lastMorningReminderSentFor,
+        createdAt: settings.created_at,
+        updatedAt: settings.updated_at
+      }
+    : {
+        enabled: DEFAULT_USER_NOTIFICATION_SETTINGS.morningReminderEnabled,
+        targetTime: DEFAULT_USER_NOTIFICATION_SETTINGS.morningReminderTime,
+        timezone: DEFAULT_USER_NOTIFICATION_SETTINGS.morningReminderTimezone,
+        lastSentFor: DEFAULT_USER_NOTIFICATION_SETTINGS.lastMorningReminderSentFor,
+        createdAt: null,
+        updatedAt: null
+      };
+
+  return {
+    userId,
+    reminder,
+    subscriptionCount: subscriptions.length,
+    subscriptions: subscriptions.map(toPushSubscriptionDebugRow)
   };
 }
 
@@ -358,6 +449,18 @@ export async function listPushSubscriptions(userId?: string) {
 }
 
 export async function getUserNotificationSettings(userId?: string): Promise<UserNotificationSettings> {
+  const row = await getUserNotificationSettingsRow(userId);
+  if (!row) return DEFAULT_USER_NOTIFICATION_SETTINGS;
+
+  return sanitizeUserNotificationSettings({
+    morningReminderEnabled: row.morningReminderEnabled,
+    morningReminderTime: row.morningReminderTime,
+    morningReminderTimezone: row.morningReminderTimezone,
+    lastMorningReminderSentFor: row.lastMorningReminderSentFor
+  });
+}
+
+export async function getUserNotificationSettingsRow(userId?: string): Promise<UserNotificationSettingsRow | null> {
   const supabase = getSupabaseAdmin();
   const resolvedUserId = userId ?? (await appUserId());
   const { data, error } = await supabase
@@ -367,14 +470,9 @@ export async function getUserNotificationSettings(userId?: string): Promise<User
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) return DEFAULT_USER_NOTIFICATION_SETTINGS;
+  if (!data) return null;
 
-  return sanitizeUserNotificationSettings({
-    morningReminderEnabled: data.morning_reminder_enabled,
-    morningReminderTime: data.morning_reminder_time,
-    morningReminderTimezone: data.morning_reminder_timezone,
-    lastMorningReminderSentFor: data.last_morning_reminder_sent_for
-  });
+  return mapUserNotificationSettingsRow(data);
 }
 
 export async function upsertUserNotificationSettings(
@@ -419,17 +517,17 @@ export async function listUsersWithMorningReminderEnabled() {
 
   if (error) throw error;
 
-  return (data ?? []).map((row) =>
-    ({
-      user_id: row.user_id,
-      morningReminderEnabled: Boolean(row.morning_reminder_enabled),
-      morningReminderTime: row.morning_reminder_time,
-      morningReminderTimezone: row.morning_reminder_timezone,
-      lastMorningReminderSentFor: row.last_morning_reminder_sent_for ?? null,
-      created_at: row.created_at,
-      updated_at: row.updated_at
-    }) as UserNotificationSettingsRow
-  );
+  return (data ?? []).map((row) => mapUserNotificationSettingsRow(row));
+}
+
+export async function getUserPushDebugSnapshot(userId?: string): Promise<UserPushDebugSnapshot> {
+  const resolvedUserId = userId ?? (await appUserId());
+  const [settings, subscriptions] = await Promise.all([
+    getUserNotificationSettingsRow(resolvedUserId),
+    listPushSubscriptions(resolvedUserId)
+  ]);
+
+  return toUserPushDebugSnapshot(resolvedUserId, settings, subscriptions);
 }
 
 export async function markMorningReminderSent(userId: string, localDate: string) {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listPushSubscriptions, listUsersWithMorningReminderEnabled } from "@/lib/db";
+import { getUserPushDebugSnapshot, listUsersWithMorningReminderEnabled } from "@/lib/db";
 import { processMorningReminder } from "@/lib/notification-reminders";
 import { isPushConfigured } from "@/lib/push";
 
@@ -21,6 +21,9 @@ function isAuthorized(request: Request) {
 }
 
 export async function GET(request: Request) {
+  const requestUrl = new URL(request.url);
+  const dryRun = requestUrl.searchParams.get("dryRun") === "1";
+
   if (!isAuthorized(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
@@ -36,44 +39,52 @@ export async function GET(request: Request) {
   };
   console.info("[cron] morning-reminders.env", JSON.stringify(envSnapshot));
   const settingsRows = await listUsersWithMorningReminderEnabled();
-  const dbSnapshot = await Promise.all(
-    settingsRows.map(async (settings) => {
-      const subscriptions = await listPushSubscriptions(settings.user_id);
-      return {
-        userId: settings.user_id,
-        reminder: {
-          enabled: settings.morningReminderEnabled,
-          targetTime: settings.morningReminderTime,
-          timezone: settings.morningReminderTimezone,
-          lastSentFor: settings.lastMorningReminderSentFor,
-          createdAt: "created_at" in settings ? settings.created_at : null,
-          updatedAt: "updated_at" in settings ? settings.updated_at : null
-        },
-        subscriptionCount: subscriptions.length,
-        subscriptions: subscriptions.map((item) => ({
-          endpoint: item.endpoint,
-          deviceLabel: item.device_label,
-          createdAt: item.created_at,
-          updatedAt: item.updated_at,
-          lastSentAt: item.last_sent_at,
-          lastReminderSentFor: item.last_morning_reminder_sent_for,
-          lastErrorAt: item.last_error_at,
-          lastErrorMessage: item.last_error_message
-        }))
-      };
-    })
-  );
-  console.info("[cron] morning-reminders.db", JSON.stringify(dbSnapshot));
-  const results = await Promise.all(settingsRows.map((settings) => processMorningReminder(settings)));
+  const userIds = settingsRows.map((settings) => settings.user_id);
+  const dbSnapshotBefore = await Promise.all(userIds.map((userId) => getUserPushDebugSnapshot(userId)));
+  console.info("[cron] morning-reminders.db", JSON.stringify(dbSnapshotBefore));
 
-  return NextResponse.json({
-    ok: true,
-    ...envSnapshot,
-    processedUsers: settingsRows.length,
-    sentUsers: results.filter((result) => result.processed).length,
-    sentDevices: results.reduce(
-      (sum, result) => sum + ("sentCount" in result && typeof result.sentCount === "number" ? result.sentCount : 0),
-      0
-    )
-  });
+  if (dryRun) {
+    return NextResponse.json(
+      {
+        ok: true,
+        dryRun: true,
+        generatedAt: new Date().toISOString(),
+        ...envSnapshot,
+        processedUsers: settingsRows.length,
+        sentUsers: 0,
+        sentDevices: 0,
+        dbSnapshotBefore
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, max-age=0, must-revalidate"
+        }
+      }
+    );
+  }
+
+  const results = await Promise.all(settingsRows.map((settings) => processMorningReminder(settings)));
+  const dbSnapshotAfter = await Promise.all(userIds.map((userId) => getUserPushDebugSnapshot(userId)));
+
+  return NextResponse.json(
+    {
+      ok: true,
+      dryRun: false,
+      generatedAt: new Date().toISOString(),
+      ...envSnapshot,
+      processedUsers: settingsRows.length,
+      sentUsers: results.filter((result) => result.processed).length,
+      sentDevices: results.reduce(
+        (sum, result) => sum + ("sentCount" in result && typeof result.sentCount === "number" ? result.sentCount : 0),
+        0
+      ),
+      dbSnapshotBefore,
+      dbSnapshotAfter
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store, no-cache, max-age=0, must-revalidate"
+      }
+    }
+  );
 }
