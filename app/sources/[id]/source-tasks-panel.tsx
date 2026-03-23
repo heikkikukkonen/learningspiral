@@ -162,10 +162,22 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
 
         {cards.map((card, index) => (
           <article className="card" key={card.id}>
-            <div className="source-meta">
-              <span className="pill" data-variant="primary">
-                {cardTypeLabel(card.card_type)}
-              </span>
+            <div className="source-task-card-topbar">
+              <div className="source-meta">
+                <span className="pill" data-variant="primary">
+                  {cardTypeLabel(card.card_type)}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                className="source-task-delete-button"
+                aria-label="Poista tehtava"
+                disabled={isPending}
+                onClick={() => handleDeleteCard(card.id)}
+              >
+                x
+              </button>
             </div>
 
             <div className="form" style={{ marginTop: "0.7rem" }}>
@@ -209,16 +221,9 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
               </label>
             </div>
 
-            <div className="actions" style={{ marginTop: "0.75rem" }}>
-              <button
-                type="button"
-                className="danger"
-                disabled={isPending}
-                onClick={() => handleDeleteCard(card.id)}
-              >
-                {pendingAction === `delete:${card.id}` ? "Poistetaan..." : "Poista"}
-              </button>
-            </div>
+            {pendingAction === `delete:${card.id}` ? (
+              <p className="status source-task-delete-status">Poistetaan tehtavaa...</p>
+            ) : null}
           </article>
         ))}
       </div>
