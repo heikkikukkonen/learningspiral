@@ -62,3 +62,10 @@ export interface CaptureAsset {
   base64Data: string;
   createdAt: string;
 }
+
+export function cardTypeLabel(cardType: CardType): string {
+  if (cardType === "recall") return "Kertaustehtava";
+  if (cardType === "apply") return "Soveltamistehtava";
+  if (cardType === "reflect") return "Reflektiotehtava";
+  return "Paatostehtava";
+}

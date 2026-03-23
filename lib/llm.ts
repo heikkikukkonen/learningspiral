@@ -527,6 +527,83 @@ export async function generateReviewCardsFromSummary(input: {
   return { ok: true, data: ordered, model: reply.model };
 }
 
+export async function generateReviewCardFromSummary(input: {
+  summary: string;
+  rawInput: string;
+  cardType?: CardType;
+  instruction?: string;
+  settings?: UserSettings;
+}): Promise<LlmResult<GeneratedCard | null>> {
+  if (!isLlmConfigured()) {
+    return { ok: false, data: null };
+  }
+
+  const allowedCardTypes = input.cardType ? [input.cardType] : ["recall", "apply", "reflect"];
+  const typeInstruction = input.cardType
+    ? `Generate exactly one ${input.cardType} card.`
+    : "Generate exactly one card and choose the best cardType from recall, apply, or reflect.";
+
+  const systemPrompt = appendOptionalInstruction([
+    "You generate one learning review card.",
+    buildLanguageInstruction(input.settings?.responseLanguage || "Finnish"),
+    "Return ONLY valid JSON.",
+    "Schema:",
+    "{",
+    '  "card": {"cardType":"recall|apply|reflect|decision","prompt":"...","answer":"..."}',
+    "}",
+    typeInstruction,
+    `Allowed card types: ${allowedCardTypes.join(", ")}.`
+  ], input.instruction).join("\n");
+
+  const reply = await callResponsesApi([
+    { role: "system", content: systemPrompt },
+    {
+      role: "user",
+      content: [
+        "Generate a single review card using both the original capture and the refined summary.",
+        "",
+        "Original capture:",
+        input.rawInput || "(none)",
+        "",
+        "Summary:",
+        input.summary
+      ].join("\n")
+    }
+  ]);
+
+  let parsed: unknown = {};
+  try {
+    parsed = JSON.parse(reply.text);
+  } catch {
+    return { ok: false, data: null };
+  }
+
+  if (!parsed || typeof parsed !== "object") {
+    return { ok: false, data: null };
+  }
+
+  const parsedRecord = parsed as { card?: Partial<GeneratedCard> } & Partial<GeneratedCard>;
+  const rawCard =
+    parsedRecord.card && typeof parsedRecord.card === "object" ? parsedRecord.card : parsedRecord;
+  const card = sanitizeCard(rawCard);
+  if (!card) {
+    return { ok: false, data: null };
+  }
+
+  if (input.cardType) {
+    return {
+      ok: true,
+      data: {
+        ...card,
+        cardType: input.cardType
+      },
+      model: reply.model
+    };
+  }
+
+  return { ok: true, data: card, model: reply.model };
+}
+
 export async function generateSourceTags(input: {
   title: string;
   idea: string;

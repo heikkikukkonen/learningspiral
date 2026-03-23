@@ -985,6 +985,42 @@ button.danger {
   gap: 0.9rem;
 }
 
+.source-task-stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.source-task-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.source-task-create-button {
+  min-height: 48px;
+}
+
+.source-task-custom {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex: 1 1 320px;
+}
+
+.source-task-custom input {
+  flex: 1 1 auto;
+}
+
+.source-task-info,
+.source-task-error {
+  margin: 0;
+}
+
+.source-task-error {
+  color: var(--danger);
+}
+
 .source-task-card-header {
   margin-bottom: 0;
 }
@@ -2960,6 +2996,7 @@ button.danger {
   }
 
   .source-tag-add,
+  .source-task-custom,
   .source-edit-footer,
   .source-edit-save-group,
   .source-page-save-actions,
@@ -2971,6 +3008,7 @@ button.danger {
 
   .source-edit-save,
   .source-tag-add button,
+  .source-task-create-button,
   .source-page-delete,
   .source-edit-later {
     width: 100%;
@@ -3706,12 +3744,6 @@ button.danger {
   background:
     radial-gradient(circle at 50% 50%, rgba(127, 227, 232, 0.08) 0%, rgba(255, 255, 255, 0) 40%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(244, 251, 250, 0.22));
-}
-
-.source-task-empty::before {
-  content: "Ajatus on valmis seuraavaan vaiheeseen, kun haluat luoda kortit.";
-  display: block;
-  color: var(--muted);
 }
 
 .source-row {

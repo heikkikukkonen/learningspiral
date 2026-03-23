@@ -1,12 +1,7 @@
 import { notFound } from "next/navigation";
-import { SubmitButton } from "@/app/components/submit-button";
-import {
-  deleteCardAction,
-  generateCardsAction,
-  setCardStatusAction
-} from "@/app/sources/actions";
 import { SourceEditorForm } from "@/app/sources/[id]/source-editor-form";
 import { SourcePageActions } from "@/app/sources/[id]/source-page-actions";
+import { SourceTasksPanel } from "@/app/sources/[id]/source-tasks-panel";
 import { getSourceWithDetails, listUserTagStats } from "@/lib/db";
 import { parseSourceSummaryContent } from "@/lib/source-editor";
 import { deriveSourceIdeaStage, sourceIdeaStageLabel } from "@/lib/source-status";
@@ -33,7 +28,6 @@ type SummaryDetails = {
 
 type CardDetails = {
   id: string;
-  status: "suggested" | "active" | "rejected";
   card_type: CardType;
   prompt: string;
   answer: string;
@@ -209,106 +203,12 @@ export default async function SourceDetailsPage({
           <div className="page-header source-task-card-header">
             <h2>Luo tehtavat</h2>
             <p className="muted">
-              Kun olet syventanyt ajatuksen riittavan valmiiksi, voit luoda tehtavat automaattisesti.
-              Tehtavien avulla ajatus pysyy mukana kertauksessa, soveltamisessa ja reflektoinnissa.
+              Tehtava auttaa palaamaan ajatukseen myohemmin. Luo haluamasi tehtavat palataksesi
+              ajatukseen myohemmin.
             </p>
           </div>
-          <form action={generateCardsAction}>
-            <input type="hidden" name="sourceId" value={source.id} />
-            <SubmitButton
-              className="primary"
-              pendingText="Luodaan tehtavia..."
-              loadingVariant="idea-network"
-            >
-              Luo tehtavat
-            </SubmitButton>
-          </form>
         </div>
-
-        <div className="list" style={{ marginTop: "0.8rem" }}>
-          {cards.length === 0 ? (
-            <div className="source-task-empty" />
-          ) : null}
-
-          {cards.map((card, index) => (
-            <article className="card" key={card.id}>
-              <div className="source-meta">
-                <span className="pill" data-variant="primary">
-                  {card.card_type}
-                </span>
-                <span className="pill">{card.status}</span>
-              </div>
-
-              <div className="form" style={{ marginTop: "0.7rem" }}>
-                <input
-                  form="source-editor-form"
-                  type="hidden"
-                  name={`cards[${index}].cardId`}
-                  value={card.id}
-                />
-                <label className="form-row">
-                  <span>Kysymys</span>
-                  <input
-                    form="source-editor-form"
-                    name={`cards[${index}].prompt`}
-                    defaultValue={card.prompt}
-                    required
-                  />
-                </label>
-                <label className="form-row">
-                  <span>Vastaus</span>
-                  <textarea
-                    form="source-editor-form"
-                    name={`cards[${index}].answer`}
-                    defaultValue={card.answer}
-                    required
-                  />
-                </label>
-                <label className="form-row">
-                  <span>Tyyppi</span>
-                  <select
-                    form="source-editor-form"
-                    name={`cards[${index}].cardType`}
-                    defaultValue={card.card_type}
-                  >
-                    <option value="recall">recall</option>
-                    <option value="apply">apply</option>
-                    <option value="reflect">reflect</option>
-                    <option value="decision">decision</option>
-                  </select>
-                </label>
-              </div>
-
-              <div className="actions" style={{ marginTop: "0.75rem" }}>
-                {card.status === "suggested" ? (
-                  <form action={setCardStatusAction}>
-                    <input type="hidden" name="sourceId" value={source.id} />
-                    <input type="hidden" name="cardId" value={card.id} />
-                    <input type="hidden" name="prompt" value={card.prompt} />
-                    <input type="hidden" name="answer" value={card.answer} />
-                    <input type="hidden" name="cardType" value={card.card_type} />
-                    <input type="hidden" name="status" value="active" />
-                    <SubmitButton className="success" pendingText="Hyvaksytaan...">
-                      Hyvaksy
-                    </SubmitButton>
-                  </form>
-                ) : null}
-
-                <form action={deleteCardAction}>
-                  <input type="hidden" name="sourceId" value={source.id} />
-                  <input type="hidden" name="cardId" value={card.id} />
-                  <SubmitButton
-                    className="danger"
-                    pendingText="Poistetaan..."
-                    confirmMessage="Poistetaanko kortti pysyvasti?"
-                  >
-                    Poista
-                  </SubmitButton>
-                </form>
-              </div>
-            </article>
-          ))}
-        </div>
+        <SourceTasksPanel sourceId={source.id} cards={cards} />
       </article>
 
       <SourcePageActions

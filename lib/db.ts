@@ -10,7 +10,7 @@ import {
 import {
   extractTextFromCaptureImage,
   generateCaptureSummaryReply,
-  generateReviewCardsFromSummary,
+  generateReviewCardFromSummary,
   isLlmConfigured,
   transcribeCaptureAudio
 } from "@/lib/llm";
@@ -349,6 +349,78 @@ function logLlmWarning(context: string, metadata?: Record<string, unknown>) {
   console.warn("[llm-warning]", context, metadata ?? {});
 }
 
+function joinInstructions(...values: Array<string | null | undefined>) {
+  return values
+    .map((value) => (value ?? "").trim())
+    .filter(Boolean)
+    .join("\n");
+}
+
+function getTaskTypeInstruction(settings: UserSettings, cardType: CardType) {
+  if (cardType === "recall") {
+    return settings.recallCardGenerationPrompt;
+  }
+  if (cardType === "apply") {
+    return settings.applyCardGenerationPrompt;
+  }
+  if (cardType === "reflect") {
+    return settings.reflectCardGenerationPrompt;
+  }
+  return "";
+}
+
+function inferCustomCardType(instruction: string): CardType {
+  const normalized = instruction.trim().toLowerCase();
+  if (!normalized) return "apply";
+  if (
+    normalized.includes("kertaus") ||
+    normalized.includes("muist") ||
+    normalized.includes("recall") ||
+    normalized.includes("palauta")
+  ) {
+    return "recall";
+  }
+  if (
+    normalized.includes("reflekt") ||
+    normalized.includes("pohdi") ||
+    normalized.includes("oletus") ||
+    normalized.includes("ajattel") ||
+    normalized.includes("tunne")
+  ) {
+    return "reflect";
+  }
+  return "apply";
+}
+
+function buildFallbackGeneratedCard(input: {
+  summary: string;
+  cardType: CardType;
+}) {
+  const preview = input.summary.trim().slice(0, 280);
+
+  if (input.cardType === "recall") {
+    return {
+      cardType: "recall" as const,
+      prompt: "Mika ajatuksen ydin kannattaa muistaa myohemmin?",
+      answer: preview
+    };
+  }
+
+  if (input.cardType === "reflect") {
+    return {
+      cardType: "reflect" as const,
+      prompt: "Mita tama ajatus haastaa sinussa tai tavassasi ajatella?",
+      answer: "Kirjaa yksi oletus, tulkinta tai tapa, jota haluat paivittaa taman ajatuksen pohjalta."
+    };
+  }
+
+  return {
+    cardType: "apply" as const,
+    prompt: "Missa seuraavassa oikeassa tilanteessa sovellat tata ajatusta?",
+    answer: "Valitse yksi tilanne, tee pieni kokeilu ja kirjaa mita opit."
+  };
+}
+
 export async function logLearningEvent(input: {
   eventType: string;
   entityId?: string | null;
@@ -383,6 +455,9 @@ export async function getUserSettings(userId?: string): Promise<UserSettings> {
     analysisPromptDeepen: data.analysis_prompt_deepen,
     analysisPromptSummarize: data.analysis_prompt_summarize,
     cardGenerationPrompt: data.card_generation_prompt,
+    recallCardGenerationPrompt: data.recall_card_generation_prompt,
+    applyCardGenerationPrompt: data.apply_card_generation_prompt,
+    reflectCardGenerationPrompt: data.reflect_card_generation_prompt,
     tagGenerationPrompt: data.tag_generation_prompt
   });
 }
@@ -401,6 +476,9 @@ export async function upsertUserSettings(input: UserSettings, userId?: string) {
       analysis_prompt_deepen: settings.analysisPromptDeepen,
       analysis_prompt_summarize: settings.analysisPromptSummarize,
       card_generation_prompt: settings.cardGenerationPrompt,
+      recall_card_generation_prompt: settings.recallCardGenerationPrompt,
+      apply_card_generation_prompt: settings.applyCardGenerationPrompt,
+      reflect_card_generation_prompt: settings.reflectCardGenerationPrompt,
       tag_generation_prompt: settings.tagGenerationPrompt
     })
     .select("*")
@@ -415,6 +493,9 @@ export async function upsertUserSettings(input: UserSettings, userId?: string) {
     analysisPromptDeepen: data.analysis_prompt_deepen ?? "",
     analysisPromptSummarize: data.analysis_prompt_summarize ?? "",
     cardGenerationPrompt: data.card_generation_prompt ?? "",
+    recallCardGenerationPrompt: data.recall_card_generation_prompt ?? "",
+    applyCardGenerationPrompt: data.apply_card_generation_prompt ?? "",
+    reflectCardGenerationPrompt: data.reflect_card_generation_prompt ?? "",
     tagGenerationPrompt: data.tag_generation_prompt ?? "",
     created_at: data.created_at,
     updated_at: data.updated_at
@@ -1297,8 +1378,10 @@ export async function upsertSummary(
   return data as SummaryRow;
 }
 
-export async function generateSuggestedCards(params: {
+export async function generateSuggestedCard(params: {
   sourceId: string;
+  cardType?: CardType;
+  instruction?: string;
 }) {
   const supabase = getSupabaseAdmin();
   const userId = await appUserId();
@@ -1313,6 +1396,12 @@ export async function generateSuggestedCards(params: {
   if (!summary?.content?.trim()) return;
 
   const trimmed = summary.content.trim();
+  const requestedCardType = params.cardType ?? inferCustomCardType(params.instruction || "");
+  const instruction = joinInstructions(
+    settings.cardGenerationPrompt,
+    params.cardType ? getTaskTypeInstruction(settings, params.cardType) : "",
+    params.instruction
+  );
   let rawInput = (summary.raw_input || "").trim();
   if (!rawInput) {
     const { data: captureMessages, error: captureError } = await supabase
@@ -1329,100 +1418,68 @@ export async function generateSuggestedCards(params: {
       .join("\n\n");
   }
 
-  await supabase
-    .from("cards")
-    .delete()
-    .eq("source_id", params.sourceId)
-    .eq("user_id", userId)
-    .eq("status", "suggested");
-
-  const fallbackCards = [
-    {
-      user_id: userId,
-      source_id: params.sourceId,
-      summary_id: summary.id,
-      status: "suggested",
-      card_type: "recall",
-      prompt: "Mika on taman summaryn tarkein vaittama?",
-      answer: trimmed.slice(0, 280),
-      generation_model: CARD_GENERATION_MODEL,
-      generation_context: { mode: "summary", variant: "recall" }
-    },
-    {
-      user_id: userId,
-      source_id: params.sourceId,
-      summary_id: summary.id,
-      status: "suggested",
-      card_type: "apply",
-      prompt: "Miten sovellat tata ideaa seuraavaan oikeaan tilanteeseen?",
-      answer: "Valitse yksi paatos ja testaa tata periaatetta viikon aikana.",
-      generation_model: CARD_GENERATION_MODEL,
-      generation_context: { mode: "summary", variant: "apply" }
-    },
-    {
-      user_id: userId,
-      source_id: params.sourceId,
-      summary_id: summary.id,
-      status: "suggested",
-      card_type: "reflect",
-      prompt: "Mika tassa ideassa haastaa nykyisen ajattelutapasi?",
-      answer: "Kirjaa yksi oletus, jonka paivitat taman lahteen perusteella.",
-      generation_model: CARD_GENERATION_MODEL,
-      generation_context: { mode: "summary", variant: "reflect" }
-    },
-    {
-      user_id: userId,
-      source_id: params.sourceId,
-      summary_id: summary.id,
-      status: "suggested",
-      card_type: "decision",
-      prompt: "Mika paatostradeoff kannattaa ratkaista tanaan taman pohjalta?",
-      answer:
-        "Kirjaa kaksi vaihtoehtoa, valitse toinen ja perustele valinta yhdella virkkeella.",
-      generation_model: CARD_GENERATION_MODEL,
-      generation_context: { mode: "summary", variant: "decision" }
-    }
-  ];
-
-  const llmCards = await generateReviewCardsFromSummary({
+  const llmCard = await generateReviewCardFromSummary({
     settings,
     summary: trimmed,
-    rawInput
+    rawInput,
+    cardType: params.cardType,
+    instruction
   }).catch((error) => {
-    logLlmError("generateSuggestedCards.generateReviewCardsFromSummary", error, {
-      sourceId: params.sourceId
+    logLlmError("generateSuggestedCard.generateReviewCardFromSummary", error, {
+      sourceId: params.sourceId,
+      cardType: requestedCardType
     });
-    return { ok: false, data: [], model: undefined };
+    return { ok: false, data: null, model: undefined };
   });
 
-  if (!llmCards.ok && isLlmConfigured()) {
-    logLlmWarning("generateSuggestedCards.fallback_to_rule_cards", {
+  if (!llmCard.ok && isLlmConfigured()) {
+    logLlmWarning("generateSuggestedCard.fallback_to_rule_card", {
       sourceId: params.sourceId,
-      summaryId: summary.id
+      summaryId: summary.id,
+      cardType: requestedCardType
     });
   }
 
-  const cardsToInsert = llmCards.ok
-    ? llmCards.data.map((card) => ({
-        user_id: userId,
-        source_id: params.sourceId,
-        summary_id: summary.id,
-        status: "suggested" as const,
-        card_type: card.cardType,
-        prompt: card.prompt,
-        answer: card.answer,
-        generation_model: llmCards.model ?? "openai",
-        generation_context: { mode: "summary", provider: "openai", variant: card.cardType }
-      }))
-    : fallbackCards;
+  const nextCard = llmCard.ok && llmCard.data
+    ? llmCard.data
+    : buildFallbackGeneratedCard({
+        summary: trimmed,
+        cardType: requestedCardType
+      });
 
-  const { error } = await supabase.from("cards").insert(cardsToInsert);
+  const { data: insertedCard, error } = await supabase
+    .from("cards")
+    .insert({
+      user_id: userId,
+      source_id: params.sourceId,
+      summary_id: summary.id,
+      status: "active",
+      due_at: new Date().toISOString(),
+      card_type: nextCard.cardType,
+      prompt: nextCard.prompt,
+      answer: nextCard.answer,
+      generation_model: llmCard.model ?? CARD_GENERATION_MODEL,
+      generation_context: {
+        mode: "summary",
+        provider: llmCard.model ? "openai" : "rule",
+        variant: nextCard.cardType,
+        customInstruction: Boolean(params.instruction?.trim())
+      }
+    })
+    .select("id, card_type")
+    .single();
   if (error) throw error;
 
   await logLearningEvent({
     eventType: "cards_generated",
     entityId: params.sourceId,
-    payload: { count: cardsToInsert.length }
+    payload: { count: 1, card_type: nextCard.cardType }
+  });
+
+  await logLearningEvent({
+    eventType: "card_accepted",
+    entityId: insertedCard.id,
+    payload: { source_id: params.sourceId, card_type: insertedCard.card_type }
   });
 }
 
@@ -1432,41 +1489,22 @@ export async function updateCard(params: {
   prompt: string;
   answer: string;
   cardType: CardType;
-  status?: "suggested" | "active" | "rejected";
 }) {
   const supabase = getSupabaseAdmin();
   const userId = await appUserId();
-  const dueAt = params.status === "active" ? new Date().toISOString() : undefined;
 
   const { error } = await supabase
     .from("cards")
     .update({
       prompt: params.prompt,
       answer: params.answer,
-      card_type: params.cardType,
-      ...(params.status ? { status: params.status } : {}),
-      ...(dueAt ? { due_at: dueAt } : {})
+      card_type: params.cardType
     })
     .eq("id", params.cardId)
     .eq("source_id", params.sourceId)
     .eq("user_id", userId);
 
   if (error) throw error;
-
-  if (params.status === "active") {
-    await logLearningEvent({
-      eventType: "card_accepted",
-      entityId: params.cardId,
-      payload: { source_id: params.sourceId, card_type: params.cardType }
-    });
-  }
-  if (params.status === "rejected") {
-    await logLearningEvent({
-      eventType: "card_rejected",
-      entityId: params.cardId,
-      payload: { source_id: params.sourceId, card_type: params.cardType }
-    });
-  }
 }
 
 export async function deleteCard(params: { cardId: string; sourceId: string }) {
@@ -1487,31 +1525,6 @@ export async function deleteCard(params: { cardId: string; sourceId: string }) {
     .eq("source_id", params.sourceId)
     .eq("user_id", userId);
   if (cardError) throw cardError;
-}
-
-export async function acceptAllSuggested(sourceId: string) {
-  const supabase = getSupabaseAdmin();
-  const userId = await appUserId();
-  const { data, error } = await supabase
-    .from("cards")
-    .update({
-      status: "active",
-      due_at: new Date().toISOString()
-    })
-    .eq("source_id", sourceId)
-    .eq("user_id", userId)
-    .eq("status", "suggested")
-    .select("id, card_type");
-
-  if (error) throw error;
-
-  for (const row of data ?? []) {
-    await logLearningEvent({
-      eventType: "card_accepted",
-      entityId: row.id,
-      payload: { source_id: sourceId, card_type: row.card_type }
-    });
-  }
 }
 
 export async function listDueCards() {

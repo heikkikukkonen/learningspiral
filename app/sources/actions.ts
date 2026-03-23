@@ -7,7 +7,7 @@ import {
   deleteCard,
   deleteSource,
   createSource,
-  generateSuggestedCards,
+  generateSuggestedCard,
   getUserSettings,
   listUserTagStats,
   updateSource,
@@ -197,12 +197,6 @@ export async function generateSourceTagsAction(formData: FormData) {
   };
 }
 
-export async function generateCardsAction(formData: FormData) {
-  const sourceId = asString(formData.get("sourceId"));
-  await generateSuggestedCards({ sourceId });
-  revalidatePath(`/sources/${sourceId}`);
-}
-
 export async function saveCardAction(formData: FormData) {
   const sourceId = asString(formData.get("sourceId"));
   await updateCard({
@@ -215,15 +209,23 @@ export async function saveCardAction(formData: FormData) {
   revalidatePath(`/sources/${sourceId}`);
 }
 
-export async function setCardStatusAction(formData: FormData) {
+export async function generateCardAction(formData: FormData) {
   const sourceId = asString(formData.get("sourceId"));
-  await updateCard({
-    cardId: asString(formData.get("cardId")),
+  const variantValue = asString(formData.get("variant"));
+  const instruction = asString(formData.get("instruction")).trim();
+  const cardType =
+    variantValue === "recall" || variantValue === "apply" || variantValue === "reflect"
+      ? variantValue
+      : undefined;
+
+  if (variantValue === "custom" && !instruction) {
+    throw new Error("Kirjoita ohje tehtavan luontia varten.");
+  }
+
+  await generateSuggestedCard({
     sourceId,
-    prompt: asString(formData.get("prompt")),
-    answer: asString(formData.get("answer")),
-    cardType: asString(formData.get("cardType")) as CardType,
-    status: asString(formData.get("status")) as "active" | "rejected"
+    cardType,
+    instruction: instruction || undefined
   });
   revalidatePath(`/sources/${sourceId}`);
   revalidatePath("/review");

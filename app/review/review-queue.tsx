@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { completeReviewAction } from "@/app/sources/actions";
 import { SubmitButton } from "@/app/components/submit-button";
 import type { CardAnswerHistoryItem, DueReviewCard, UnrefinedIdeaQueueItem } from "@/lib/db";
+import { cardTypeLabel } from "@/lib/types";
 
 type ReviewQueueItem =
   | {
@@ -60,7 +61,7 @@ function ReviewCard({
       <div className="review-card-head">
         <div className="source-meta">
           <span className="pill" data-variant="primary">
-            {card.card_type}
+            {cardTypeLabel(card.card_type)}
           </span>
           <span className="pill">{card.source_title}</span>
         </div>

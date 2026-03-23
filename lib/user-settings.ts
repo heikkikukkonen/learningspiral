@@ -4,6 +4,9 @@ export interface UserSettings {
   analysisPromptDeepen: string;
   analysisPromptSummarize: string;
   cardGenerationPrompt: string;
+  recallCardGenerationPrompt: string;
+  applyCardGenerationPrompt: string;
+  reflectCardGenerationPrompt: string;
   tagGenerationPrompt: string;
 }
 
@@ -13,6 +16,9 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   analysisPromptDeepen: "",
   analysisPromptSummarize: "",
   cardGenerationPrompt: "",
+  recallCardGenerationPrompt: "",
+  applyCardGenerationPrompt: "",
+  reflectCardGenerationPrompt: "",
   tagGenerationPrompt: ""
 };
 
@@ -27,6 +33,9 @@ export function sanitizeUserSettings(input: Partial<UserSettings> | null | undef
     analysisPromptDeepen: clamp(input?.analysisPromptDeepen || "", 1200),
     analysisPromptSummarize: clamp(input?.analysisPromptSummarize || "", 1200),
     cardGenerationPrompt: clamp(input?.cardGenerationPrompt || "", 1200),
+    recallCardGenerationPrompt: clamp(input?.recallCardGenerationPrompt || "", 1200),
+    applyCardGenerationPrompt: clamp(input?.applyCardGenerationPrompt || "", 1200),
+    reflectCardGenerationPrompt: clamp(input?.reflectCardGenerationPrompt || "", 1200),
     tagGenerationPrompt: clamp(input?.tagGenerationPrompt || "", 1200)
   };
 }

@@ -187,17 +187,37 @@ export default async function SettingsPage({
             <div className="settings-subsection-copy">
               <h3 style={{ margin: 0 }}>Tehtävät</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Millaiset tehtävät auttavat sinua viemään ajatuksen käytäntöön tai syventämään ajatteluasi?
+                Kirjoita haluamasi ohjeistus tehtävän luontiin eri tyyppisille tehtäville.
               </p>
             </div>
-            <label className="form-row">
-              <span>Tehtävät</span>
-              <textarea
-                name="cardGenerationPrompt"
-                defaultValue={settings.cardGenerationPrompt}
-                placeholder="Esim. tee korteista päätöksentekoa ja soveltamista tukevia."
-              />
-            </label>
+            <div className="grid settings-grid">
+              <label className="form-row">
+                <span>Kertaustehtävä</span>
+                <textarea
+                  name="recallCardGenerationPrompt"
+                  defaultValue={settings.recallCardGenerationPrompt}
+                  placeholder="Esim. tee tehtävästä ytimekäs ja auta muistamaan ajatuksen olennaisin kohta."
+                />
+              </label>
+
+              <label className="form-row">
+                <span>Soveltamistehtävä</span>
+                <textarea
+                  name="applyCardGenerationPrompt"
+                  defaultValue={settings.applyCardGenerationPrompt}
+                  placeholder="Esim. ohjaa tehtävä soveltamaan ajatusta seuraavassa oikeassa tilanteessa."
+                />
+              </label>
+
+              <label className="form-row">
+                <span>Reflektiotehtävä</span>
+                <textarea
+                  name="reflectCardGenerationPrompt"
+                  defaultValue={settings.reflectCardGenerationPrompt}
+                  placeholder="Esim. auta tehtävää pysähtymään oman ajattelun, oletusten tai tunteiden äärelle."
+                />
+              </label>
+            </div>
           </div>
         </article>
 
