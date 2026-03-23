@@ -102,24 +102,44 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
 
   return (
     <div className="source-task-stack">
-      <div className="source-task-toolbar" role="group" aria-label="Tehtavien luonti">
-        {presetTaskButtons.map((task) => (
-          <button
-            key={task.value}
-            type="button"
-            className="secondary source-task-create-button"
-            disabled={isPending}
-            onClick={() => handleGenerateTask(task.value)}
-          >
-            {pendingAction === `generate:${task.value}` ? "Luodaan..." : task.label}
-          </button>
-        ))}
+      <div className="source-task-section">
+        <div className="source-task-section-copy">
+          <h3>Pikaluonti</h3>
+          <p>
+            Ylemmat kolme painiketta ovat tehtavien pikaluontitoimintoja. Voit muokata niiden
+            ohjeistusta Asetukset-sivulla.
+          </p>
+        </div>
+
+        <div className="source-task-toolbar" role="group" aria-label="Tehtavien pikaluonti">
+          {presetTaskButtons.map((task) => (
+            <button
+              key={task.value}
+              type="button"
+              className="secondary source-task-create-button"
+              disabled={isPending}
+              onClick={() => handleGenerateTask(task.value)}
+            >
+              {pendingAction === `generate:${task.value}` ? "Luodaan..." : task.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="source-task-section">
+        <div className="source-task-section-copy">
+          <h3>Oma tehtava</h3>
+          <p>
+            Alempi tekstikentta ja Luo tehtava -painike ovat vapaa tehtavanluontimahdollisuus, jolla
+            voit luoda haluamasi oman tehtavan.
+          </p>
+        </div>
 
         <div className="source-task-custom">
           <input
             value={customInstruction}
             onChange={(event) => setCustomInstruction(event.target.value)}
-            placeholder="Kirjoita ohje tehtavan luontia varten"
+            placeholder="Kirjoita ohje oman tehtavan luontia varten"
             disabled={isPending}
           />
           <button
@@ -132,8 +152,6 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
           </button>
         </div>
       </div>
-
-      <p className="status source-task-info">Voit muuttaa tehtavien luonnin ohjeistusta Asetukset-sivulla.</p>
 
       <div className="list" style={{ marginTop: "0.8rem" }}>
         {cards.length === 0 ? (
