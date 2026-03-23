@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   countReviewQueueItemsForUser,
-  getUserNotificationSettings,
   listPushSubscriptions,
   upsertPushSubscription,
   deletePushSubscription,
@@ -57,16 +56,11 @@ export async function saveUserSettingsAction(formData: FormData) {
   }
 
   await upsertUserSettings(settings);
-  const currentNotificationSettings = await getUserNotificationSettings(user?.id);
   await upsertUserNotificationSettings(
     {
-      ...currentNotificationSettings,
       morningReminderEnabled,
       morningReminderTime,
-      morningReminderTimezone,
-      lastMorningReminderSentFor: morningReminderEnabled
-        ? currentNotificationSettings.lastMorningReminderSentFor
-        : null
+      morningReminderTimezone
     },
     user?.id
   );

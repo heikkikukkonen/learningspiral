@@ -17,6 +17,7 @@ function getLocalDateParts(date: Date, timeZone: string) {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
     hour12: false
   });
 
@@ -28,38 +29,98 @@ function getLocalDateParts(date: Date, timeZone: string) {
     month: get("month"),
     day: get("day"),
     hour: get("hour"),
-    minute: get("minute")
+    minute: get("minute"),
+    second: get("second")
   };
 }
 
-export function getReminderDebugSnapshot(
-  settings: Pick<
-    UserNotificationSettingsRow,
-    "morningReminderEnabled" | "morningReminderTime" | "morningReminderTimezone" | "lastMorningReminderSentFor"
-  >,
-  now = new Date()
+function getTimeZoneOffsetMs(date: Date, timeZone: string) {
+  const local = getLocalDateParts(date, timeZone);
+  const asUtcTimestamp = Date.UTC(
+    Number(local.year),
+    Number(local.month) - 1,
+    Number(local.day),
+    Number(local.hour),
+    Number(local.minute),
+    Number(local.second)
+  );
+
+  return asUtcTimestamp - date.getTime();
+}
+
+function getReminderTargetTimestamp(localDate: string, localTime: string, timeZone: string) {
+  const [year, month, day] = localDate.split("-").map(Number);
+  const [hour, minute] = localTime.split(":").map(Number);
+  const utcGuess = new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
+  const initialOffset = getTimeZoneOffsetMs(utcGuess, timeZone);
+  let target = new Date(utcGuess.getTime() - initialOffset);
+  const adjustedOffset = getTimeZoneOffsetMs(target, timeZone);
+
+  if (adjustedOffset !== initialOffset) {
+    target = new Date(utcGuess.getTime() - adjustedOffset);
+  }
+
+  return target;
+}
+
+function getReminderTiming(
+  settings: Pick<UserNotificationSettingsRow, "morningReminderTime" | "morningReminderTimezone">,
+  now: Date
 ) {
   const local = getLocalDateParts(now, settings.morningReminderTimezone);
   const localDate = `${local.year}-${local.month}-${local.day}`;
   const localTime = `${local.hour}:${local.minute}`;
-  const dueCheck = isReminderDueNow(settings, now);
+  const reminderAt = getReminderTargetTimestamp(
+    localDate,
+    settings.morningReminderTime,
+    settings.morningReminderTimezone
+  );
+
+  return {
+    localDate,
+    localTime,
+    reminderAt
+  };
+}
+
+function hasReminderBeenSentSince(
+  subscription: Pick<PushSubscriptionRow, "last_sent_at">,
+  reminderAt: Date
+) {
+  if (!subscription.last_sent_at) {
+    return false;
+  }
+
+  const lastSentAt = new Date(subscription.last_sent_at);
+  if (Number.isNaN(lastSentAt.getTime())) {
+    return false;
+  }
+
+  return lastSentAt.getTime() >= reminderAt.getTime();
+}
+
+export function getReminderDebugSnapshot(
+  settings: Pick<UserNotificationSettingsRow, "morningReminderEnabled" | "morningReminderTime" | "morningReminderTimezone">,
+  now = new Date()
+) {
+  const timing = getReminderTiming(settings, now);
 
   return {
     enabled: settings.morningReminderEnabled,
     targetTime: settings.morningReminderTime,
     timezone: settings.morningReminderTimezone,
-    lastSentFor: settings.lastMorningReminderSentFor,
     nowUtc: now.toISOString(),
-    localDate,
-    localTime,
-    dueNow: dueCheck.due
+    localDate: timing.localDate,
+    localTime: timing.localTime,
+    reminderAtUtc: timing.reminderAt.toISOString(),
+    dueNow: now.getTime() >= timing.reminderAt.getTime()
   };
 }
 
 export function buildMorningReminderPayload(queueCount: number): PushPayload {
   return {
     title: "Noema",
-    body: `Sinulla on ${queueCount} ${queueCount === 1 ? "asia" : "asiaa"} syvennettävänä.`,
+    body: `Sinulla on ${queueCount} ${queueCount === 1 ? "asia" : "asiaa"} syvennett\u00E4v\u00E4n\u00E4.`,
     url: "/review"
   };
 }
@@ -76,7 +137,7 @@ export async function sendPushToUserDevices(userId: string, payload: PushPayload
   for (const subscription of subscriptions) {
     try {
       await sendWebPush(subscription.subscription_json, payload);
-      await markPushSubscriptionSent(subscription.endpoint, userId);
+      await markPushSubscriptionSent(subscription.endpoint, userId, { recordSentAt: false });
       sentCount += 1;
       results.push({
         endpoint: subscription.endpoint,
@@ -120,43 +181,38 @@ export async function sendPushToUserDevices(userId: string, payload: PushPayload
 }
 
 export function isReminderDueNow(
-  settings: Pick<
-    UserNotificationSettingsRow,
-    "morningReminderTime" | "morningReminderTimezone" | "lastMorningReminderSentFor"
-  >,
+  settings: Pick<UserNotificationSettingsRow, "morningReminderTime" | "morningReminderTimezone">,
   now: Date
 ) {
-  const local = getLocalDateParts(now, settings.morningReminderTimezone);
-  const nowTotalMinutes = Number(local.hour) * 60 + Number(local.minute);
-  const [targetHour, targetMinute] = settings.morningReminderTime.split(":").map(Number);
-  const targetTotalMinutes = targetHour * 60 + targetMinute;
-  const localDate = `${local.year}-${local.month}-${local.day}`;
+  const timing = getReminderTiming(settings, now);
 
   return {
-    localDate,
-    due: nowTotalMinutes >= targetTotalMinutes && settings.lastMorningReminderSentFor !== localDate
+    localDate: timing.localDate,
+    reminderAt: timing.reminderAt,
+    due: now.getTime() >= timing.reminderAt.getTime()
   };
 }
 
-function getPendingReminderSubscriptions(subscriptions: PushSubscriptionRow[], localDate: string) {
-  return subscriptions.filter((subscription) => subscription.last_morning_reminder_sent_for !== localDate);
+function getPendingReminderSubscriptions(subscriptions: PushSubscriptionRow[], reminderAt: Date) {
+  return subscriptions.filter((subscription) => !hasReminderBeenSentSince(subscription, reminderAt));
 }
 
-function getAlreadySentReminderSubscriptions(subscriptions: PushSubscriptionRow[], localDate: string) {
-  return subscriptions.filter((subscription) => subscription.last_morning_reminder_sent_for === localDate);
+function getAlreadySentReminderSubscriptions(subscriptions: PushSubscriptionRow[], reminderAt: Date) {
+  return subscriptions.filter((subscription) => hasReminderBeenSentSince(subscription, reminderAt));
 }
 
-export async function sendMorningReminderToUser(userId: string, localDate: string) {
+export async function sendMorningReminderToUser(userId: string, reminderAt: Date, localDate: string) {
   const queueCount = await countReviewQueueItemsForUser(userId);
   const payload = buildMorningReminderPayload(queueCount);
   const subscriptions = await listPushSubscriptions(userId);
-  const alreadySentSubscriptions = getAlreadySentReminderSubscriptions(subscriptions, localDate);
-  const pendingSubscriptions = getPendingReminderSubscriptions(subscriptions, localDate);
+  const alreadySentSubscriptions = getAlreadySentReminderSubscriptions(subscriptions, reminderAt);
+  const pendingSubscriptions = getPendingReminderSubscriptions(subscriptions, reminderAt);
   const results: Array<Record<string, unknown>> = alreadySentSubscriptions.map((subscription) => ({
     endpoint: subscription.endpoint,
     deviceLabel: subscription.device_label,
     status: "skipped_already_sent",
-    sentFor: localDate
+    lastSentAt: subscription.last_sent_at,
+    reminderAtUtc: reminderAt.toISOString()
   }));
 
   if (!pendingSubscriptions.length) {
@@ -179,15 +235,14 @@ export async function sendMorningReminderToUser(userId: string, localDate: strin
   for (const subscription of pendingSubscriptions) {
     try {
       await sendWebPush(subscription.subscription_json, payload);
-      await markPushSubscriptionSent(subscription.endpoint, userId, {
-        reminderSentFor: localDate
-      });
+      await markPushSubscriptionSent(subscription.endpoint, userId);
       sentCount += 1;
       results.push({
         endpoint: subscription.endpoint,
         deviceLabel: subscription.device_label,
         status: "sent",
-        sentFor: localDate
+        localDate,
+        reminderAtUtc: reminderAt.toISOString()
       });
     } catch (error) {
       const statusCode =
@@ -229,11 +284,7 @@ export async function sendMorningReminderToUser(userId: string, localDate: strin
 export async function processMorningReminder(
   settings: Pick<
     UserNotificationSettingsRow,
-    | "user_id"
-    | "morningReminderEnabled"
-    | "morningReminderTime"
-    | "morningReminderTimezone"
-    | "lastMorningReminderSentFor"
+    "user_id" | "morningReminderEnabled" | "morningReminderTime" | "morningReminderTimezone"
   >,
   now = new Date()
 ) {
@@ -241,19 +292,20 @@ export async function processMorningReminder(
     return { processed: false, reason: "disabled" as const };
   }
 
-  const { due, localDate } = isReminderDueNow(settings, now);
+  const { due, localDate, reminderAt } = isReminderDueNow(settings, now);
   if (!due) {
-    return { processed: false, reason: "not_due" as const, localDate };
+    return { processed: false, reason: "not_due" as const, localDate, reminderAtUtc: reminderAt.toISOString() };
   }
 
   const subscriptions = await listPushSubscriptions(settings.user_id);
-  const alreadySentSubscriptions = getAlreadySentReminderSubscriptions(subscriptions, localDate);
-  const pendingSubscriptions = getPendingReminderSubscriptions(subscriptions, localDate);
+  const alreadySentSubscriptions = getAlreadySentReminderSubscriptions(subscriptions, reminderAt);
+  const pendingSubscriptions = getPendingReminderSubscriptions(subscriptions, reminderAt);
   if (!pendingSubscriptions.length) {
     return {
       processed: false,
       reason: "all_devices_already_sent" as const,
       localDate,
+      reminderAtUtc: reminderAt.toISOString(),
       queueCount: null,
       sentCount: 0,
       failureCount: 0,
@@ -263,13 +315,15 @@ export async function processMorningReminder(
         endpoint: subscription.endpoint,
         deviceLabel: subscription.device_label,
         status: "skipped_already_sent",
-        sentFor: localDate
+        lastSentAt: subscription.last_sent_at,
+        reminderAtUtc: reminderAt.toISOString()
       }))
     };
   }
 
   const { queueCount, sentCount, failureCount, skippedCount, deletedCount, results } = await sendMorningReminderToUser(
     settings.user_id,
+    reminderAt,
     localDate
   );
 
@@ -277,6 +331,7 @@ export async function processMorningReminder(
     processed: sentCount > 0 || failureCount > 0 || skippedCount > 0,
     reason: "sent" as const,
     localDate,
+    reminderAtUtc: reminderAt.toISOString(),
     queueCount,
     sentCount,
     failureCount,

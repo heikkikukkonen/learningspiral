@@ -151,7 +151,6 @@ export interface PushSubscriptionRow {
   created_at: string;
   updated_at: string;
   last_sent_at: string | null;
-  last_morning_reminder_sent_for: string | null;
   last_error_at: string | null;
   last_error_message: string | null;
 }
@@ -160,7 +159,6 @@ export interface UserNotificationSettings {
   morningReminderEnabled: boolean;
   morningReminderTime: string;
   morningReminderTimezone: string;
-  lastMorningReminderSentFor: string | null;
 }
 
 export interface UserNotificationSettingsRow extends UserNotificationSettings {
@@ -176,7 +174,6 @@ export interface PushSubscriptionDebugRow {
   createdAt: string;
   updatedAt: string;
   lastSentAt: string | null;
-  lastReminderSentFor: string | null;
   lastErrorAt: string | null;
   lastErrorMessage: string | null;
 }
@@ -187,7 +184,6 @@ export interface UserPushDebugSnapshot {
     enabled: boolean;
     targetTime: string;
     timezone: string;
-    lastSentFor: string | null;
     createdAt: string | null;
     updatedAt: string | null;
   };
@@ -198,8 +194,7 @@ export interface UserPushDebugSnapshot {
 export const DEFAULT_USER_NOTIFICATION_SETTINGS: UserNotificationSettings = {
   morningReminderEnabled: false,
   morningReminderTime: "08:00",
-  morningReminderTimezone: "UTC",
-  lastMorningReminderSentFor: null
+  morningReminderTimezone: "UTC"
 };
 
 const CARD_GENERATION_MODEL = "rule-v1";
@@ -257,11 +252,7 @@ export function sanitizeUserNotificationSettings(
         ? input.morningReminderEnabled
         : DEFAULT_USER_NOTIFICATION_SETTINGS.morningReminderEnabled,
     morningReminderTime: sanitizeTime(input?.morningReminderTime),
-    morningReminderTimezone: sanitizeTimezone(input?.morningReminderTimezone),
-    lastMorningReminderSentFor:
-      typeof input?.lastMorningReminderSentFor === "string" && input.lastMorningReminderSentFor.trim()
-        ? input.lastMorningReminderSentFor.trim()
-        : null
+    morningReminderTimezone: sanitizeTimezone(input?.morningReminderTimezone)
   };
 }
 
@@ -270,7 +261,6 @@ function mapUserNotificationSettingsRow(row: {
   morning_reminder_enabled: boolean;
   morning_reminder_time: string;
   morning_reminder_timezone: string;
-  last_morning_reminder_sent_for: string | null;
   created_at: string;
   updated_at: string;
 }): UserNotificationSettingsRow {
@@ -279,7 +269,6 @@ function mapUserNotificationSettingsRow(row: {
     morningReminderEnabled: Boolean(row.morning_reminder_enabled),
     morningReminderTime: row.morning_reminder_time,
     morningReminderTimezone: row.morning_reminder_timezone,
-    lastMorningReminderSentFor: row.last_morning_reminder_sent_for ?? null,
     created_at: row.created_at,
     updated_at: row.updated_at
   };
@@ -293,7 +282,6 @@ function toPushSubscriptionDebugRow(row: PushSubscriptionRow): PushSubscriptionD
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     lastSentAt: row.last_sent_at,
-    lastReminderSentFor: row.last_morning_reminder_sent_for,
     lastErrorAt: row.last_error_at,
     lastErrorMessage: row.last_error_message
   };
@@ -309,7 +297,6 @@ function toUserPushDebugSnapshot(
         enabled: settings.morningReminderEnabled,
         targetTime: settings.morningReminderTime,
         timezone: settings.morningReminderTimezone,
-        lastSentFor: settings.lastMorningReminderSentFor,
         createdAt: settings.created_at,
         updatedAt: settings.updated_at
       }
@@ -317,7 +304,6 @@ function toUserPushDebugSnapshot(
         enabled: DEFAULT_USER_NOTIFICATION_SETTINGS.morningReminderEnabled,
         targetTime: DEFAULT_USER_NOTIFICATION_SETTINGS.morningReminderTime,
         timezone: DEFAULT_USER_NOTIFICATION_SETTINGS.morningReminderTimezone,
-        lastSentFor: DEFAULT_USER_NOTIFICATION_SETTINGS.lastMorningReminderSentFor,
         createdAt: null,
         updatedAt: null
       };
@@ -455,8 +441,7 @@ export async function getUserNotificationSettings(userId?: string): Promise<User
   return sanitizeUserNotificationSettings({
     morningReminderEnabled: row.morningReminderEnabled,
     morningReminderTime: row.morningReminderTime,
-    morningReminderTimezone: row.morningReminderTimezone,
-    lastMorningReminderSentFor: row.lastMorningReminderSentFor
+    morningReminderTimezone: row.morningReminderTimezone
   });
 }
 
@@ -489,8 +474,7 @@ export async function upsertUserNotificationSettings(
       user_id: resolvedUserId,
       morning_reminder_enabled: settings.morningReminderEnabled,
       morning_reminder_time: settings.morningReminderTime,
-      morning_reminder_timezone: settings.morningReminderTimezone,
-      last_morning_reminder_sent_for: settings.lastMorningReminderSentFor
+      morning_reminder_timezone: settings.morningReminderTimezone
     })
     .select("*")
     .single();
@@ -502,7 +486,6 @@ export async function upsertUserNotificationSettings(
     morningReminderEnabled: Boolean(data.morning_reminder_enabled),
     morningReminderTime: data.morning_reminder_time,
     morningReminderTimezone: data.morning_reminder_timezone,
-    lastMorningReminderSentFor: data.last_morning_reminder_sent_for ?? null,
     created_at: data.created_at,
     updated_at: data.updated_at
   } as UserNotificationSettingsRow;
@@ -528,16 +511,6 @@ export async function getUserPushDebugSnapshot(userId?: string): Promise<UserPus
   ]);
 
   return toUserPushDebugSnapshot(resolvedUserId, settings, subscriptions);
-}
-
-export async function markMorningReminderSent(userId: string, localDate: string) {
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
-    .from("user_notification_settings")
-    .update({ last_morning_reminder_sent_for: localDate })
-    .eq("user_id", userId);
-
-  if (error) throw error;
 }
 
 export async function upsertPushSubscription(input: {
@@ -582,19 +555,18 @@ export async function markPushSubscriptionSent(
   endpoint: string,
   userId?: string,
   opts?: {
-    reminderSentFor?: string | null;
+    recordSentAt?: boolean;
   }
 ) {
   const supabase = getSupabaseAdmin();
   const resolvedUserId = userId ?? (await appUserId());
   const update: Record<string, unknown> = {
-    last_sent_at: new Date().toISOString(),
     last_error_at: null,
     last_error_message: null
   };
 
-  if (typeof opts?.reminderSentFor !== "undefined") {
-    update.last_morning_reminder_sent_for = opts.reminderSentFor;
+  if (opts?.recordSentAt !== false) {
+    update.last_sent_at = new Date().toISOString();
   }
 
   const { error } = await supabase
