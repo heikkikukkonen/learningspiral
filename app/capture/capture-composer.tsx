@@ -153,14 +153,18 @@ function sharedImportErrorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : "";
 
   if (/not found/i.test(message)) {
-    return "Jaetun kuvan luonnosta ei loytynyt. Jaa kuva uudelleen tai valitse kuva manuaalisesti.";
+    return "Jaetun sisallon luonnosta ei loytynyt. Jaa sisalto uudelleen tai lisaa se manuaalisesti.";
   }
 
   if (/unauthorized/i.test(message)) {
-    return "Kirjaudu sisaan ja yrita jakaa kuva uudelleen.";
+    return "Kirjaudu sisaan ja yrita jakaa sisalto uudelleen.";
   }
 
-  return message || "Jaetun kuvan avaaminen epaonnistui.";
+  return message || "Jaetun sisallon avaaminen epaonnistui.";
+}
+
+function buildSharedTextDraft(sharedContext: SharedImageCaptureContext | null | undefined): string {
+  return sharedContext?.sharedText || sharedContext?.sharedUrl || sharedContext?.sharedTitle || "";
 }
 
 export function CaptureComposer({
@@ -186,7 +190,7 @@ export function CaptureComposer({
   const [titleValue, setTitleValue] = useState("");
   const [rawInputValue, setRawInputValue] = useState("");
   const [asset, setAsset] = useState<AssetPayload | null>(null);
-  const [sharedImageContext, setSharedImageContext] = useState<SharedImageCaptureContext | null>(null);
+  const [sharedCaptureContext, setSharedCaptureContext] = useState<SharedImageCaptureContext | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [textSaveStage, setTextSaveStage] = useState<TextSaveStage>("idle");
@@ -218,11 +222,12 @@ export function CaptureComposer({
 
     let cancelled = false;
 
-    async function loadSharedImageImport() {
-      setMode("image");
+    async function loadSharedImport() {
       setIsImageDragActive(false);
       setIsAnalyzing(true);
       setError("");
+      setTextValue("");
+      setTitleValue("");
       setAsset(null);
       setRawInputValue("");
 
@@ -236,11 +241,25 @@ export function CaptureComposer({
         const sharedImport = await parseJson<SharedImageImportPayload>(response);
         if (cancelled) return;
 
-        const nextSharedImageContext = normalizeSharedImageCaptureContext({
+        const nextSharedCaptureContext = normalizeSharedImageCaptureContext({
           sharedTitle: sharedImport.sharedTitle,
           sharedText: sharedImport.sharedText,
           sharedUrl: sharedImport.sharedUrl
         });
+        if (sharedImport.fileSize <= 0 || !sharedImport.base64Data || /^text\//i.test(sharedImport.mimeType)) {
+          setSharedCaptureContext(nextSharedCaptureContext);
+          setMode("text");
+          setTextValue(buildSharedTextDraft(nextSharedCaptureContext));
+          setTitleValue(nextSharedCaptureContext?.sharedTitle ?? "");
+
+          void fetch(`/api/capture/shared-import/${encodeURIComponent(activeSharedImportId)}`, {
+            method: "DELETE"
+          }).catch(() => undefined);
+
+          router.replace("/capture?mode=text");
+          return;
+        }
+        setMode("image");
         const file = fileFromBase64(
           sharedImport.base64Data,
           sharedImport.fileName,
@@ -248,18 +267,18 @@ export function CaptureComposer({
         );
         const analysis = await requestImageAnalysis(
           file,
-          buildSharedImageUserContext(nextSharedImageContext)
+          buildSharedImageUserContext(nextSharedCaptureContext)
         );
         if (cancelled) return;
 
-        setSharedImageContext(nextSharedImageContext);
+        setSharedCaptureContext(nextSharedCaptureContext);
         setAsset(analysis.asset ?? null);
         setRawInputValue(
-          hasSharedImageCaptureContext(nextSharedImageContext)
-            ? buildSharedImageRawInput(nextSharedImageContext, analysis.rawInput)
+          hasSharedImageCaptureContext(nextSharedCaptureContext)
+            ? buildSharedImageRawInput(nextSharedCaptureContext, analysis.rawInput)
             : analysis.rawInput
         );
-        setTitleValue(inferImageCaptureTitle(file, analysis.rawInput, nextSharedImageContext));
+        setTitleValue(inferImageCaptureTitle(file, analysis.rawInput, nextSharedCaptureContext));
 
         void fetch(`/api/capture/shared-import/${encodeURIComponent(activeSharedImportId)}`, {
           method: "DELETE"
@@ -276,7 +295,7 @@ export function CaptureComposer({
       }
     }
 
-    void loadSharedImageImport();
+    void loadSharedImport();
 
     return () => {
       cancelled = true;
@@ -330,7 +349,7 @@ export function CaptureComposer({
     setTitleValue("");
     setRawInputValue("");
     setAsset(null);
-    setSharedImageContext(null);
+    setSharedCaptureContext(null);
     setTextSaveStage("idle");
     setError("");
     if (audioPreviewUrl) {
@@ -365,8 +384,8 @@ export function CaptureComposer({
         title: overrides?.title ?? titleValue,
         rawInput: overrides?.rawInput ?? rawInputValue,
         inputModality,
-        origin: overrides?.origin ?? (sharedImageContext ? "Shared from device" : undefined),
-        url: overrides?.url ?? sharedImageContext?.sharedUrl,
+        origin: overrides?.origin ?? (sharedCaptureContext ? "Shared from device" : undefined),
+        url: overrides?.url ?? sharedCaptureContext?.sharedUrl,
         asset: overrides?.asset ?? asset
       };
 
@@ -394,7 +413,7 @@ export function CaptureComposer({
 
   async function analyzeImage(file: File, contextOverride?: SharedImageCaptureContext | null) {
     const activeSharedImageContext =
-      contextOverride === undefined ? sharedImageContext : contextOverride;
+      contextOverride === undefined ? sharedCaptureContext : contextOverride;
 
     setIsImageDragActive(false);
     setIsAnalyzing(true);
@@ -411,7 +430,7 @@ export function CaptureComposer({
         ? buildSharedImageRawInput(activeSharedImageContext, json.rawInput)
         : json.rawInput;
 
-      setSharedImageContext(activeSharedImageContext ?? null);
+      setSharedCaptureContext(activeSharedImageContext ?? null);
       setAsset(json.asset ?? null);
       setRawInputValue(nextRawInput);
       setTitleValue(inferImageCaptureTitle(file, json.rawInput, activeSharedImageContext));

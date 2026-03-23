@@ -29,8 +29,8 @@ export default async function CapturePage({
         <article className="card">
           <p className="status" style={{ margin: 0 }}>
             {shareError === "missing-file"
-              ? "Jaettu kuva ei tullut mukaan. Kokeile jakaa kuva uudelleen tai valitse se manuaalisesti."
-              : "Jaetun kuvan tuonti epäonnistui. Voit silti jatkaa tavallisen image capture -flow'n kautta."}
+              ? "Jaettu sisalto ei tullut mukaan. Kokeile jakaa se uudelleen tai lisaa se manuaalisesti."
+              : "Jaetun sisallon tuonti epaonnistui. Voit silti jatkaa tavallisen capture-flow'n kautta."}
           </p>
         </article>
       ) : null}

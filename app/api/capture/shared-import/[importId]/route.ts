@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import {
-  deleteSharedImageImport,
-  getSharedImageImport
+  deleteSharedCaptureImport,
+  getSharedCaptureImport
 } from "@/lib/shared-capture-imports";
 
 function errorResponse(error: unknown) {
-  const message = error instanceof Error ? error.message : "Shared image import failed.";
+  const message = error instanceof Error ? error.message : "Shared capture import failed.";
   if (message === "Unauthorized") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -18,10 +18,10 @@ export async function GET(
   { params }: { params: { importId: string } }
 ) {
   try {
-    const sharedImport = await getSharedImageImport(params.importId);
+    const sharedImport = await getSharedCaptureImport(params.importId);
 
     if (!sharedImport) {
-      return NextResponse.json({ error: "Shared image import not found." }, { status: 404 });
+      return NextResponse.json({ error: "Shared capture import not found." }, { status: 404 });
     }
 
     return NextResponse.json(sharedImport);
@@ -35,7 +35,7 @@ export async function DELETE(
   { params }: { params: { importId: string } }
 ) {
   try {
-    await deleteSharedImageImport(params.importId);
+    await deleteSharedCaptureImport(params.importId);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     return errorResponse(error);

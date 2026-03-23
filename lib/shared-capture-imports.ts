@@ -7,7 +7,7 @@ import {
 
 const SHARED_CAPTURE_IMPORT_MAX_AGE_MS = 1000 * 60 * 60 * 24;
 
-export interface SharedImageImportRecord extends SharedImageCaptureContext {
+export interface SharedCaptureImportRecord extends SharedImageCaptureContext {
   id: string;
   fileName: string;
   mimeType: string;
@@ -20,7 +20,7 @@ function staleCutoffIso() {
   return new Date(Date.now() - SHARED_CAPTURE_IMPORT_MAX_AGE_MS).toISOString();
 }
 
-async function cleanupStaleSharedImageImports(userId: string) {
+async function cleanupStaleSharedCaptureImports(userId: string) {
   const supabase = getSupabaseAdmin();
   await supabase
     .from("shared_capture_imports")
@@ -29,10 +29,10 @@ async function cleanupStaleSharedImageImports(userId: string) {
     .lt("created_at", staleCutoffIso());
 }
 
-export async function createSharedImageImport(input: {
+export async function createSharedCaptureImport(input: {
   fileName: string;
   mimeType: string;
-  bytes: Uint8Array;
+  bytes?: Uint8Array;
   sharedTitle?: string;
   sharedText?: string;
   sharedUrl?: string;
@@ -45,7 +45,9 @@ export async function createSharedImageImport(input: {
     sharedUrl: input.sharedUrl
   });
 
-  await cleanupStaleSharedImageImports(userId);
+  await cleanupStaleSharedCaptureImports(userId);
+
+  const bytes = input.bytes ?? new Uint8Array();
 
   const { data, error } = await supabase
     .from("shared_capture_imports")
@@ -53,8 +55,8 @@ export async function createSharedImageImport(input: {
       user_id: userId,
       file_name: input.fileName,
       mime_type: input.mimeType,
-      file_size: input.bytes.byteLength,
-      base64_data: Buffer.from(input.bytes).toString("base64"),
+      file_size: bytes.byteLength,
+      base64_data: Buffer.from(bytes).toString("base64"),
       shared_title: context?.sharedTitle ?? null,
       shared_text: context?.sharedText ?? null,
       shared_url: context?.sharedUrl ?? null
@@ -66,7 +68,7 @@ export async function createSharedImageImport(input: {
   return data.id as string;
 }
 
-export async function getSharedImageImport(importId: string) {
+export async function getSharedCaptureImport(importId: string) {
   const supabase = getSupabaseAdmin();
   const userId = await requireUserId();
 
@@ -81,7 +83,7 @@ export async function getSharedImageImport(importId: string) {
   if (!data) return null;
 
   if (Date.parse(data.created_at) < Date.now() - SHARED_CAPTURE_IMPORT_MAX_AGE_MS) {
-    await deleteSharedImageImport(importId);
+    await deleteSharedCaptureImport(importId);
     return null;
   }
 
@@ -95,10 +97,10 @@ export async function getSharedImageImport(importId: string) {
     sharedText: (data.shared_text as string | null) ?? undefined,
     sharedUrl: (data.shared_url as string | null) ?? undefined,
     createdAt: data.created_at as string
-  } satisfies SharedImageImportRecord;
+  } satisfies SharedCaptureImportRecord;
 }
 
-export async function deleteSharedImageImport(importId: string) {
+export async function deleteSharedCaptureImport(importId: string) {
   const supabase = getSupabaseAdmin();
   const userId = await requireUserId();
 
@@ -110,3 +112,7 @@ export async function deleteSharedImageImport(importId: string) {
 
   if (error) throw error;
 }
+
+export const createSharedImageImport = createSharedCaptureImport;
+export const getSharedImageImport = getSharedCaptureImport;
+export const deleteSharedImageImport = deleteSharedCaptureImport;
