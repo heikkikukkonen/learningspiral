@@ -13,12 +13,13 @@ export interface UserSettings {
 
 export const DEFAULT_TASK_GENERATION_PROMPTS = {
   recall:
-    "Tee kysymyksesta mahdollisimman konkreettinen ja sellainen etta se testaa ajatuksen oleellisten osien muistamista ja jos kyseessa on sitaattimainen muotoilu jollekin ajatukselle, kysy muistatko sitaattia tai sen tekijaa",
-  apply: "Luo tehtava joka ohjaa keksimaan keinon, miten voisin soveltaa ajatusta kaytannossa",
+    "Luo muistamista vahvistava kertaustehtava, joka on mahdollisimman konkreettinen ja sellainen etta se testaa ajatuksen oleellisten osien muistamista ja jos kyseessa on sitaattimainen muotoilu jollekin ajatukselle, kysy muistatko sitaattia tai sen tekijaa",
+  apply:
+    "Luo soveltamistehtava joka ohjaa keksimaan keinon, miten voisin soveltaa ajatusta kaytannossa. Muotoile tehtava niin, etta kayttaja kuvittelee tai tunnistaa todellisen tilanteen. Tehtavan tulee rohkaista toimintaa, ei vain muistamista.",
   reflect:
-    "Luo tehtava joka ohjaa pohtimaan syvallisesti ajatuksen merkitysta minulle, miksi se on tarkea ja mita voin siita oppia",
+    "Luo reflektiotehtava joka ohjaa pohtimaan syvallisesti ajatuksen merkitysta minulle ja kasvattamaan itsetuntemusta, ymmarrysta tai uuden nakokulman syntya. Miksi se on tarkea ja mita voin siita oppia. Tehtava voi olla avoin, mutta sen tulisi olla selkea.",
   discuss:
-    "Luo tehtava joka kannustaa minua loytamaan jonkun ystavan tai asiantuntijan kenen kanssa voisin keskustella aiheesta syventaakseni ymmarrysta asista."
+    "Luo keskustelutehtava, joka ohjaa sosiaaliseen oppimiseen. joka kannustaa minua loytamaan ystavan, kollegan, mentorin tai asiantuntijan, jonka kanssa han voisi keskustella aiheesta ja syventaa ymmarrysta keskustelun kautta. Muotoile tehtava konkreettiseksi ja helposti toteutettavaksi. Anna myos esimerkkikeskustelun avaus tai malliehdotus siita, miten asian voisi ottaa puheeksi."
 } as const;
 
 export const DEFAULT_USER_SETTINGS: UserSettings = {
