@@ -191,6 +191,7 @@ export default async function SettingsPage({
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
                 Kirjoita haluamasi ohjeistus tehtävän luontiin eri tyyppisille tehtäville.
                 Nämä ohjeet ohjaavat neljää pikaluontipainiketta ajatuksen muokkaussivulla.
+                Tyhjennä ohjeteksti niin saat palautettua oletusohjeen käyttöön tehtävän luonnille.
               </p>
             </div>
             <div className="settings-task-guidance" aria-label="Tehtavatyyppien tarkoitukset">
