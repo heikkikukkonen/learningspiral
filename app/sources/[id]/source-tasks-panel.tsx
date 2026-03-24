@@ -7,7 +7,13 @@ import {
   generateCardAction,
   saveSourceDraftAction
 } from "@/app/sources/actions";
-import { CardType, QUICK_TASK_GUIDANCE, QUICK_TASK_TYPES, cardTypeLabel } from "@/lib/types";
+import {
+  CardType,
+  QUICK_TASK_GUIDANCE,
+  QUICK_TASK_TYPES,
+  cardTypeLabel,
+  cardTypeSupportText
+} from "@/lib/types";
 
 type CardDetails = {
   id: string;
@@ -145,73 +151,80 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
           </div>
         ) : null}
 
-        {cards.map((card, index) => (
-          <article className="card" key={card.id}>
-            <div className="source-task-card-topbar">
-              <div className="source-meta">
-                <span className="pill" data-variant="primary">
-                  {cardTypeLabel(card.card_type)}
-                </span>
+        {cards.map((card, index) => {
+          const supportText = cardTypeSupportText(card.card_type);
+
+          return (
+            <article className="card" key={card.id}>
+              <div className="source-task-card-topbar">
+                <div className="source-meta">
+                  <span className="pill" data-variant="primary">
+                    {cardTypeLabel(card.card_type)}
+                  </span>
+                  {supportText ? (
+                    <span className="source-task-type-note">{supportText}</span>
+                  ) : null}
+                </div>
+
+                <button
+                  type="button"
+                  className="source-task-delete-button"
+                  aria-label="Poista tehtava"
+                  disabled={isPending}
+                  onClick={() => handleDeleteCard(card.id)}
+                >
+                  x
+                </button>
               </div>
 
-              <button
-                type="button"
-                className="source-task-delete-button"
-                aria-label="Poista tehtava"
-                disabled={isPending}
-                onClick={() => handleDeleteCard(card.id)}
-              >
-                x
-              </button>
-            </div>
-
-            <div className="form" style={{ marginTop: "0.7rem" }}>
-              <input
-                form="source-editor-form"
-                type="hidden"
-                name={`cards[${index}].cardId`}
-                value={card.id}
-              />
-              <label className="form-row">
-                <span>Kysymys</span>
+              <div className="form" style={{ marginTop: "0.7rem" }}>
                 <input
                   form="source-editor-form"
-                  name={`cards[${index}].prompt`}
-                  defaultValue={card.prompt}
-                  required
+                  type="hidden"
+                  name={`cards[${index}].cardId`}
+                  value={card.id}
                 />
-              </label>
-              <label className="form-row">
-                <span>Vastaus</span>
-                <textarea
-                  form="source-editor-form"
-                  name={`cards[${index}].answer`}
-                  defaultValue={card.answer}
-                  required
-                />
-              </label>
-              <label className="form-row">
-                <span>Tyyppi</span>
-                <select
-                  form="source-editor-form"
-                  name={`cards[${index}].cardType`}
-                  defaultValue={card.card_type}
-                >
-                  <option value="recall">Kertaustehtava</option>
-                  <option value="apply">Soveltamistehtava</option>
-                  <option value="reflect">Reflektiotehtava</option>
-                  <option value="discuss">Keskustelutehtava</option>
-                  <option value="custom">Oma tehtava</option>
-                  <option value="decision">Paatostehtava</option>
-                </select>
-              </label>
-            </div>
+                <label className="form-row">
+                  <span>Kysymys</span>
+                  <input
+                    form="source-editor-form"
+                    name={`cards[${index}].prompt`}
+                    defaultValue={card.prompt}
+                    required
+                  />
+                </label>
+                <label className="form-row">
+                  <span>Vastaus</span>
+                  <textarea
+                    form="source-editor-form"
+                    name={`cards[${index}].answer`}
+                    defaultValue={card.answer}
+                    required
+                  />
+                </label>
+                <label className="form-row">
+                  <span>Tyyppi</span>
+                  <select
+                    form="source-editor-form"
+                    name={`cards[${index}].cardType`}
+                    defaultValue={card.card_type}
+                  >
+                    <option value="recall">Kertaustehtava</option>
+                    <option value="apply">Soveltamistehtava</option>
+                    <option value="reflect">Reflektiotehtava</option>
+                    <option value="discuss">Keskustelutehtava</option>
+                    <option value="custom">Oma tehtava</option>
+                    <option value="decision">Paatostehtava</option>
+                  </select>
+                </label>
+              </div>
 
-            {pendingAction === `delete:${card.id}` ? (
-              <p className="status source-task-delete-status">Poistetaan tehtavaa...</p>
-            ) : null}
-          </article>
-        ))}
+              {pendingAction === `delete:${card.id}` ? (
+                <p className="status source-task-delete-status">Poistetaan tehtavaa...</p>
+              ) : null}
+            </article>
+          );
+        })}
       </div>
 
       {errorMessage ? (

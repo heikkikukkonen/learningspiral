@@ -21,6 +21,7 @@ type QuickTaskGuidance = {
   buttonLabel?: string;
   tooltip: string;
   summary: string;
+  cardSupportText: string;
 };
 
 export const QUICK_TASK_TYPES: QuickTaskCardType[] = ["recall", "apply", "reflect", "discuss"];
@@ -29,22 +30,26 @@ export const QUICK_TASK_GUIDANCE: Record<QuickTaskCardType, QuickTaskGuidance> =
   recall: {
     label: "Kertaustehtava",
     tooltip: "Ohjaa muistamista ja palauttaa ydinajatuksen mieleen ilman, etta vain luet sen uudestaan.",
-    summary: "Ohjaa muistamista ja vahvistaa muistijalkea."
+    summary: "Ohjaa muistamista ja vahvistaa muistijalkea.",
+    cardSupportText: "auttaa muistamaan ydinasian"
   },
   apply: {
     label: "Soveltamistehtava",
     tooltip: "Ohjaa kayttoon ja auttaa loytamaan tilanteen, jossa voit soveltaa ideaa kaytannossa.",
-    summary: "Ohjaa kayttoon ja siirtaa idean teoriasta kaytantoon."
+    summary: "Ohjaa kayttoon ja siirtaa idean teoriasta kaytantoon.",
+    cardSupportText: "auttaa viemaan idean kaytantoon"
   },
   reflect: {
     label: "Reflektiotehtava",
     tooltip: "Ohjaa syvempaan ymmarrykseen ja auttaa pohtimaan, mita ajatus merkitsee sinulle.",
-    summary: "Ohjaa syvempaan ymmarrykseen ja auttaa rakentamaan merkitysta."
+    summary: "Ohjaa syvempaan ymmarrykseen ja auttaa rakentamaan merkitysta.",
+    cardSupportText: "auttaa syventamaan omaa ymmarrysta"
   },
   discuss: {
     label: "Keskustelutehtava",
     tooltip: "Ohjaa sosiaaliseen oppimiseen ja kannustaa syventamaan ymmarrysta keskustelun kautta.",
-    summary: "Ohjaa sosiaaliseen oppimiseen ja tuo uusia nakokulmia."
+    summary: "Ohjaa sosiaaliseen oppimiseen ja tuo uusia nakokulmia.",
+    cardSupportText: "auttaa saamaan uusia nakokulmia"
   }
 };
 
@@ -103,4 +108,12 @@ export function cardTypeLabel(cardType: CardType): string {
   if (cardType === "discuss") return "Keskustelutehtava";
   if (cardType === "custom") return "Oma tehtava";
   return "Paatostehtava";
+}
+
+export function cardTypeSupportText(cardType: CardType): string | null {
+  if (cardType === "recall" || cardType === "apply" || cardType === "reflect" || cardType === "discuss") {
+    return QUICK_TASK_GUIDANCE[cardType].cardSupportText;
+  }
+
+  return null;
 }
