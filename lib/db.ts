@@ -15,7 +15,12 @@ import {
   transcribeCaptureAudio
 } from "@/lib/llm";
 import { dedupeTags, normalizeCaptureSummary, normalizeTagValue } from "@/lib/source-editor";
-import { DEFAULT_USER_SETTINGS, sanitizeUserSettings, UserSettings } from "@/lib/user-settings";
+import {
+  DEFAULT_TASK_GENERATION_PROMPTS,
+  DEFAULT_USER_SETTINGS,
+  sanitizeUserSettings,
+  UserSettings
+} from "@/lib/user-settings";
 import { requireUserId } from "@/lib/auth";
 import type { TagSuggestion } from "@/lib/types";
 
@@ -358,16 +363,16 @@ function joinInstructions(...values: Array<string | null | undefined>) {
 
 function getTaskTypeInstruction(settings: UserSettings, cardType: CardType) {
   if (cardType === "recall") {
-    return settings.recallCardGenerationPrompt;
+    return settings.recallCardGenerationPrompt || DEFAULT_TASK_GENERATION_PROMPTS.recall;
   }
   if (cardType === "apply") {
-    return settings.applyCardGenerationPrompt;
+    return settings.applyCardGenerationPrompt || DEFAULT_TASK_GENERATION_PROMPTS.apply;
   }
   if (cardType === "reflect") {
-    return settings.reflectCardGenerationPrompt;
+    return settings.reflectCardGenerationPrompt || DEFAULT_TASK_GENERATION_PROMPTS.reflect;
   }
   if (cardType === "discuss") {
-    return settings.discussCardGenerationPrompt;
+    return settings.discussCardGenerationPrompt || DEFAULT_TASK_GENERATION_PROMPTS.discuss;
   }
   return "";
 }

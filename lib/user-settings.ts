@@ -11,6 +11,16 @@ export interface UserSettings {
   tagGenerationPrompt: string;
 }
 
+export const DEFAULT_TASK_GENERATION_PROMPTS = {
+  recall:
+    "Tee kysymyksesta mahdollisimman konkreettinen ja sellainen etta se testaa ajatuksen oleellisten osien muistamista ja jos kyseessa on sitaattimainen muotoilu jollekin ajatukselle, kysy muistatko sitaattia tai sen tekijaa",
+  apply: "Luo tehtava joka ohjaa keksimaan keinon, miten voisin soveltaa ajatusta kaytannossa",
+  reflect:
+    "Luo tehtava joka ohjaa pohtimaan syvallisesti ajatuksen merkitysta minulle, miksi se on tarkea ja mita voin siita oppia",
+  discuss:
+    "Luo tehtava joka kannustaa minua loytamaan jonkun ystavan tai asiantuntijan kenen kanssa voisin keskustella aiheesta syventaakseni ymmarrysta asista."
+} as const;
+
 export const DEFAULT_USER_SETTINGS: UserSettings = {
   responseLanguage: "Finnish",
   analysisPromptRefresh: "",
@@ -20,8 +30,7 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   recallCardGenerationPrompt: "",
   applyCardGenerationPrompt: "",
   reflectCardGenerationPrompt: "",
-  discussCardGenerationPrompt:
-    "Luo tehtava joka kannustaa minua loytamaan jonkun ystavan tai asiantuntijan kenen kanssa voisin keskustella aiheesta syventaakseni ymmarrysta asiasta.",
+  discussCardGenerationPrompt: "",
   tagGenerationPrompt: ""
 };
 
@@ -39,10 +48,7 @@ export function sanitizeUserSettings(input: Partial<UserSettings> | null | undef
     recallCardGenerationPrompt: clamp(input?.recallCardGenerationPrompt || "", 1200),
     applyCardGenerationPrompt: clamp(input?.applyCardGenerationPrompt || "", 1200),
     reflectCardGenerationPrompt: clamp(input?.reflectCardGenerationPrompt || "", 1200),
-    discussCardGenerationPrompt: clamp(
-      input?.discussCardGenerationPrompt || DEFAULT_USER_SETTINGS.discussCardGenerationPrompt,
-      1200
-    ),
+    discussCardGenerationPrompt: clamp(input?.discussCardGenerationPrompt || "", 1200),
     tagGenerationPrompt: clamp(input?.tagGenerationPrompt || "", 1200)
   };
 }

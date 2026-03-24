@@ -2,6 +2,7 @@ import { SubmitButton } from "@/app/components/submit-button";
 import { getCurrentUser, getCurrentUserProfile } from "@/lib/auth";
 import { getUserNotificationSettings, getUserSettings, listPushSubscriptions } from "@/lib/db";
 import { getPushPublicKey, isPushConfigured } from "@/lib/push";
+import { DEFAULT_TASK_GENERATION_PROMPTS } from "@/lib/user-settings";
 import { signOutAction } from "@/app/login/actions";
 import { saveUserSettingsAction } from "./actions";
 import { NotificationSettings } from "./notification-settings";
@@ -197,7 +198,7 @@ export default async function SettingsPage({
                 <textarea
                   name="recallCardGenerationPrompt"
                   defaultValue={settings.recallCardGenerationPrompt}
-                  placeholder="Esim. tee tehtävästä ytimekäs ja auta muistamaan ajatuksen olennaisin kohta."
+                  placeholder={DEFAULT_TASK_GENERATION_PROMPTS.recall}
                 />
               </label>
 
@@ -206,7 +207,7 @@ export default async function SettingsPage({
                 <textarea
                   name="applyCardGenerationPrompt"
                   defaultValue={settings.applyCardGenerationPrompt}
-                  placeholder="Esim. ohjaa tehtävä soveltamaan ajatusta seuraavassa oikeassa tilanteessa."
+                  placeholder={DEFAULT_TASK_GENERATION_PROMPTS.apply}
                 />
               </label>
 
@@ -215,7 +216,7 @@ export default async function SettingsPage({
                 <textarea
                   name="reflectCardGenerationPrompt"
                   defaultValue={settings.reflectCardGenerationPrompt}
-                  placeholder="Esim. auta tehtävää pysähtymään oman ajattelun, oletusten tai tunteiden äärelle."
+                  placeholder={DEFAULT_TASK_GENERATION_PROMPTS.reflect}
                 />
               </label>
 
@@ -224,7 +225,7 @@ export default async function SettingsPage({
                 <textarea
                   name="discussCardGenerationPrompt"
                   defaultValue={settings.discussCardGenerationPrompt}
-                  placeholder="Luo tehtävä joka kannustaa minua löytämään jonkun ystävän tai asiantuntijan kenen kanssa voisin keskustella aiheesta syventääkseni ymmärrystä asiasta."
+                  placeholder={DEFAULT_TASK_GENERATION_PROMPTS.discuss}
                 />
               </label>
             </div>
