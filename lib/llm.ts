@@ -8,7 +8,11 @@ import {
   selectRelevantExistingTags,
   suggestSourceTags
 } from "@/lib/source-editor";
-import { buildLanguageInstruction, UserSettings } from "@/lib/user-settings";
+import {
+  DEFAULT_TAG_GENERATION_PROMPT,
+  buildLanguageInstruction,
+  UserSettings
+} from "@/lib/user-settings";
 
 interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -654,7 +658,7 @@ export async function generateSourceTags(input: {
     "When an existing tag fits semantically, return that exact existing spelling instead of inventing a new synonym.",
     "Avoid duplicate or near-duplicate synonyms.",
     "Use only information found in the title and idea."
-  ], input.settings?.tagGenerationPrompt).join("\n");
+  ], input.settings?.tagGenerationPrompt || DEFAULT_TAG_GENERATION_PROMPT).join("\n");
 
   const reply = await callResponsesApi([
     { role: "system", content: systemPrompt },

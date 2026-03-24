@@ -3,7 +3,7 @@ import { getCurrentUser, getCurrentUserProfile } from "@/lib/auth";
 import { getUserNotificationSettings, getUserSettings, listPushSubscriptions } from "@/lib/db";
 import { getPushPublicKey, isPushConfigured } from "@/lib/push";
 import { QUICK_TASK_GUIDANCE, QUICK_TASK_TYPES } from "@/lib/types";
-import { DEFAULT_TASK_GENERATION_PROMPTS } from "@/lib/user-settings";
+import { DEFAULT_TAG_GENERATION_PROMPT, DEFAULT_TASK_GENERATION_PROMPTS } from "@/lib/user-settings";
 import { signOutAction } from "@/app/login/actions";
 import { saveUserSettingsAction } from "./actions";
 import { NotificationSettings } from "./notification-settings";
@@ -142,7 +142,7 @@ export default async function SettingsPage({
               <textarea
                 name="tagGenerationPrompt"
                 defaultValue={settings.tagGenerationPrompt}
-                placeholder="Esim. 3–6 selkeää, toisistaan erottuvaa tunnistetta, jotka kuvaavat ajatuksen ydintä."
+                placeholder={DEFAULT_TAG_GENERATION_PROMPT}
               />
             </label>
           </div>

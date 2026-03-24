@@ -11,6 +11,9 @@ export interface UserSettings {
   tagGenerationPrompt: string;
 }
 
+export const DEFAULT_TAG_GENERATION_PROMPT =
+  "Luo 3-6 selkeaa tunnistetta, jotka kuvaavat ajatuksen ydinta selkeasti. Jos ajatus sisaltaa erisnimia tai esimerkiksi kirjan nimia tai tiettyja avainkasitteita, luo niista tunnisteet.";
+
 export const DEFAULT_TASK_GENERATION_PROMPTS = {
   recall:
     "Luo muistamista vahvistava kertaustehtava, joka on mahdollisimman konkreettinen ja sellainen etta se testaa ajatuksen oleellisten osien muistamista ja jos kyseessa on sitaattimainen muotoilu jollekin ajatukselle, kysy muistatko sitaattia tai sen tekijaa",
