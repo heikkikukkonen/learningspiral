@@ -987,34 +987,7 @@ button.danger {
 
 .source-task-stack {
   display: grid;
-  gap: 1rem;
-}
-
-.source-task-section {
-  display: grid;
   gap: 0.75rem;
-}
-
-.source-task-section + .source-task-section {
-  padding-top: 0.9rem;
-  border-top: 1px solid rgba(223, 228, 236, 0.95);
-}
-
-.source-task-section-copy {
-  display: grid;
-  gap: 0.3rem;
-}
-
-.source-task-section-copy h3 {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.source-task-section-copy p {
-  margin: 0;
-  max-width: 64ch;
-  color: var(--muted);
-  line-height: 1.55;
 }
 
 .source-task-toolbar {
@@ -1040,6 +1013,10 @@ button.danger {
 .source-task-custom input {
   width: clamp(14rem, 20vw, 19rem);
   min-width: 14rem;
+}
+
+.source-task-hint {
+  margin: 0;
 }
 
 .source-task-card-topbar {

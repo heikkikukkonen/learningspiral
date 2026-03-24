@@ -202,10 +202,7 @@ export default async function SourceDetailsPage({
         <div className="source-origin-header">
           <div className="page-header source-task-card-header">
             <h2>Luo tehtavat</h2>
-            <p className="muted">
-              Tehtava auttaa palaamaan ajatukseen myohemmin. Luo haluamasi tehtavat palataksesi
-              ajatukseen myohemmin.
-            </p>
+            <p className="muted">Luo haluamasi tehtavat palataksesi ajatukseen myohemmin.</p>
           </div>
         </div>
         <SourceTasksPanel sourceId={source.id} cards={cards} />
