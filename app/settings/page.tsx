@@ -189,7 +189,7 @@ export default async function SettingsPage({
               <h3 style={{ margin: 0 }}>Tehtävät</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
                 Kirjoita haluamasi ohjeistus tehtävän luontiin eri tyyppisille tehtäville.
-                Nämä ohjeet ohjaavat lähdesivun neljää pikaluontipainiketta.
+                Nämä ohjeet ohjaavat neljää pikaluontipainiketta ajatuksen muokkaussivulla.
               </p>
             </div>
             <div className="grid settings-grid">
