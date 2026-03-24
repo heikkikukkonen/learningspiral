@@ -43,7 +43,6 @@ export const QUICK_TASK_GUIDANCE: Record<QuickTaskCardType, QuickTaskGuidance> =
   },
   discuss: {
     label: "Keskustelutehtava",
-    buttonLabel: "Keskustelutehtava ystavan kanssa",
     tooltip: "Ohjaa sosiaaliseen oppimiseen ja kannustaa syventamaan ymmarrysta keskustelun kautta.",
     summary: "Ohjaa sosiaaliseen oppimiseen ja tuo uusia nakokulmia."
   }
