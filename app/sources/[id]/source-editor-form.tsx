@@ -38,9 +38,7 @@ export function SourceEditorForm({
   const [tags, setTags] = useState(() => dedupeTags(initialTags));
   const [tagInput, setTagInput] = useState("");
   const [customInstruction, setCustomInstruction] = useState("");
-  const [aiNote, setAiNote] = useState(
-    "Valitse valmis toiminto tai kirjoita oma suunta, niin ehdotan tekstia nykyisen otsikon, ajatuksen ja alkuperaisen tallenteen pohjalta."
-  );
+  const [aiNote, setAiNote] = useState("");
   const [tagNote, setTagNote] = useState("");
   const [activeMode, setActiveMode] = useState<AnalysisModeOrCustom | null>(null);
   const [isRefining, setIsRefining] = useState(false);
@@ -121,7 +119,7 @@ export function SourceEditorForm({
   function handleAiAction(mode: AnalysisModeOrCustom) {
     const nextCustomInstruction = customInstruction.trim();
     if (mode === "custom" && !nextCustomInstruction) {
-      setAiNote("Kirjoita oma ohje syventamista varten ennen kuin painat Lisaa.");
+      setAiNote("Kirjoita oma pyyntosi ennen kuin painat Syvenna.");
       return;
     }
 
@@ -144,14 +142,14 @@ export function SourceEditorForm({
         setAnalysis(result.analysis);
         setAiNote(
           result.model
-            ? `Paivitin "Syvenna aihetta" -tekstin toiminnolla "${result.modeLabel}". Muista tallentaa muutokset, jos haluat sailyttaa ne.`
-            : `"Syvenna aihetta" -teksti paivittyi toiminnolla "${result.modeLabel}". Muista tallentaa muutokset.`
+            ? `Paivitin "Syvenna nakokulmaa" -tekstin toiminnolla "${result.modeLabel}". Muista tallentaa muutokset, jos haluat sailyttaa ne.`
+            : `"Syvenna nakokulmaa" -teksti paivittyi toiminnolla "${result.modeLabel}". Muista tallentaa muutokset.`
         );
         if (mode === "custom") {
           setCustomInstruction("");
         }
       } catch (error) {
-        setAiNote(error instanceof Error ? error.message : '"Syvenna aihetta" -tekstin paivitys epaonnistui.');
+        setAiNote(error instanceof Error ? error.message : '"Syvenna nakokulmaa" -tekstin paivitys epaonnistui.');
       } finally {
         setActiveMode(null);
         setIsRefining(false);
@@ -312,55 +310,49 @@ export function SourceEditorForm({
 
         <div className="form-row source-edit-field source-analysis-shell">
           <div className="source-analysis-header">
-            <span>Syvenna aihetta</span>
+            <span>Syvenna nakokulmaa</span>
             <p className="status" style={{ margin: 0 }}>
-              Valitse valmis toiminto tai anna oma suunta. Nykyinen otsikko, ajatus ja alkuperainen
-              tallenne toimivat pohjana.
+              Valitse valmis toiminto tai anna oma suunta. Voit muokata toimintojen ohjeistusta
+              Asetukset-sivulla.
             </p>
           </div>
 
-          <div className="source-analysis-actions" role="group" aria-label="Syvenna aihetta">
+          <div className="source-analysis-actions" role="group" aria-label="Syvenna nakokulmaa">
             {ANALYSIS_ACTIONS.map((action) => (
               <button
                 key={action.id}
-                className="secondary source-analysis-action"
+                className="secondary source-task-create-button source-analysis-action"
                 disabled={isRefining}
                 onClick={() => handleAiAction(action.id)}
                 type="button"
+                title={action.summary}
               >
-                <span className="source-analysis-action-title">
-                  {isRefining && activeMode === action.id ? "Kasitellaan..." : action.label}
-                </span>
-                <span className="source-analysis-action-helper">{action.summary}</span>
+                {isRefining && activeMode === action.id ? "Kasitellaan..." : action.label}
               </button>
             ))}
           </div>
 
           <div className="source-analysis-custom">
-            <label className="form-row source-analysis-custom-field">
-              <span>Vapaamuotoinen syvennys</span>
-              <span className="source-analysis-custom-hint">
-                Kirjoita oma pyyntosi, jos haluat ohjata syvennysta tarkemmin.
-              </span>
+            <div className="source-analysis-custom-field">
               <textarea
                 value={customInstruction}
                 onChange={(event) => setCustomInstruction(event.target.value)}
-                placeholder="Esim. tarkastele ajatusta opetuksen, liiketoiminnan tai etiikan nakokulmasta."
+                placeholder="Kirjoita oma pyyntosi, jos haluat ohjata syvennysta tarkemmin."
                 rows={3}
                 disabled={isRefining}
               />
-            </label>
+            </div>
             <button
               type="button"
-              className="secondary source-analysis-custom-button"
+              className="secondary source-task-create-button source-analysis-custom-button"
               disabled={isRefining}
               onClick={() => handleAiAction("custom")}
             >
-              {isRefining && activeMode === "custom" ? "Kasitellaan..." : "Lisaa"}
+              {isRefining && activeMode === "custom" ? "Kasitellaan..." : "Syvenna"}
             </button>
           </div>
 
-          <p className="status source-analysis-note">{aiNote}</p>
+          {aiNote ? <p className="status source-analysis-note">{aiNote}</p> : null}
 
           <textarea
             name="analysis"

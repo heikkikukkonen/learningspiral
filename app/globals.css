@@ -815,34 +815,14 @@ button.danger {
 }
 
 .source-analysis-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.65rem;
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .source-analysis-action {
-  display: grid;
-  gap: 0.35rem;
-  align-items: start;
-  justify-items: start;
-  min-height: 5.25rem;
-  padding: 0.95rem 1rem;
-  text-align: left;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(205, 216, 229, 0.95) !important;
-}
-
-.source-analysis-action-title {
-  font-size: 0.98rem;
-  font-weight: 700;
-  color: #234053;
-}
-
-.source-analysis-action-helper {
-  font-size: 0.86rem;
-  line-height: 1.45;
-  color: var(--muted);
+  min-width: 13.5rem;
 }
 
 .source-analysis-custom {
@@ -861,17 +841,12 @@ button.danger {
 }
 
 .source-analysis-custom-field textarea {
+  width: 100%;
   min-height: 104px;
 }
 
-.source-analysis-custom-hint {
-  font-size: 0.88rem;
-  line-height: 1.45;
-  color: var(--muted);
-}
-
 .source-analysis-custom-button {
-  min-width: 7rem;
+  min-width: 13.5rem;
 }
 
 .source-analysis-note {
@@ -3128,7 +3103,7 @@ button.danger {
   }
 
   .source-analysis-actions {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 
   .settings-grid {
