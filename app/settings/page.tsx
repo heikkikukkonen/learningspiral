@@ -2,6 +2,7 @@ import { SubmitButton } from "@/app/components/submit-button";
 import { getCurrentUser, getCurrentUserProfile } from "@/lib/auth";
 import { getUserNotificationSettings, getUserSettings, listPushSubscriptions } from "@/lib/db";
 import { getPushPublicKey, isPushConfigured } from "@/lib/push";
+import { QUICK_TASK_GUIDANCE, QUICK_TASK_TYPES } from "@/lib/types";
 import { DEFAULT_TASK_GENERATION_PROMPTS } from "@/lib/user-settings";
 import { signOutAction } from "@/app/login/actions";
 import { saveUserSettingsAction } from "./actions";
@@ -192,6 +193,14 @@ export default async function SettingsPage({
                 Nämä ohjeet ohjaavat neljää pikaluontipainiketta ajatuksen muokkaussivulla.
               </p>
             </div>
+            <div className="settings-task-guidance" aria-label="Tehtavatyyppien tarkoitukset">
+              {QUICK_TASK_TYPES.map((taskType) => (
+                <div className="settings-task-guidance-item" key={taskType} title={QUICK_TASK_GUIDANCE[taskType].tooltip}>
+                  <strong>{QUICK_TASK_GUIDANCE[taskType].label}</strong>
+                  <span>{QUICK_TASK_GUIDANCE[taskType].summary}</span>
+                </div>
+              ))}
+            </div>
             <div className="grid settings-grid">
               <label className="form-row">
                 <span>Kertaustehtävä</span>
@@ -293,6 +302,33 @@ export default async function SettingsPage({
         .settings-form-actions {
           justify-content: flex-end;
           margin-top: 0.25rem;
+        }
+
+        .settings-task-guidance {
+          display: grid;
+          gap: 0.6rem;
+          margin: 0 0 1rem;
+        }
+
+        .settings-task-guidance-item {
+          display: grid;
+          gap: 0.15rem;
+          padding: 0.85rem 1rem;
+          border-radius: 1rem;
+          border: 1px solid var(--border);
+          background: color-mix(in srgb, var(--surface) 90%, white 10%);
+        }
+
+        .settings-task-guidance-item strong {
+          font-size: 0.95rem;
+          line-height: 1.2;
+          color: var(--text);
+        }
+
+        .settings-task-guidance-item span {
+          font-size: 0.9rem;
+          line-height: 1.45;
+          color: var(--muted);
         }
 
         @media (max-width: 760px) {

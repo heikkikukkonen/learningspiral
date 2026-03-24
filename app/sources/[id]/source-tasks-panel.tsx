@@ -7,7 +7,7 @@ import {
   generateCardAction,
   saveSourceDraftAction
 } from "@/app/sources/actions";
-import { CardType, cardTypeLabel } from "@/lib/types";
+import { CardType, QUICK_TASK_GUIDANCE, QUICK_TASK_TYPES, cardTypeLabel } from "@/lib/types";
 
 type CardDetails = {
   id: string;
@@ -21,12 +21,13 @@ type Props = {
   cards: CardDetails[];
 };
 
-const presetTaskButtons: Array<{ value: CardType; label: string }> = [
-  { value: "recall", label: "Kertaustehtava" },
-  { value: "apply", label: "Soveltamistehtava" },
-  { value: "reflect", label: "Reflektiotehtava" },
-  { value: "discuss", label: "Keskustelutehtava ystavan kanssa" }
-];
+const presetTaskButtons: Array<{ value: CardType; label: string; tooltip: string }> = QUICK_TASK_TYPES.map(
+  (value) => ({
+    value,
+    label: QUICK_TASK_GUIDANCE[value].buttonLabel || QUICK_TASK_GUIDANCE[value].label,
+    tooltip: QUICK_TASK_GUIDANCE[value].tooltip
+  })
+);
 
 export function SourceTasksPanel({ sourceId, cards }: Props) {
   const router = useRouter();
@@ -110,6 +111,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
             type="button"
             className="secondary source-task-create-button"
             disabled={isPending}
+            title={task.tooltip}
             onClick={() => handleGenerateTask(task.value)}
           >
             {pendingAction === `generate:${task.value}` ? "Luodaan..." : task.label}
