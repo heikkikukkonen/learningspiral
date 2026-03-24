@@ -319,7 +319,6 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
           <p className="review-card-counter" style={{ marginBottom: "0.35rem" }}>
             {totalCount === 0 ? 0 : totalCount} / {totalCount}
           </p>
-          <h2 className="review-card-title">Jono on tasta eraa tyhja</h2>
           <p className="muted" style={{ marginBottom: 0 }}>
             Ei uusia tehtavia juuri nyt. Voit tallentaa uusia ajatuksia tai syventaa olemassa
             olevia ajatuksia.
