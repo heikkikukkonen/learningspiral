@@ -116,8 +116,10 @@ export default async function SourceDetailsPage({
       <div className="page-header source-workspace-header">
         <h1>Syvenny ajatukseen</h1>
         <p className="muted">
-          Muokkaa ajatuksesta selkea otsikko, ajatus, &quot;Syvenna nakokulmaa&quot; -teksti ja tunnisteet ennen tehtavien luontia.
-          {" "}Voit myos vain tallentaa tiedot ja syventaa ajatusta myohemmin.
+          Muokkaa ajatukselle selkea otsikko ja ajatus. Lisaa tunnisteet, jotta autat ajatuksia
+          loytamaan toisensa ja muodostamaan yhteyksia. Syvenna nakokulmaa tarvittaessa. Lopuksi luo
+          haluamasi tehtavat palataksesi ajatukseen myohemmin. Voit myos vain tallentaa tiedot ja
+          syventaa ajatusta myohemmin.
         </p>
       </div>
 
