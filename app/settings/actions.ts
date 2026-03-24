@@ -33,6 +33,7 @@ export async function saveUserSettingsAction(formData: FormData) {
     analysisPromptRefresh: asString(formData.get("analysisPromptRefresh")),
     analysisPromptDeepen: asString(formData.get("analysisPromptDeepen")),
     analysisPromptSummarize: asString(formData.get("analysisPromptSummarize")),
+    analysisPromptNetwork: asString(formData.get("analysisPromptNetwork")),
     cardGenerationPrompt: asString(formData.get("cardGenerationPrompt")),
     recallCardGenerationPrompt: asString(formData.get("recallCardGenerationPrompt")),
     applyCardGenerationPrompt: asString(formData.get("applyCardGenerationPrompt")),

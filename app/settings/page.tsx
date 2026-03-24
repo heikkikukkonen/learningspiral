@@ -1,10 +1,15 @@
 import { SubmitButton } from "@/app/components/submit-button";
+import { signOutAction } from "@/app/login/actions";
+import { ANALYSIS_ACTIONS } from "@/lib/analysis-actions";
 import { getCurrentUser, getCurrentUserProfile } from "@/lib/auth";
 import { getUserNotificationSettings, getUserSettings, listPushSubscriptions } from "@/lib/db";
 import { getPushPublicKey, isPushConfigured } from "@/lib/push";
 import { QUICK_TASK_GUIDANCE } from "@/lib/types";
-import { DEFAULT_TAG_GENERATION_PROMPT, DEFAULT_TASK_GENERATION_PROMPTS } from "@/lib/user-settings";
-import { signOutAction } from "@/app/login/actions";
+import {
+  DEFAULT_ANALYSIS_PROMPTS,
+  DEFAULT_TAG_GENERATION_PROMPT,
+  DEFAULT_TASK_GENERATION_PROMPTS
+} from "@/lib/user-settings";
 import { saveUserSettingsAction } from "./actions";
 import { NotificationSettings } from "./notification-settings";
 
@@ -25,8 +30,14 @@ export default async function SettingsPage({
   const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email || "Noema user";
   const accountDetails = [user?.email, user?.email_confirmed_at ? "Tili aktiivinen" : "Vahvista email"]
     .filter(Boolean)
-    .join(" · ");
+    .join(" | ");
   const pushSubscriptions = user ? await listPushSubscriptions() : [];
+  const analysisSettingsFields = ANALYSIS_ACTIONS.map((action) => ({
+    ...action,
+    formName: action.settingsKey,
+    value: settings[action.settingsKey],
+    placeholder: DEFAULT_ANALYSIS_PROMPTS[action.id]
+  }));
 
   return (
     <section className="review-shell">
@@ -62,7 +73,7 @@ export default async function SettingsPage({
           <article className="card settings-card">
             <div className="settings-section-header">
               <div>
-                <h2 style={{ margin: 0 }}>Käyttäjän tiedot</h2>
+                <h2 style={{ margin: 0 }}>Kayttajan tiedot</h2>
                 <p className="muted" style={{ margin: "0.35rem 0 0" }}>
                   Nimi, yhteystieto ja muut tilin perustiedot.
                 </p>
@@ -74,11 +85,11 @@ export default async function SettingsPage({
 
             <div className="grid grid-cols-2">
               <div className="form-row">
-                <span>Käyttäjän nimi</span>
+                <span>Kayttajan nimi</span>
                 <strong>{displayName}</strong>
               </div>
               <div className="form-row">
-                <span>Käyttäjän tiedot</span>
+                <span>Kayttajan tiedot</span>
                 <strong>{user.email || "-"}</strong>
               </div>
             </div>
@@ -88,14 +99,14 @@ export default async function SettingsPage({
               <textarea
                 name="motivation"
                 defaultValue={profile?.motivation || user.user_metadata?.motivation || ""}
-                placeholder="Kirjoita tähän, mikä kutsuu sinua mukaan Noeman tarinaan."
+                placeholder="Kirjoita tahan, mika kutsuu sinua mukaan Noeman tarinaan."
                 rows={4}
               />
             </label>
 
             {!user.email_confirmed_at ? (
               <p className="status" style={{ margin: 0, color: "var(--danger)" }}>
-                Tili aktivoituu vasta, kun sähköpostissa oleva vahvistuslinkki on avattu.
+                Tili aktivoituu vasta, kun sahkopostissa oleva vahvistuslinkki on avattu.
               </p>
             ) : null}
           </article>
@@ -106,7 +117,7 @@ export default async function SettingsPage({
             <div>
               <h2 style={{ margin: 0 }}>Ajattelun suunta</h2>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Määritä, millaiset kysymykset auttavat sinua syventämään ajatuksiasi ja näkemään asioita
+                Maarita, millaiset kysymykset auttavat sinua syventamaan ajatuksiasi ja nakemaan asioita
                 uudella tavalla.
               </p>
             </div>
@@ -133,8 +144,8 @@ export default async function SettingsPage({
             <div className="settings-subsection-copy">
               <h3 style={{ margin: 0 }}>Tunnisteet</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Miten haluat jäsentää ajatuksiasi? Tunnisteet auttavat ajatuksia löytämään toisensa ja
-                muodostamaan yhteyksiä.
+                Miten haluat jasentaa ajatuksiasi? Tunnisteet auttavat ajatuksia loytamaan toisensa ja
+                muodostamaan yhteyksia.
               </p>
             </div>
             <label className="form-row">
@@ -149,54 +160,39 @@ export default async function SettingsPage({
 
           <div className="settings-subsection">
             <div className="settings-subsection-copy">
-              <h3 style={{ margin: 0 }}>Syvennä näkökulmaa</h3>
+              <h3 style={{ margin: 0 }}>Syvenna nakokulmaa</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Millaiset kysymykset auttavat sinua tarkastelemaan ajatusta eri kulmista ja viemään sitä
-                eteenpäin?
+                Maarita neljan paatoiminnon oletusohjeet. Tyhjenna ohjeteksti, jos haluat palauttaa
+                sovelluksen oletuspromptin kayttoon.
               </p>
             </div>
             <div className="grid settings-grid">
-              <label className="form-row">
-                <span>Kirkasta ajattelua</span>
-                <textarea
-                  name="analysisPromptRefresh"
-                  defaultValue={settings.analysisPromptRefresh}
-                  placeholder="Esim. pidä näkökulma käytännöllisenä ja tuo esiin päätösvaikutus."
-                />
-              </label>
-
-              <label className="form-row">
-                <span>Syvennä ajattelua</span>
-                <textarea
-                  name="analysisPromptDeepen"
-                  defaultValue={settings.analysisPromptDeepen}
-                  placeholder="Esim. syvennä trade-offit, riskit ja seuraava konkreettinen askel."
-                />
-              </label>
-
-              <label className="form-row">
-                <span>Tiivistä</span>
-                <textarea
-                  name="analysisPromptSummarize"
-                  defaultValue={settings.analysisPromptSummarize}
-                  placeholder="Esim. tiivistä ydinväite, älä menetä toimintaehdotusta."
-                />
-              </label>
+              {analysisSettingsFields.map((field) => (
+                <label key={field.id} className="form-row">
+                  <span>{field.label}</span>
+                  <span className="settings-task-field-description">{field.summary}</span>
+                  <textarea
+                    name={field.formName}
+                    defaultValue={field.value}
+                    placeholder={field.placeholder}
+                  />
+                </label>
+              ))}
             </div>
           </div>
 
           <div className="settings-subsection">
             <div className="settings-subsection-copy">
-              <h3 style={{ margin: 0 }}>Tehtävät</h3>
+              <h3 style={{ margin: 0 }}>Tehtavat</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Kirjoita haluamasi ohjeistus tehtävän luontiin eri tyyppisille tehtäville.
-                Nämä ohjeet ohjaavat neljää pikaluontipainiketta ajatuksen muokkaussivulla.
-                Tyhjennä ohjeteksti niin saat palautettua oletusohjeen käyttöön tehtävän luonnille.
+                Kirjoita haluamasi ohjeistus tehtavan luontiin eri tyyppisille tehtaville. Namat ohjeet
+                ohjaavat neljaa pikaluontipainiketta ajatuksen muokkaussivulla. Tyhjenna ohjeteksti niin
+                saat palautettua oletusohjeen kayttoon tehtavan luonnille.
               </p>
             </div>
             <div className="grid settings-grid">
               <label className="form-row">
-                <span>Kertaustehtävä</span>
+                <span>Kertaustehtava</span>
                 <span className="settings-task-field-description">{QUICK_TASK_GUIDANCE.recall.summary}</span>
                 <textarea
                   name="recallCardGenerationPrompt"
@@ -206,7 +202,7 @@ export default async function SettingsPage({
               </label>
 
               <label className="form-row">
-                <span>Soveltamistehtävä</span>
+                <span>Soveltamistehtava</span>
                 <span className="settings-task-field-description">{QUICK_TASK_GUIDANCE.apply.summary}</span>
                 <textarea
                   name="applyCardGenerationPrompt"
@@ -216,7 +212,7 @@ export default async function SettingsPage({
               </label>
 
               <label className="form-row">
-                <span>Reflektiotehtävä</span>
+                <span>Reflektiotehtava</span>
                 <span className="settings-task-field-description">{QUICK_TASK_GUIDANCE.reflect.summary}</span>
                 <textarea
                   name="reflectCardGenerationPrompt"
@@ -226,7 +222,7 @@ export default async function SettingsPage({
               </label>
 
               <label className="form-row">
-                <span>Keskustelutehtävä</span>
+                <span>Keskustelutehtava</span>
                 <span className="settings-task-field-description">{QUICK_TASK_GUIDANCE.discuss.summary}</span>
                 <textarea
                   name="discussCardGenerationPrompt"

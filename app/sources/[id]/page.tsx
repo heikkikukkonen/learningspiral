@@ -116,7 +116,7 @@ export default async function SourceDetailsPage({
       <div className="page-header source-workspace-header">
         <h1>Syvenny ajatukseen</h1>
         <p className="muted">
-          Muokkaa ajatuksesta selkea otsikko, ajatus, &quot;Tutki tata lisaa&quot; -teksti ja tunnisteet ennen tehtavien luontia.
+          Muokkaa ajatuksesta selkea otsikko, ajatus, &quot;Syvenna aihetta&quot; -teksti ja tunnisteet ennen tehtavien luontia.
           {" "}Voit myos vain tallentaa tiedot ja syventaa ajatusta myohemmin.
         </p>
       </div>

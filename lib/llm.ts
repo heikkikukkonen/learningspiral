@@ -1,3 +1,5 @@
+import { getAnalysisPrompt } from "@/lib/analysis-actions";
+import type { AnalysisMode } from "@/lib/analysis-actions";
 import { CardType } from "@/lib/types";
 import type { TagSuggestion } from "@/lib/types";
 import {
@@ -276,51 +278,63 @@ function sentenceSplit(value: string): string[] {
 }
 
 function fallbackRefinedSourceDraft(input: {
-  mode: "refresh" | "deepen" | "summarize";
+  mode: AnalysisMode | "custom";
   title: string;
   idea: string;
   analysis: string;
   rawInput: string;
   tags: string[];
+  customInstruction?: string;
 }): RefinedSourceDraft {
   const title = normalizeBlock(input.title) || "Untitled idea";
   const idea = normalizeBlock(input.idea) || normalizeBlock(input.rawInput) || title;
   const analysis = normalizeBlock(input.analysis) || idea;
   const ideaSentences = sentenceSplit(idea);
   const analysisSentences = sentenceSplit(analysis);
+  const customInstruction = normalizeBlock(input.customInstruction || "");
 
   let nextAnalysis = analysis;
-  if (input.mode === "refresh") {
+  if (input.mode === "clarify") {
     nextAnalysis = [
-      analysis,
-      "",
-      "Paivitetty nakokulma:",
-      `- Ydinajatus: ${ideaSentences[0] || idea}`,
-      "- Seuraava hyoty syntyy, kun viet taman yhteen oikeaan keskusteluun tai paatokseen.",
-      "- Pida viesti napakkana, mutta nimea myos mahdollinen epavarmuus suoraan."
+      `Ydinajatus on ${ideaSentences[0] || idea}.`,
+      "Tama auttaa nakemaan nopeammin, mita olet oikeastaan sanomassa, miksi se on tarkea ja mika viestin punainen lanka on."
     ]
-      .join("\n")
+      .join(" ")
       .trim();
-  }
-
-  if (input.mode === "deepen") {
+  } else if (input.mode === "deepen") {
     nextAnalysis = [
       analysis,
       "",
       "Syvennys:",
-      "- Mita ongelmaa tama ratkaisee kaytannossa?",
-      "- Missa tilanteessa taman idean soveltaminen on vaikeinta?",
-      "- Mita konkreettista sanot tai teet seuraavaksi, jotta idea muuttuu toiminnaksi?"
+      "- Mita uusi nakokulma avaa tai haastaa taman ajatuksen sisalla?",
+      "- Mihin laajempaan ilmioon, esimerkkiin tai kaytannon tilanteeseen tama liittyy?",
+      "- Mita kysymysta kannattaa pohtia seuraavaksi?"
     ]
       .join("\n")
       .trim();
-  }
-
-  if (input.mode === "summarize") {
-    nextAnalysis = analysisSentences.slice(0, 3).join(" ");
+  } else if (input.mode === "condense") {
+    nextAnalysis = analysisSentences.slice(0, 2).join(" ");
     if (!nextAnalysis) {
       nextAnalysis = ideaSentences.slice(0, 2).join(" ") || idea;
     }
+  } else if (input.mode === "network") {
+    nextAnalysis = [
+      "Aihetta kannattaisi syventaa ainakin muutaman erilaisen ihmisen kanssa:",
+      "- Kaytannon tekija, joka kohtaa aiheen arjessa ja voi kertoa missa se toimii tai ei toimi.",
+      "- Asiantuntija tai tutkija, joka osaa liittaa ajatuksen laajempaan tietoon ja aiempiin havaintoihin.",
+      "- Luotettu keskustelukumppani, joka uskaltaa haastaa ajatusta ja tehda piilevat oletukset nakyviksi."
+    ].join("\n");
+  } else if (customInstruction) {
+    nextAnalysis = [
+      analysis,
+      "",
+      "Oma syvennys:",
+      customInstruction,
+      "",
+      "Jatka aihetta taman suunnan pohjalta nostamalla esiin yksi uusi nakokulma, yksi tarkentava kysymys ja yksi konkreettinen seuraava askel."
+    ]
+      .join("\n")
+      .trim();
   }
 
   const nextTags = Array.from(
@@ -698,14 +712,19 @@ export async function generateSourceTags(input: {
 }
 
 export async function refineSourceDraft(input: {
-  mode: "refresh" | "deepen" | "summarize";
+  mode: AnalysisMode | "custom";
   title: string;
   idea: string;
   analysis: string;
   rawInput: string;
   tags: string[];
+  customInstruction?: string;
   settings?: UserSettings;
 }): Promise<LlmResult<RefinedSourceDraft>> {
+  if (input.mode === "custom" && !normalizeBlock(input.customInstruction || "")) {
+    throw new Error("Kirjoita oma ohje syventamista varten.");
+  }
+
   if (!isLlmConfigured()) {
     return {
       ok: true,
@@ -714,19 +733,21 @@ export async function refineSourceDraft(input: {
   }
 
   const instructionByMode = {
-    refresh:
-      "Refresh the analysis so it better reflects the current title, idea, and original capture.",
+    clarify:
+      "Clarify the analysis into a clean and easy-to-understand summary without losing the main message.",
     deepen:
       "Deepen the analysis with sharper reasoning, implications, examples, and next actions.",
-    summarize:
-      "Tighten and summarize the analysis so it stays concise without losing the core message."
+    condense:
+      "Condense the analysis into its clearest core message while keeping the meaning intact.",
+    network:
+      "Suggest the kinds of people or experts the user should talk with to deepen the topic further.",
+    custom:
+      "Rewrite the analysis according to the user's custom instruction while staying grounded in the original capture."
   } as const;
 
-  const customInstructionByMode = {
-    refresh: input.settings?.analysisPromptRefresh || "",
-    deepen: input.settings?.analysisPromptDeepen || "",
-    summarize: input.settings?.analysisPromptSummarize || ""
-  } as const;
+  const customInstruction = input.mode === "custom"
+    ? normalizeBlock(input.customInstruction || "")
+    : getAnalysisPrompt(input.settings, input.mode);
 
   const systemPrompt = appendOptionalInstruction([
     "You are a learning capture editor.",
@@ -740,7 +761,7 @@ export async function refineSourceDraft(input: {
     "Do not rewrite the title, idea, or tags.",
     "Keep analysis directly editable by the user.",
     "Preserve the user's intent and wording where possible."
-  ], customInstructionByMode[input.mode]).join("\n");
+  ], customInstruction).join("\n");
 
   const reply = await callResponsesApi([
     { role: "system", content: systemPrompt },

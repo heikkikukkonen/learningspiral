@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { analysisModeLabel, isAnalysisMode } from "@/lib/analysis-actions";
 import {
   completeReview,
   deleteCard,
@@ -151,12 +152,10 @@ export async function refineSourceDraftAction(formData: FormData) {
   const analysis = asString(formData.get("analysis"));
   const rawInput = asString(formData.get("rawInput"));
   const modeValue = asString(formData.get("mode"));
+  const customInstruction = asString(formData.get("customInstruction")).trim();
   const tags = readTags(asString(formData.get("tags")));
 
-  const mode =
-    modeValue === "deepen" || modeValue === "summarize" || modeValue === "refresh"
-      ? modeValue
-      : "refresh";
+  const mode = modeValue === "custom" ? "custom" : isAnalysisMode(modeValue) ? modeValue : "clarify";
   const settings = await getUserSettings();
 
   const refined = await refineSourceDraft({
@@ -166,6 +165,7 @@ export async function refineSourceDraftAction(formData: FormData) {
     analysis,
     rawInput,
     tags,
+    customInstruction,
     settings
   });
 
@@ -175,6 +175,7 @@ export async function refineSourceDraftAction(formData: FormData) {
     analysis: refined.data.analysis,
     tags: refined.data.tags,
     mode,
+    modeLabel: analysisModeLabel(mode),
     model: refined.model ?? null
   };
 }
