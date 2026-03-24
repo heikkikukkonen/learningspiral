@@ -24,7 +24,8 @@ type Props = {
 const presetTaskButtons: Array<{ value: CardType; label: string }> = [
   { value: "recall", label: "Kertaustehtava" },
   { value: "apply", label: "Soveltamistehtava" },
-  { value: "reflect", label: "Reflektiotehtava" }
+  { value: "reflect", label: "Reflektiotehtava" },
+  { value: "discuss", label: "Keskustelutehtava ystavan kanssa" }
 ];
 
 export function SourceTasksPanel({ sourceId, cards }: Props) {
@@ -197,6 +198,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
                   <option value="recall">Kertaustehtava</option>
                   <option value="apply">Soveltamistehtava</option>
                   <option value="reflect">Reflektiotehtava</option>
+                  <option value="discuss">Keskustelutehtava</option>
                   <option value="custom">Oma tehtava</option>
                   <option value="decision">Paatostehtava</option>
                 </select>

@@ -197,7 +197,7 @@ async function callResponsesApiWithInput(
 }
 
 function sanitizeCard(input: Partial<GeneratedCard>): GeneratedCard | null {
-  const allowedTypes: CardType[] = ["recall", "apply", "reflect", "decision", "custom"];
+  const allowedTypes: CardType[] = ["recall", "apply", "reflect", "discuss", "decision", "custom"];
   const cardType = input.cardType;
   const prompt = (input.prompt || "").trim();
   const answer = (input.answer || "").trim();
@@ -538,13 +538,13 @@ export async function generateReviewCardFromSummary(input: {
     return { ok: false, data: null };
   }
 
-  const allowedCardTypes = input.cardType ? [input.cardType] : ["recall", "apply", "reflect"];
+  const allowedCardTypes = input.cardType ? [input.cardType] : ["recall", "apply", "reflect", "discuss"];
   const typeInstruction =
     input.cardType === "custom"
       ? "Generate exactly one custom card. Use the custom instruction below as the primary brief for the task."
       : input.cardType
         ? `Generate exactly one ${input.cardType} card.`
-        : "Generate exactly one card and choose the best cardType from recall, apply, or reflect.";
+        : "Generate exactly one card and choose the best cardType from recall, apply, reflect, or discuss.";
 
   const systemPrompt = appendOptionalInstruction([
     "You generate one learning review card.",
@@ -552,7 +552,7 @@ export async function generateReviewCardFromSummary(input: {
     "Return ONLY valid JSON.",
     "Schema:",
     "{",
-    '  "card": {"cardType":"recall|apply|reflect|decision|custom","prompt":"...","answer":"..."}',
+    '  "card": {"cardType":"recall|apply|reflect|discuss|decision|custom","prompt":"...","answer":"..."}',
     "}",
     typeInstruction,
     `Allowed card types: ${allowedCardTypes.join(", ")}.`

@@ -37,6 +37,7 @@ export async function saveUserSettingsAction(formData: FormData) {
     recallCardGenerationPrompt: asString(formData.get("recallCardGenerationPrompt")),
     applyCardGenerationPrompt: asString(formData.get("applyCardGenerationPrompt")),
     reflectCardGenerationPrompt: asString(formData.get("reflectCardGenerationPrompt")),
+    discussCardGenerationPrompt: asString(formData.get("discussCardGenerationPrompt")),
     tagGenerationPrompt: asString(formData.get("tagGenerationPrompt"))
   });
 

@@ -217,6 +217,7 @@ export async function generateCardAction(formData: FormData) {
     variantValue === "recall" ||
     variantValue === "apply" ||
     variantValue === "reflect" ||
+    variantValue === "discuss" ||
     variantValue === "custom"
       ? variantValue
       : undefined;

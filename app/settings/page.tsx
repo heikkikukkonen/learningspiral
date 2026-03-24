@@ -188,7 +188,7 @@ export default async function SettingsPage({
               <h3 style={{ margin: 0 }}>Tehtävät</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
                 Kirjoita haluamasi ohjeistus tehtävän luontiin eri tyyppisille tehtäville.
-                Nämä ohjeet ohjaavat lähdesivun kolmea pikaluontipainiketta.
+                Nämä ohjeet ohjaavat lähdesivun neljää pikaluontipainiketta.
               </p>
             </div>
             <div className="grid settings-grid">
@@ -216,6 +216,15 @@ export default async function SettingsPage({
                   name="reflectCardGenerationPrompt"
                   defaultValue={settings.reflectCardGenerationPrompt}
                   placeholder="Esim. auta tehtävää pysähtymään oman ajattelun, oletusten tai tunteiden äärelle."
+                />
+              </label>
+
+              <label className="form-row">
+                <span>Keskustelutehtävä</span>
+                <textarea
+                  name="discussCardGenerationPrompt"
+                  defaultValue={settings.discussCardGenerationPrompt}
+                  placeholder="Luo tehtävä joka kannustaa minua löytämään jonkun ystävän tai asiantuntijan kenen kanssa voisin keskustella aiheesta syventääkseni ymmärrystä asiasta."
                 />
               </label>
             </div>

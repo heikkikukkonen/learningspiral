@@ -7,6 +7,7 @@ export interface UserSettings {
   recallCardGenerationPrompt: string;
   applyCardGenerationPrompt: string;
   reflectCardGenerationPrompt: string;
+  discussCardGenerationPrompt: string;
   tagGenerationPrompt: string;
 }
 
@@ -19,6 +20,8 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   recallCardGenerationPrompt: "",
   applyCardGenerationPrompt: "",
   reflectCardGenerationPrompt: "",
+  discussCardGenerationPrompt:
+    "Luo tehtava joka kannustaa minua loytamaan jonkun ystavan tai asiantuntijan kenen kanssa voisin keskustella aiheesta syventaakseni ymmarrysta asiasta.",
   tagGenerationPrompt: ""
 };
 
@@ -36,6 +39,10 @@ export function sanitizeUserSettings(input: Partial<UserSettings> | null | undef
     recallCardGenerationPrompt: clamp(input?.recallCardGenerationPrompt || "", 1200),
     applyCardGenerationPrompt: clamp(input?.applyCardGenerationPrompt || "", 1200),
     reflectCardGenerationPrompt: clamp(input?.reflectCardGenerationPrompt || "", 1200),
+    discussCardGenerationPrompt: clamp(
+      input?.discussCardGenerationPrompt || DEFAULT_USER_SETTINGS.discussCardGenerationPrompt,
+      1200
+    ),
     tagGenerationPrompt: clamp(input?.tagGenerationPrompt || "", 1200)
   };
 }

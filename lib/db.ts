@@ -366,6 +366,9 @@ function getTaskTypeInstruction(settings: UserSettings, cardType: CardType) {
   if (cardType === "reflect") {
     return settings.reflectCardGenerationPrompt;
   }
+  if (cardType === "discuss") {
+    return settings.discussCardGenerationPrompt;
+  }
   return "";
 }
 
@@ -389,6 +392,15 @@ function buildFallbackGeneratedCard(input: {
       cardType: "reflect" as const,
       prompt: "Mita tama ajatus haastaa sinussa tai tavassasi ajatella?",
       answer: "Kirjaa yksi oletus, tulkinta tai tapa, jota haluat paivittaa taman ajatuksen pohjalta."
+    };
+  }
+
+  if (input.cardType === "discuss") {
+    return {
+      cardType: "discuss" as const,
+      prompt: "Kenen kanssa voisit keskustella tasta aiheesta syventaaksesi ymmarrystasi?",
+      answer:
+        "Nimea yksi ystava tai asiantuntija, sovi keskustelu ja kirjaa etukateen yksi kysymys, jonka haluat esittaa."
     };
   }
 
@@ -445,6 +457,7 @@ export async function getUserSettings(userId?: string): Promise<UserSettings> {
     recallCardGenerationPrompt: data.recall_card_generation_prompt,
     applyCardGenerationPrompt: data.apply_card_generation_prompt,
     reflectCardGenerationPrompt: data.reflect_card_generation_prompt,
+    discussCardGenerationPrompt: data.discuss_card_generation_prompt,
     tagGenerationPrompt: data.tag_generation_prompt
   });
 }
@@ -466,6 +479,7 @@ export async function upsertUserSettings(input: UserSettings, userId?: string) {
       recall_card_generation_prompt: settings.recallCardGenerationPrompt,
       apply_card_generation_prompt: settings.applyCardGenerationPrompt,
       reflect_card_generation_prompt: settings.reflectCardGenerationPrompt,
+      discuss_card_generation_prompt: settings.discussCardGenerationPrompt,
       tag_generation_prompt: settings.tagGenerationPrompt
     })
     .select("*")
@@ -483,6 +497,7 @@ export async function upsertUserSettings(input: UserSettings, userId?: string) {
     recallCardGenerationPrompt: data.recall_card_generation_prompt ?? "",
     applyCardGenerationPrompt: data.apply_card_generation_prompt ?? "",
     reflectCardGenerationPrompt: data.reflect_card_generation_prompt ?? "",
+    discussCardGenerationPrompt: data.discuss_card_generation_prompt ?? "",
     tagGenerationPrompt: data.tag_generation_prompt ?? "",
     created_at: data.created_at,
     updated_at: data.updated_at
