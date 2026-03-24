@@ -221,7 +221,7 @@ function sanitizeCard(input: Partial<GeneratedCard>): GeneratedCard | null {
 function sanitizeRefinedSourceDraft(input: Partial<RefinedSourceDraft>): RefinedSourceDraft | null {
   const title = normalizeBlock(input.title || "");
   const idea = normalizeBlock(input.idea || "");
-  const analysis = normalizeBlock(input.analysis || "");
+  const analysis = formatRefinedAnalysis(input.analysis || "");
   const tags = Array.isArray(input.tags)
     ? input.tags
         .map((tag) => normalizeBlock(typeof tag === "string" ? tag : ""))
@@ -241,8 +241,47 @@ function sanitizeRefinedSourceDraft(input: Partial<RefinedSourceDraft>): Refined
   };
 }
 
+function formatRefinedAnalysis(value: string): string {
+  const normalized = normalizeBlock(value).replace(/\n{3,}/g, "\n\n");
+  if (!normalized) {
+    return "";
+  }
+
+  const hasExplicitParagraphs = /\n\s*\n/.test(normalized);
+  const hasStructuredLines = /(^|\n)([-*]|\d+\.)\s/m.test(normalized);
+
+  if (hasExplicitParagraphs || hasStructuredLines) {
+    return normalized;
+  }
+
+  const compact = normalized
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join(" ");
+
+  const sentences =
+    compact
+      .match(/[^.!?]+(?:[.!?]+(?=\s|$)|$)/g)
+      ?.map((sentence) => sentence.trim())
+      .filter(Boolean) ?? [];
+
+  if (sentences.length < 4) {
+    return compact;
+  }
+
+  const chunkSize = sentences.length >= 7 ? 3 : 2;
+  const paragraphs: string[] = [];
+
+  for (let index = 0; index < sentences.length; index += chunkSize) {
+    paragraphs.push(sentences.slice(index, index + chunkSize).join(" "));
+  }
+
+  return paragraphs.join("\n\n").trim();
+}
+
 function sanitizeRefinedAnalysis(input: Partial<RefinedAnalysisPayload>): RefinedAnalysisPayload | null {
-  const analysis = normalizeBlock(input.analysis || "");
+  const analysis = formatRefinedAnalysis(input.analysis || "");
 
   if (!analysis) {
     return null;
@@ -753,6 +792,7 @@ export async function refineSourceDraft(input: {
     "You are a learning capture editor.",
     buildLanguageInstruction(input.settings?.responseLanguage || "Finnish"),
     "Keep the writing concise.",
+    "Preserve readable paragraph breaks when the response is longer than a couple of sentences.",
     "Return ONLY valid JSON.",
     "Schema:",
     "{",
