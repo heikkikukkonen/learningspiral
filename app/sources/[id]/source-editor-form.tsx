@@ -308,7 +308,7 @@ export function SourceEditorForm({
           </div>
         </div>
 
-        <div className="form-row source-edit-field source-analysis-shell">
+        <div className="form-row source-edit-field">
           <div className="source-analysis-header">
             <span>Syvenna nakokulmaa</span>
             <p className="status" style={{ margin: 0 }}>
@@ -317,51 +317,53 @@ export function SourceEditorForm({
             </p>
           </div>
 
-          <div className="source-analysis-actions" role="group" aria-label="Syvenna nakokulmaa">
-            {ANALYSIS_ACTIONS.map((action) => (
-              <button
-                key={action.id}
-                className="secondary source-task-create-button source-analysis-action"
-                disabled={isRefining}
-                onClick={() => handleAiAction(action.id)}
-                type="button"
-                title={action.summary}
-              >
-                {isRefining && activeMode === action.id ? "Kasitellaan..." : action.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="source-analysis-custom">
-            <div className="source-analysis-custom-field">
-              <textarea
-                value={customInstruction}
-                onChange={(event) => setCustomInstruction(event.target.value)}
-                placeholder="Kirjoita oma pyyntosi, jos haluat ohjata syvennysta tarkemmin."
-                rows={3}
-                disabled={isRefining}
-              />
+          <div className="source-analysis-shell">
+            <div className="source-analysis-actions" role="group" aria-label="Syvenna nakokulmaa">
+              {ANALYSIS_ACTIONS.map((action) => (
+                <button
+                  key={action.id}
+                  className="secondary source-task-create-button source-analysis-action"
+                  disabled={isRefining}
+                  onClick={() => handleAiAction(action.id)}
+                  type="button"
+                  title={action.summary}
+                >
+                  {isRefining && activeMode === action.id ? "Kasitellaan..." : action.label}
+                </button>
+              ))}
             </div>
-            <button
-              type="button"
-              className="secondary source-task-create-button source-analysis-custom-button"
-              disabled={isRefining}
-              onClick={() => handleAiAction("custom")}
-            >
-              {isRefining && activeMode === "custom" ? "Kasitellaan..." : "Syvenna"}
-            </button>
+
+            <div className="source-analysis-custom">
+              <div className="source-analysis-custom-field">
+                <textarea
+                  value={customInstruction}
+                  onChange={(event) => setCustomInstruction(event.target.value)}
+                  placeholder="Kirjoita oma pyyntosi, jos haluat ohjata syvennysta tarkemmin."
+                  rows={3}
+                  disabled={isRefining}
+                />
+              </div>
+              <button
+                type="button"
+                className="secondary source-task-create-button source-analysis-custom-button"
+                disabled={isRefining}
+                onClick={() => handleAiAction("custom")}
+              >
+                {isRefining && activeMode === "custom" ? "Kasitellaan..." : "Syvenna"}
+              </button>
+            </div>
+
+            {aiNote ? <p className="status source-analysis-note">{aiNote}</p> : null}
+
+            <textarea
+              name="analysis"
+              value={analysis}
+              onChange={(event) => setAnalysis(event.target.value)}
+              className="source-analysis-textarea"
+              placeholder="Kokoa tahan kirkastus, syvennys, tiivistys tai verkostoitumisidea."
+              required
+            />
           </div>
-
-          {aiNote ? <p className="status source-analysis-note">{aiNote}</p> : null}
-
-          <textarea
-            name="analysis"
-            value={analysis}
-            onChange={(event) => setAnalysis(event.target.value)}
-            className="source-analysis-textarea"
-            placeholder="Kokoa tahan kirkastus, syvennys, tiivistys tai verkostoitumisidea."
-            required
-          />
         </div>
       </form>
     </div>
