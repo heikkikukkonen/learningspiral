@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { listSources } from "@/lib/db";
+import { parseSourceSummaryContent } from "@/lib/source-editor";
 import { deriveSourceIdeaStage, sourceIdeaStageLabel } from "@/lib/source-status";
 import { SourceType } from "@/lib/types";
 import { ThoughtsTagBrowser } from "./thoughts-tag-browser";
@@ -69,6 +70,29 @@ function buildSourcesHref(query: string, tag: string) {
 
   const search = params.toString();
   return search ? `/sources?${search}` : "/sources";
+}
+
+function buildSourcePreview(source: Pick<SourceListItem, "summary_content" | "raw_input">) {
+  const summaryContent = source.summary_content?.trim() ?? "";
+  const rawInput = source.raw_input?.trim() ?? "";
+
+  if (!summaryContent) {
+    return rawInput;
+  }
+
+  if (!/(^|\n)Idea:\s*/i.test(summaryContent)) {
+    return summaryContent;
+  }
+
+  const parsed = parseSourceSummaryContent(summaryContent, rawInput);
+  const idea = parsed.idea.trim();
+  const analysis = parsed.analysis.trim();
+
+  if (idea && analysis && idea !== analysis) {
+    return `${idea}\n${analysis}`;
+  }
+
+  return idea || analysis;
 }
 
 export default async function SourcesPage({ searchParams }: SourcesPageProps) {
@@ -188,7 +212,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
 
       <div className="list" style={{ marginTop: loadError ? "1rem" : 0 }}>
         {filteredSources.map((source) => {
-          const preview = (source.summary_content ?? source.raw_input ?? "").trim();
+          const preview = buildSourcePreview(source);
 
           return (
             <article className="card source-row" key={source.id}>
@@ -211,12 +235,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
                     </span>
                   ))}
                 </div>
-                {preview ? (
-                  <p className="thoughts-snippet">
-                    {preview.slice(0, 180)}
-                    {preview.length > 180 ? "..." : ""}
-                  </p>
-                ) : null}
+                {preview ? <p className="thoughts-snippet">{preview}</p> : null}
                 <p className="status" style={{ marginBottom: 0 }}>
                   Tallennettu:{" "}
                   {new Date(source.created_at).toLocaleString("fi-FI", {

@@ -690,6 +690,11 @@ button.danger {
   margin: 0.7rem 0 0.55rem;
   color: #41556e;
   line-height: 1.55;
+  white-space: pre-line;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .status {
