@@ -16,7 +16,7 @@ export function NoemaLoadingModal({
   open,
   label,
   detail,
-  hint = "Tama vaihe kestaa hetken. Voit odottaa rauhassa."
+  hint = "Tämä vaihe kestää hetken. Voit odottaa rauhassa."
 }: NoemaLoadingModalProps) {
   const [mounted, setMounted] = useState(false);
   const [loaderSize, setLoaderSize] = useState(352);

@@ -87,12 +87,12 @@ export function SourceEditorForm({
   const showInlineSuggestions = normalizedTagInput.length > 0 && visibleSuggestions.length > 0;
   const showDefaultSuggestions = normalizedTagInput.length === 0 && visibleSuggestions.length > 0;
   const sourceLoadingOpen = isRefining || isGeneratingTags;
-  const sourceLoadingLabel = isGeneratingTags ? "Luon tunnisteet automaattisesti" : "Syvennan nakokulmaa";
+  const sourceLoadingLabel = isGeneratingTags ? "Luon tunnisteet automaattisesti" : "Syvennän näkökulmaa";
   const sourceLoadingDetail = isGeneratingTags
-    ? "Voit poistaa tai lisata itse tunnisteita taman jalkeen."
+    ? "Voit poistaa tai lisätä itse tunnisteita tämän jälkeen."
     : activeMode === "custom"
-    ? "Paivitan syvennystekstin antamasi ohjeen mukaan."
-    : "Paivitan syvennystekstin. Voit kokeilla valmiita toimintoja tai ohjata omalla ohjeellasi syventamista.";
+      ? "Päivitän syvennystekstin antamasi ohjeen mukaan."
+      : "Päivitän syvennystekstin. Voit kokeilla valmiita toimintoja tai ohjata omalla ohjeellasi syventämistä.";
 
   function addResolvedTag(nextValue?: string) {
     const trimmedValue = (nextValue ?? tagInput).trim();
@@ -115,8 +115,8 @@ export function SourceEditorForm({
     setTagInput("");
     setTagNote(
       resolvedSuggestion
-        ? `Kaytin olemassa olevaa tunnistetta "${resolvedSuggestion.tag}", jotta saman aiheen tunnisteet pysyvat yhdessa.`
-        : `Lisattiin uusi tunniste "${resolvedTag}".`
+        ? `Käytin olemassa olevaa tunnistetta "${resolvedSuggestion.tag}", jotta saman aiheen tunnisteet pysyvät yhdessä.`
+        : `Lisättiin uusi tunniste "${resolvedTag}".`
     );
   }
 
@@ -127,7 +127,7 @@ export function SourceEditorForm({
   function handleAiAction(mode: AnalysisModeOrCustom) {
     const nextCustomInstruction = customInstruction.trim();
     if (mode === "custom" && !nextCustomInstruction) {
-      setAiNote("Kirjoita oma pyyntosi ennen kuin painat Syvenna.");
+      setAiNote("Kirjoita oma pyyntösi ennen kuin painat Syvennä.");
       return;
     }
 
@@ -150,14 +150,14 @@ export function SourceEditorForm({
         setAnalysis(result.analysis);
         setAiNote(
           result.model
-            ? `Paivitin "Syvenna nakokulmaa" -tekstin toiminnolla "${result.modeLabel}". Muista tallentaa muutokset, jos haluat sailyttaa ne.`
-            : `"Syvenna nakokulmaa" -teksti paivittyi toiminnolla "${result.modeLabel}". Muista tallentaa muutokset.`
+            ? `Päivitin "Syvennä näkökulmaa" -tekstin toiminnolla "${result.modeLabel}". Muista tallentaa muutokset, jos haluat säilyttää ne.`
+            : `"Syvennä näkökulmaa" -teksti päivittyi toiminnolla "${result.modeLabel}". Muista tallentaa muutokset.`
         );
         if (mode === "custom") {
           setCustomInstruction("");
         }
       } catch (error) {
-        setAiNote(error instanceof Error ? error.message : '"Syvenna nakokulmaa" -tekstin paivitys epaonnistui.');
+        setAiNote(error instanceof Error ? error.message : '"Syvennä näkökulmaa" -tekstin päivitys epäonnistui.');
       } finally {
         setActiveMode(null);
         setIsRefining(false);
@@ -179,11 +179,11 @@ export function SourceEditorForm({
           result.tags.length > 0
             ? result.model
               ? "Loin tunnisteet otsikon, idean ja aiempien tunnisteidesi perusteella. Muista tallentaa muutokset."
-              : "Tunnisteet paivitettiin aiempia tunnisteita painottavalla varalogiikalla. Muista tallentaa muutokset."
-            : "Tunnisteita ei saatu luotua nykyisista kentista."
+              : "Tunnisteet päivitettiin aiempia tunnisteita painottavalla varalogiikalla. Muista tallentaa muutokset."
+            : "Tunnisteita ei saatu luotua nykyisistä kentistä."
         );
       } catch (error) {
-        setTagNote(error instanceof Error ? error.message : "Tunnisteiden luonti epaonnistui.");
+        setTagNote(error instanceof Error ? error.message : "Tunnisteiden luonti epäonnistui.");
       } finally {
         setIsGeneratingTags(false);
       }
@@ -204,7 +204,7 @@ export function SourceEditorForm({
             name="title"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="Anna ajatukselle selkea otsikko"
+            placeholder="Anna ajatukselle selkeä otsikko"
             required
           />
         </label>
@@ -215,7 +215,7 @@ export function SourceEditorForm({
             name="idea"
             value={idea}
             onChange={(event) => setIdea(event.target.value)}
-            placeholder="Kirjoita ytimekas paaoivallus tai varsinainen ajatus."
+            placeholder="Kirjoita ytimekäs pääoivallus tai varsinainen ajatus."
             required
           />
         </label>
@@ -252,7 +252,7 @@ export function SourceEditorForm({
                     addResolvedTag();
                   }
                 }}
-                placeholder="Lisaa tunniste tai hae olemassa olevista"
+                placeholder="Lisää tunniste tai hae olemassa olevista"
               />
             </div>
 
@@ -278,7 +278,7 @@ export function SourceEditorForm({
 
             <div className="source-tag-add source-tag-add-actions">
               <button type="button" className="secondary" onClick={() => addResolvedTag()}>
-                {exactAutocompleteSuggestion ? "Kayta olemassa olevaa" : "Lisaa uusi tunniste"}
+                {exactAutocompleteSuggestion ? "Käytä olemassa olevaa" : "Lisää uusi tunniste"}
               </button>
               {!hasTags ? (
                 <button
@@ -318,7 +318,7 @@ export function SourceEditorForm({
 
         <div className="form-row source-edit-field">
           <div className="source-analysis-header">
-            <span>Syvenna nakokulmaa</span>
+            <span>Syvennä näkökulmaa</span>
             <p className="status" style={{ margin: 0 }}>
               Valitse valmis toiminto tai anna oma suunta. Voit muokata toimintojen ohjeistusta
               Asetukset-sivulla.
@@ -326,7 +326,7 @@ export function SourceEditorForm({
           </div>
 
           <div className="source-analysis-shell">
-            <div className="source-analysis-actions" role="group" aria-label="Syvenna nakokulmaa">
+            <div className="source-analysis-actions" role="group" aria-label="Syvennä näkökulmaa">
               {ANALYSIS_ACTIONS.map((action) => (
                 <button
                   key={action.id}
@@ -336,7 +336,7 @@ export function SourceEditorForm({
                   type="button"
                   title={action.summary}
                 >
-                  {isRefining && activeMode === action.id ? "Kasitellaan..." : action.label}
+                  {isRefining && activeMode === action.id ? "Käsitellään..." : action.label}
                 </button>
               ))}
             </div>
@@ -346,7 +346,7 @@ export function SourceEditorForm({
                 <textarea
                   value={customInstruction}
                   onChange={(event) => setCustomInstruction(event.target.value)}
-                  placeholder="Kirjoita oma pyyntosi, jos haluat ohjata syvennysta tarkemmin."
+                  placeholder="Kirjoita oma pyyntösi, jos haluat ohjata syventämistä tarkemmin."
                   rows={3}
                   disabled={isRefining}
                 />
@@ -357,7 +357,7 @@ export function SourceEditorForm({
                 disabled={isRefining}
                 onClick={() => handleAiAction("custom")}
               >
-                {isRefining && activeMode === "custom" ? "Kasitellaan..." : "Syvenna"}
+                {isRefining && activeMode === "custom" ? "Käsitellään..." : "Syvennä"}
               </button>
             </div>
 
@@ -368,7 +368,7 @@ export function SourceEditorForm({
               value={analysis}
               onChange={(event) => setAnalysis(event.target.value)}
               className="source-analysis-textarea"
-              placeholder="Kokoa tahan kirkastus, syvennys, tiivistys tai verkostoitumisidea."
+              placeholder="Kokoa tähän kirkastus, syvennys, tiivistys tai verkostoitumisidea."
               required
             />
           </div>

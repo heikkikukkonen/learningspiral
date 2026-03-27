@@ -13,75 +13,75 @@ export interface UserSettings {
 }
 
 export const DEFAULT_TAG_GENERATION_PROMPT =
-  "Luo 3-6 selkeaa tunnistetta, jotka kuvaavat ajatuksen ydinta selkeasti. Jos ajatus sisaltaa erisnimia tai esimerkiksi kirjan nimia tai tiettyja avainkasitteita, luo niista tunnisteet.";
+  "Luo 3-6 selkeää tunnistetta, jotka kuvaavat ajatuksen ydintä selkeästi. Jos ajatus sisältää erisnimiä tai esimerkiksi kirjan nimiä tai tiettyjä avainkäsitteitä, luo niistä tunnisteet.";
 
 export const DEFAULT_ANALYSIS_PROMPTS = {
   clarify: [
-    "Muodosta selkea ja helposti ymmarrettava yhteenveto annetuista tiedoista.",
+    "Muodosta selkeä ja helposti ymmärrettävä yhteenveto annetuista tiedoista.",
     "",
     "Tavoite:",
-    "- kirkasta ajattelua ja poista epaselvyydet",
-    "- jasenna sisalto loogiseksi kokonaisuudeksi",
-    "- tuo esiin keskeinen viesti ja tarkeimmat oivallukset",
+    "- kirkasta ajattelua ja poista epäselvyydet",
+    "- jäsennä sisältö loogiseksi kokonaisuudeksi",
+    "- tuo esiin keskeinen viesti ja tärkeimmät oivallukset",
     "",
     "Muoto:",
     "- 1-2 kappaletta",
-    "- selkea ja sujuva kieli",
-    "- ei listoja, vaan yhtenainen teksti"
+    "- selkeä ja sujuva kieli",
+    "- ei listoja, vaan yhtenäinen teksti"
   ].join("\n"),
   deepen: [
-    "Syvenna ajatusta tuomalla mukaan uusia nakokulmia, kysymyksia ja mahdollisia laajennuksia.",
+    "Syvennä ajatusta tuomalla mukaan uusia näkökulmia, kysymyksiä ja mahdollisia laajennuksia.",
     "",
     "Tavoite:",
-    "- lisaa uusia nakokulmia tai tulkintoja",
-    "- nosta esiin viittauksia yleisiin ilmioihin, tutkimuksiin, kirjoihin tai kaytannon esimerkkeihin",
-    "- esita kiinnostavia jatkokysymyksia",
-    "- tuo mukaan mahdollisia esimerkkeja, vertauksia tai sovelluksia",
-    "- auta nakemaan aihe laajemmin",
+    "- lisää uusia näkökulmia tai tulkintoja",
+    "- nosta esiin viittauksia yleisiin ilmiöihin, tutkimuksiin, kirjoihin tai käytännön esimerkkeihin",
+    "- esitä kiinnostavia jatkokysymyksiä",
+    "- tuo mukaan mahdollisia esimerkkejä, vertauksia tai sovelluksia",
+    "- auta näkemään aihe laajemmin",
     "- haasta tarvittaessa ajatusta",
     "",
     "Muoto:",
     "- 2-4 kappaletta",
-    "- voi sisaltaa yksittaisia kysymyksia tekstin seassa",
-    "- tuo tietoa ulkopuolisista lahteista"
+    "- voi sisältää yksittäisiä kysymyksiä tekstin seassa",
+    "- tuo tietoa ulkopuolisista lähteistä"
   ].join("\n"),
   condense: [
-    "Tiivista ajatuksen ydin mahdollisimman selkeasti ja ytimekkaasti.",
+    "Tiivistä ajatuksen ydin mahdollisimman selkeästi ja ytimekkäästi.",
     "",
     "Tavoite:",
-    "- tunnista tarkein ajatus",
-    "- kiteyta se mahdollisimman selkeasti",
-    "- sailyta merkitys mutta poista kaikki ylimaarainen",
+    "- tunnista tärkein ajatus",
+    "- kiteytä se mahdollisimman selkeästi",
+    "- säilytä merkitys mutta poista kaikki ylimääräinen",
     "",
     "Muoto:",
-    "- enintaan 2 lausetta",
-    "- yksinkertainen ja selkea kieli",
+    "- enintään 2 lausetta",
+    "- yksinkertainen ja selkeä kieli",
     "- helposti muistettava muotoilu"
   ].join("\n"),
   network: [
-    "Tunnista ajatuksen pohjalta, millaisten ihmisten kanssa aiheesta kannattaisi keskustella ymmarryksen syventamiseksi.",
+    "Tunnista ajatuksen pohjalta, millaisten ihmisten kanssa aiheesta kannattaisi keskustella ymmärryksen syventämiseksi.",
     "",
     "Tavoite:",
-    "- ehdota 2-5 sellaista ihmistyyppia, roolia tai asiantuntijaprofiilia tai tunnettua asiantuntijaa, joiden kanssa tasta aiheesta kannattaisi keskustella",
-    "- kerro lyhyesti, mita lisaarvoa kukin voisi tuoda ajatteluun",
-    "- pida ehdotukset kaytannollisina ja helposti lahestyttavina",
+    "- ehdota 2-5 sellaista ihmistyyppiä, roolia tai asiantuntijaprofiilia tai tunnettua asiantuntijaa, joiden kanssa tästä aiheesta kannattaisi keskustella",
+    "- kerro lyhyesti, mitä lisäarvoa kukin voisi tuoda ajatteluun",
+    "- pidä ehdotukset käytännöllisinä ja helposti lähestyttävinä",
     "",
     "Muoto:",
     "- lyhyt johdanto",
-    "- sen jalkeen selkea lista ihmisista tai rooleista",
+    "- sen jälkeen selkeä lista ihmisistä tai rooleista",
     "- jokaisesta 1 lause"
   ].join("\n")
 } as const;
 
 export const DEFAULT_TASK_GENERATION_PROMPTS = {
   recall:
-    "Luo muistamista vahvistava kertaustehtava, joka on mahdollisimman konkreettinen ja sellainen etta se testaa ajatuksen oleellisten osien muistamista ja jos kyseessa on sitaattimainen muotoilu jollekin ajatukselle, kysy muistatko sitaattia tai sen tekijaa",
+    "Luo muistamista vahvistava kertaustehtävä, joka on mahdollisimman konkreettinen ja sellainen että se testaa ajatuksen oleellisten osien muistamista ja jos kyseessä on sitaattimainen muotoilu jollekin ajatukselle, kysy muistatko sitaattia tai sen tekijää",
   apply:
-    "Luo soveltamistehtava joka ohjaa keksimaan keinon, miten voisin soveltaa ajatusta kaytannossa. Muotoile tehtava niin, etta kayttaja kuvittelee tai tunnistaa todellisen tilanteen. Tehtavan tulee rohkaista toimintaa, ei vain muistamista.",
+    "Luo soveltamistehtävä joka ohjaa keksimään keinon, miten voisin soveltaa ajatusta käytännössä. Muotoile tehtävä niin, että käyttäjä kuvittelee tai tunnistaa todellisen tilanteen. Tehtävän tulee rohkaista toimintaa, ei vain muistamista.",
   reflect:
-    "Luo reflektiotehtava joka ohjaa pohtimaan syvallisesti ajatuksen merkitysta minulle ja kasvattamaan itsetuntemusta, ymmarrysta tai uuden nakokulman syntya. Miksi se on tarkea ja mita voin siita oppia. Tehtava voi olla avoin, mutta sen tulisi olla selkea.",
+    "Luo reflektiotehtävä joka ohjaa pohtimaan syvällisesti ajatuksen merkitystä minulle ja kasvattamaan itsetuntemusta, ymmärrystä tai uuden näkökulman syntyä. Miksi se on tärkeä ja mitä voin siitä oppia. Tehtävä voi olla avoin, mutta sen tulisi olla selkeä.",
   discuss:
-    "Luo keskustelutehtava, joka ohjaa sosiaaliseen oppimiseen. joka kannustaa minua loytamaan ystavan, kollegan, mentorin tai asiantuntijan, jonka kanssa han voisi keskustella aiheesta ja syventaa ymmarrysta keskustelun kautta. Muotoile tehtava konkreettiseksi ja helposti toteutettavaksi. Anna myos esimerkkikeskustelun avaus tai malliehdotus siita, miten asian voisi ottaa puheeksi."
+    "Luo keskustelutehtävä, joka ohjaa sosiaaliseen oppimiseen. joka kannustaa minua löytämään ystävän, kollegan, mentorin tai asiantuntijan, jonka kanssa hän voisi keskustella aiheesta ja syventää ymmärrystä keskustelun kautta. Muotoile tehtävä konkreettiseksi ja helposti toteutettavaksi. Anna myös esimerkkikeskustelun avaus tai malliehdotus siitä, miten asian voisi ottaa puheeksi."
 } as const;
 
 export const DEFAULT_USER_SETTINGS: UserSettings = {

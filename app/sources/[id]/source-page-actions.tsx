@@ -23,7 +23,7 @@ export function SourcePageActions({
   function readEditorFormData() {
     const form = document.getElementById("source-editor-form");
     if (!(form instanceof HTMLFormElement)) {
-      throw new Error("Ajatuslomaketta ei loytynyt.");
+      throw new Error("Ajatuslomaketta ei lÃƒÂ¶ytynyt.");
     }
 
     const formData = new FormData(form);
@@ -41,14 +41,14 @@ export function SourcePageActions({
         router.refresh();
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Tallennus epäonnistui. Yritä uudelleen.";
+          error instanceof Error ? error.message : "Tallennus epÃƒÆ’Ã‚Â¤onnistui. YritÃƒÆ’Ã‚Â¤ uudelleen.";
         setErrorMessage(message);
       }
     });
   }
 
   function handleDelete() {
-    if (!window.confirm("Poistetaanko ajatus pysyvasti? Tama poistaa myos siihen liittyvat tehtavat.")) {
+    if (!window.confirm("Poistetaanko ajatus pysyvÃƒÂ¤sti? TÃƒÂ¤mÃƒÂ¤ poistaa myÃƒÂ¶s siihen liittyvÃƒÂ¤t tehtÃƒÂ¤vÃƒÂ¤t.")) {
       return;
     }
 
@@ -61,7 +61,7 @@ export function SourcePageActions({
         await deleteSourceAction(formData);
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Ajatuksen poisto epäonnistui. Yritä uudelleen.";
+          error instanceof Error ? error.message : "Ajatuksen poisto epÃƒÆ’Ã‚Â¤onnistui. YritÃƒÆ’Ã‚Â¤ uudelleen.";
         setErrorMessage(message);
       }
     });

@@ -10,7 +10,7 @@ const homeActions = [
     icon: "pen"
   },
   {
-    title: "Lisaa kuva",
+    title: "Lisää kuva",
     href: "/capture?mode=image",
     accent: "teal",
     icon: "image"
@@ -122,7 +122,7 @@ export default async function AppHomePage({
         {captureSaved ? (
           <article className="card" style={{ marginBottom: "1rem" }}>
             <p className="status" style={{ margin: 0 }}>
-              Ajatus tallennettu. Palaamme tahan myohemmin.
+              Ajatus tallennettu. Palaamme tähän myöhemmin.
             </p>
           </article>
         ) : null}
@@ -154,7 +154,7 @@ export default async function AppHomePage({
                     <strong>{action.title}</strong>
                     {action.href === "/review" ? (
                       <span className="home-list-meta">
-                        {reviewQueueCount} {reviewQueueCount === 1 ? "asia syvennettavana" : "asiaa syvennettavana"}
+                        {reviewQueueCount} {reviewQueueCount === 1 ? "asia syvennettävänä" : "asiaa syvennettävänä"}
                       </span>
                     ) : null}
                   </span>

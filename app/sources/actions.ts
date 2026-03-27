@@ -224,7 +224,7 @@ export async function generateCardAction(formData: FormData) {
       : undefined;
 
   if (variantValue === "custom" && !instruction) {
-    throw new Error("Kirjoita ohje tehtavan luontia varten.");
+    throw new Error("Kirjoita ohje tehtävän luontia varten.");
   }
 
   await generateSuggestedCard({

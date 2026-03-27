@@ -9,7 +9,7 @@ type IdeaNetworkLoaderProps = {
 };
 
 export function IdeaNetworkLoader({
-  label = "Kasittelen ajatusta",
+  label = "Käsittelen ajatusta",
   detail,
   variant = "inline"
 }: IdeaNetworkLoaderProps) {

@@ -9,7 +9,7 @@ import { ThoughtsTagBrowser } from "./thoughts-tag-browser";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Ajatukset",
-  description: "Selaa tallentamiasi ajatuksia, syvenna niita ja palaa niihin myohemmin."
+  description: "Selaa tallentamiasi ajatuksia, syvennä niitä ja palaa niihin myöhemmin."
 };
 
 type SourceListItem = {
@@ -161,7 +161,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
       <div className="page-header">
         <h1>Ajatukset</h1>
         <p className="muted">
-          Selaa tallentamiasi ajatuksia, syvenna niita ja palaa niihin myohemmin.
+          Selaa tallentamiasi ajatuksia, syvennä niitä ja palaa niihin myöhemmin.
         </p>
       </div>
 
@@ -254,7 +254,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
         {!loadError && sources.length === 0 ? (
           <article className="card">
             <p className="muted" style={{ margin: 0 }}>
-              Et ole viela tallentanut ajatuksia. Aloita tallentamalla ensimmainen ajatus.
+              Et ole vielä tallentanut ajatuksia. Aloita tallentamalla ensimmäinen ajatus.
             </p>
           </article>
         ) : null}

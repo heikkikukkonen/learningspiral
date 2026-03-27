@@ -37,7 +37,7 @@ function getStatusMessage(searchParams?: Record<string, string | undefined>) {
   switch (searchParams?.error) {
     case "signin":
       if (authErrorCode === "email_not_confirmed" || authErrorMessage === "Email not confirmed") {
-        return "Tili on luotu, mutta sahkopostiosoitetta ei ole viela vahvistettu. Avaa vahvistusviesti ja kokeile sitten uudelleen.";
+        return "Tili on luotu, mutta sÃ¤hkÃ¶postiosoitetta ei ole vielÃ¤ vahvistettu. Avaa vahvistusviesti ja kokeile sitten uudelleen.";
       }
       return "Kirjautuminen epaonnistui. Tarkista sahkoposti ja salasana.";
     case "signup":
@@ -54,7 +54,7 @@ function getStatusMessage(searchParams?: Record<string, string | undefined>) {
     case "oauth-start":
       return "OAuth-kirjautumisen aloitus epaonnistui. Varmista, etta provider on aktivoitu Supabasessa.";
     case "oauth-provider":
-      return "Valittu kirjautumistapa ei ole kaytossa tassa ymparistossa.";
+      return "Valittu kirjautumistapa ei ole kÃ¤ytÃ¶ssÃ¤ tÃ¤ssÃ¤ ympÃ¤ristÃ¶ssÃ¤.";
     case "auth-callback":
       return "Tilin vahvistus tai kirjautumisen viimeistely epaonnistui. Kokeile linkkia uudelleen.";
     case "reset-password":
@@ -208,7 +208,7 @@ export default async function LoginPage({
                 <span>Miksi haluat olla osa Noema-tarinaa?</span>
                 <textarea
                   name="motivation"
-                  placeholder="Muutama lause siita, mita haluat Noeman avulla rakentaa tai ymmartaa syvemmin."
+                  placeholder="Muutama lause siitä, mitä haluat Noeman avulla rakentaa tai ymmärtää syvemmin."
                   minLength={10}
                   required
                 />
@@ -220,7 +220,7 @@ export default async function LoginPage({
           )}
 
           <p className="muted auth-mode-meta">
-            {mode === "signin" ? "Eiko sinulla viela ole tilia?" : "Onko sinulla jo tili?"}{" "}
+            {mode === "signin" ? "EikÃ¶ sinulla vielÃ¤ ole tiliÃ¤?" : "Onko sinulla jo tili?"}{" "}
             <Link
               href={`/login?mode=${alternateMode}&next=${encodeURIComponent(nextPath)}`}
               className="landing-inline-link"

@@ -20,25 +20,25 @@ export const ANALYSIS_ACTIONS: AnalysisActionDefinition[] = [
   {
     id: "clarify",
     label: "Kirkasta",
-    summary: "Selkea yhteenveto",
+    summary: "Selkeä yhteenveto",
     settingsKey: "analysisPromptRefresh"
   },
   {
     id: "deepen",
-    label: "Syvenna",
-    summary: "Uusia nakokulmia ja kysymyksia",
+    label: "Syvennä",
+    summary: "Uusia näkökulmia ja kysymyksiä",
     settingsKey: "analysisPromptDeepen"
   },
   {
     id: "condense",
-    label: "Tiivista",
+    label: "Tiivistä",
     summary: "Ydin kahdessa lauseessa",
     settingsKey: "analysisPromptSummarize"
   },
   {
     id: "network",
     label: "Verkostoidu",
-    summary: "Tunnista ihmisia, joiden kanssa aihetta voisi syventaa.",
+    summary: "Tunnista ihmisiä, joiden kanssa aihetta voisi syventää.",
     settingsKey: "analysisPromptNetwork"
   }
 ] as const;

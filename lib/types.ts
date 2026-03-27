@@ -30,25 +30,25 @@ export const QUICK_TASK_GUIDANCE: Record<QuickTaskCardType, QuickTaskGuidance> =
   recall: {
     label: "Kertaustehtava",
     tooltip: "Ohjaa muistamista ja palauttaa ydinajatuksen mieleen ilman, etta vain luet sen uudestaan.",
-    summary: "Ohjaa muistamista ja vahvistaa muistijalkea.",
+    summary: "Ohjaa muistamista ja vahvistaa muistijälkeä.",
     cardSupportText: "auttaa muistamaan ydinasian"
   },
   apply: {
     label: "Soveltamistehtava",
     tooltip: "Ohjaa kayttoon ja auttaa loytamaan tilanteen, jossa voit soveltaa ideaa kaytannossa.",
-    summary: "Ohjaa kayttoon ja siirtaa idean teoriasta kaytantoon.",
+    summary: "Ohjaa käyttöön ja siirtää idean teoriasta käytäntöön.",
     cardSupportText: "auttaa viemaan idean kaytantoon"
   },
   reflect: {
     label: "Reflektiotehtava",
     tooltip: "Ohjaa syvempaan ymmarrykseen ja auttaa pohtimaan, mita ajatus merkitsee sinulle.",
-    summary: "Ohjaa syvempaan ymmarrykseen ja auttaa rakentamaan merkitysta.",
+    summary: "Ohjaa syvempään ymmärrykseen ja auttaa rakentamaan merkitystä.",
     cardSupportText: "auttaa syventamaan omaa ymmarrysta"
   },
   discuss: {
     label: "Keskustelutehtava",
     tooltip: "Ohjaa sosiaaliseen oppimiseen ja kannustaa syventamaan ymmarrysta keskustelun kautta.",
-    summary: "Ohjaa sosiaaliseen oppimiseen ja tuo uusia nakokulmia.",
+    summary: "Ohjaa sosiaaliseen oppimiseen ja tuo uusia näkökulmia.",
     cardSupportText: "auttaa saamaan uusia nakokulmia"
   }
 };

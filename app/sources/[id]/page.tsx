@@ -107,7 +107,7 @@ export default async function SourceDetailsPage({
   const parsedSummary = parseSourceSummaryContent(summary?.content, summary?.raw_input);
   const lastSavedLabel = summary?.updated_at
     ? `Viimeksi tallennettu ${new Date(summary.updated_at).toLocaleString("fi-FI")}`
-    : "Ei tallennettu viela";
+    : "Ei tallennettu vielä";
   const hasCards = cards.length > 0;
   const sourceStageLabel = sourceIdeaStageLabel(deriveSourceIdeaStage(hasCards));
 
@@ -116,10 +116,10 @@ export default async function SourceDetailsPage({
       <div className="page-header source-workspace-header">
         <h1>Syvenny ajatukseen</h1>
         <p className="muted">
-          Muokkaa ajatukselle selkea otsikko ja ajatus. Lisaa tunnisteet, jotta autat ajatuksia
-          loytamaan toisensa ja muodostamaan yhteyksia. Syvenna nakokulmaa tarvittaessa. Lopuksi luo
-          haluamasi tehtavat palataksesi ajatukseen myohemmin. Voit myos vain tallentaa tiedot ja
-          syventaa ajatusta myohemmin.
+          Muokkaa ajatukselle selkeä otsikko ja ajatus. Lisää tunnisteet, jotta autat ajatuksia
+          löytämään toisensa ja muodostamaan yhteyksiä. Syvennä näkökulmaa tarvittaessa. Lopuksi luo
+          haluamasi tehtävät palataksesi ajatukseen myöhemmin. Voit myös vain tallentaa tiedot ja
+          syventää ajatusta myöhemmin.
         </p>
       </div>
 
@@ -150,7 +150,7 @@ export default async function SourceDetailsPage({
 
           <div className="source-origin-panel">
             <details className="capture-details source-capture-details">
-              <summary>Nayta alkuperainen tallenne</summary>
+              <summary>Näytä alkuperäinen tallenne</summary>
 
               <div className="source-capture-details-body">
                 <div className="source-meta">
@@ -203,8 +203,8 @@ export default async function SourceDetailsPage({
       <article className="card source-editor-card source-task-card">
         <div className="source-origin-header">
           <div className="page-header source-task-card-header">
-            <h2>Luo tehtavat</h2>
-            <p className="muted">Luo haluamasi tehtavat palataksesi ajatukseen myohemmin.</p>
+            <h2>Luo tehtävät</h2>
+            <p className="muted">Luo haluamasi tehtävät palataksesi ajatukseen myöhemmin.</p>
           </div>
         </div>
         <SourceTasksPanel sourceId={source.id} cards={cards} />

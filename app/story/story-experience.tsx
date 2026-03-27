@@ -15,7 +15,7 @@ const storySteps: StoryStep[] = [
   {
     key: "intro",
     kicker: "Noema",
-    title: "Ajattelu, joka syvenee — ja synnyttää merkityksellistä toimintaa",
+    title: "Ajattelu, joka syvenee - ja synnyttää merkityksellistä toimintaa",
     variant: "hero"
   },
   {
@@ -30,7 +30,6 @@ const storySteps: StoryStep[] = [
       "Toimi."
     ]
   },
-
   {
     key: "story-a1",
     lines: [
@@ -49,7 +48,7 @@ const storySteps: StoryStep[] = [
   {
     key: "story-a3",
     variant: "quote",
-    lines: ["Ja yhtäkkiä —", "ne liittyvät toisiinsa."]
+    lines: ["Ja yhtäkkiä -", "ne liittyvät toisiinsa."]
   },
   {
     key: "story-b",
@@ -87,7 +86,7 @@ const storySteps: StoryStep[] = [
   {
     key: "definition-c",
     lines: [
-      "Se ei ajattele puolestasi —",
+      "Se ei ajattele puolestasi -",
       "vaan auttaa sinua ajattelemaan paremmin."
     ]
   },
@@ -107,7 +106,7 @@ const storySteps: StoryStep[] = [
   {
     key: "layer-a",
     lines: [
-      "Uusi tieto ei korvaa vanhaa —",
+      "Uusi tieto ei korvaa vanhaa -",
       "se tarttuu siihen kiinni."
     ]
   },
@@ -128,7 +127,7 @@ const storySteps: StoryStep[] = [
   {
     key: "noesis-b",
     lines: [
-      "Mutta se, mitä siitä syntyy, ",
+      "Mutta se, mitä siitä syntyy,",
       "on sinun tulkintasi.",
       "Sinun ymmärryksesi."
     ]
@@ -144,7 +143,7 @@ const storySteps: StoryStep[] = [
   {
     key: "choice-b",
     lines: [
-      "Ero ei ole siinä, mitä tapahtuu —",
+      "Ero ei ole siinä, mitä tapahtuu -",
       "vaan siinä, miten ajattelet siitä."
     ]
   },
@@ -162,7 +161,7 @@ const storySteps: StoryStep[] = [
   },
   {
     key: "action-b",
-    lines: ["Ei vain siinä, mitä tiedät —", "vaan siinä, mitä teet."]
+    lines: ["Ei vain siinä, mitä tiedät -", "vaan siinä, mitä teet."]
   },
   {
     key: "cta",

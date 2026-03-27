@@ -47,7 +47,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
   function readEditorFormData() {
     const form = document.getElementById("source-editor-form");
     if (!(form instanceof HTMLFormElement)) {
-      throw new Error("Ajatuslomaketta ei loytynyt.");
+      throw new Error("Ajatuslomaketta ei löytynyt.");
     }
 
     const formData = new FormData(form);
@@ -64,7 +64,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
         await task();
         router.refresh();
       } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : "Tehtavan kasittely epaonnistui.");
+        setErrorMessage(error instanceof Error ? error.message : "Tehtävän käsittely epäonnistui.");
       } finally {
         setPendingAction(null);
       }
@@ -74,7 +74,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
   function handleGenerateTask(variant: CardType | "custom") {
     const instruction = customInstruction.trim();
     if (variant === "custom" && !instruction) {
-      setErrorMessage("Kirjoita ohje tehtavan luontia varten.");
+      setErrorMessage("Kirjoita ohje tehtävän luontia varten.");
       return;
     }
 
@@ -96,7 +96,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
   }
 
   function handleDeleteCard(cardId: string) {
-    if (!window.confirm("Poistetaanko tehtava pysyvasti?")) {
+    if (!window.confirm("Poistetaanko tehtävä pysyvästi?")) {
       return;
     }
 
@@ -112,7 +112,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
 
   return (
     <div className="source-task-stack">
-      <div className="source-task-toolbar" role="group" aria-label="Tehtavien pikaluonti">
+      <div className="source-task-toolbar" role="group" aria-label="Tehtävien pikaluonti">
         {presetTaskButtons.map((task) => (
           <button
             key={task.value}
@@ -133,7 +133,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
         <input
           value={customInstruction}
           onChange={(event) => setCustomInstruction(event.target.value)}
-          placeholder="Kirjoita ohje oman tehtavan luontia varten"
+          placeholder="Kirjoita ohje oman tehtävän luontia varten"
           disabled={isPending}
         />
         <button
@@ -142,14 +142,14 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
           disabled={isPending}
           onClick={() => handleGenerateTask("custom")}
         >
-          {pendingAction === "generate:custom" ? "Luodaan..." : "Luo tehtava"}
+          {pendingAction === "generate:custom" ? "Luodaan..." : "Luo tehtävä"}
         </button>
       </div>
 
       <div className="list" style={{ marginTop: "0.8rem" }}>
         {cards.length === 0 ? (
           <div className="source-task-empty">
-            <p>Luo tehtava ylla olevista painikkeista. Uusin tehtava tulee aina ylimmaksi.</p>
+            <p>Luo tehtävä yllä olevista painikkeista. Uusin tehtävä tulee aina ylimmäksi.</p>
           </div>
         ) : null}
 
@@ -171,7 +171,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
                 <button
                   type="button"
                   className="source-task-delete-button"
-                  aria-label="Poista tehtava"
+                  aria-label="Poista tehtävä"
                   disabled={isPending}
                   onClick={() => handleDeleteCard(card.id)}
                 >
@@ -211,18 +211,18 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
                     name={`cards[${index}].cardType`}
                     defaultValue={card.card_type}
                   >
-                    <option value="recall">Kertaustehtava</option>
-                    <option value="apply">Soveltamistehtava</option>
-                    <option value="reflect">Reflektiotehtava</option>
-                    <option value="discuss">Keskustelutehtava</option>
-                    <option value="custom">Oma tehtava</option>
-                    <option value="decision">Paatostehtava</option>
+                    <option value="recall">Kertaustehtävä</option>
+                    <option value="apply">Soveltamistehtävä</option>
+                    <option value="reflect">Reflektiotehtävä</option>
+                    <option value="discuss">Keskustelutehtävä</option>
+                    <option value="custom">Oma tehtävä</option>
+                    <option value="decision">Päätöstehtävä</option>
                   </select>
                 </label>
               </div>
 
               {pendingAction === `delete:${card.id}` ? (
-                <p className="status source-task-delete-status">Poistetaan tehtavaa...</p>
+                <p className="status source-task-delete-status">Poistetaan tehtävää...</p>
               ) : null}
             </article>
           );
@@ -237,8 +237,8 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
 
       <NoemaLoadingModal
         open={isPending && isGeneratingTask}
-        label="Luon tehtavan"
-        detail="Luon tehtavan automaattisesti. Voit itse muokata tehtavaa ja vastausta halutessasi."
+        label="Luon tehtävän"
+        detail="Luon tehtävän automaattisesti. Voit itse muokata tehtävää ja vastausta halutessasi."
       />
     </div>
   );

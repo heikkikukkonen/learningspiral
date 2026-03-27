@@ -26,7 +26,7 @@ type Props = {
 function buildIdeaPreview(idea: UnrefinedIdeaQueueItem): string {
   const primary = idea.raw_input?.trim() || idea.summary_content?.trim() || "";
   if (!primary) {
-    return "Keskenerainen ajatus odottaa viela otsikointia ja syventamista.";
+    return "Keskeneräinen ajatus odottaa vielä otsikointia ja syventämistä.";
   }
 
   return primary.length > 280 ? `${primary.slice(0, 277)}...` : primary;
@@ -120,20 +120,20 @@ function ReviewCard({
             </article>
 
             <details className="card review-answer-panel">
-              <summary style={{ cursor: "pointer", fontWeight: 700 }}>Avaa tehtavaan liittyva teoria</summary>
+              <summary style={{ cursor: "pointer", fontWeight: 700 }}>Avaa tehtävään liittyvä teoria</summary>
               <div style={{ marginTop: "0.7rem" }}>
                 <p className="status" style={{ marginTop: 0 }}>
-                  Lahde: {card.source_title}
+                  Lähde: {card.source_title}
                 </p>
                 <p style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>
-                  {card.summary_content || "Teoriaa ei loytynyt tasta lahteesta viela."}
+                  {card.summary_content || "Teoriaa ei löytynyt tästä lähteestä vielä."}
                 </p>
               </div>
             </details>
 
             <article className="card review-answer-panel review-schedule-panel">
               <h3 style={{ marginTop: 0, marginBottom: "0.5rem" }}>
-                Kuinka vahvasti haluat palata tahan uudelleen?
+                Kuinka vahvasti haluat palata tähän uudelleen?
               </h3>
               <div className="review-schedule-grid">
                 <form
@@ -165,7 +165,7 @@ function ReviewCard({
                     pendingText="Tallennetaan..."
                     disabled={pending || !userAnswer.trim()}
                   >
-                    Pida lahella (1paiva)
+                    Pidä lähellä (1 päivä)
                   </SubmitButton>
                 </form>
                 <form
@@ -181,7 +181,7 @@ function ReviewCard({
                     pendingText="Tallennetaan..."
                     disabled={pending || !userAnswer.trim()}
                   >
-                    Palaa myohemmin ({">"}10 paivaa)
+                    Palaa myöhemmin ({">"}10 päivää)
                   </SubmitButton>
                 </form>
               </div>
@@ -215,7 +215,7 @@ function IdeaCard({
       <div className="review-card-head">
         <div className="source-meta">
           <span className="pill" data-variant="primary">
-            Keskenerainen ajatus
+            Keskeneräinen ajatus
           </span>
           {idea.tags?.slice(0, 3).map((tag) => (
             <span className="pill" key={tag}>
@@ -223,14 +223,14 @@ function IdeaCard({
             </span>
           ))}
         </div>
-        <h2 className="review-card-title">Haluatko syventaa taman ajatuksen valmiiksi?</h2>
+        <h2 className="review-card-title">Haluatko syventää tämän ajatuksen valmiiksi?</h2>
         <p className="review-card-lead">{buildIdeaPreview(idea)}</p>
       </div>
 
       <div className="card review-answer-panel">
-        <p className="review-panel-label">Miksi tama on nyt jonossa</p>
+        <p className="review-panel-label">Miksi tämä on nyt jonossa</p>
         <p style={{ margin: 0 }}>
-          Ajatus on tallessa, mutta sita ei ole viela syvennetty riittavasti eika muutettu tehtaviksi.
+          Ajatus on tallessa, mutta sitä ei ole vielä syvennetty riittävästi eikä muutettu tehtäviksi.
         </p>
       </div>
 
@@ -239,7 +239,7 @@ function IdeaCard({
           Syvenny nyt
         </Link>
         <button type="button" className="secondary review-idea-button" onClick={onSkip}>
-          Jatka myohemmin
+          Jatka myöhemmin
         </button>
       </div>
     </article>
@@ -255,9 +255,9 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
   const currentItem = items[0] ?? null;
   const headerLead =
     currentItem?.kind === "review"
-      ? "Yksi asia kerrallaan. Yrita vastata ensin tehtavaan itse, nayta vasta sitten tiedot."
+      ? "Yksi asia kerrallaan. Yritä vastata ensin tehtävään itse, näytä vasta sitten tiedot."
       : currentItem?.kind === "idea"
-        ? "Yksi asia kerrallaan. Nyt on hyva hetki syventaa aiemmin tallentamaasi ajatusta. Lisaa siihen puuttuvat tagit ja luo tehtavat niin saat tehtavat automaattisesti nousemaan talle sivulle."
+        ? "Yksi asia kerrallaan. Nyt on hyvä hetki syventää aiemmin tallentamaasi ajatusta. Lisää siihen puuttuvat tagit ja luo tehtävät niin saat tehtävät automaattisesti nousemaan tälle sivulle."
         : "Yksi asia kerrallaan. Vastaa ensin itse, nayta sitten tiedot tai nosta keskenerainen ajatus syvennettavaksi.";
 
   function removeCurrentItem() {
@@ -320,7 +320,7 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
             {totalCount === 0 ? 0 : totalCount} / {totalCount}
           </p>
           <p className="muted" style={{ marginBottom: 0 }}>
-            Ei uusia tehtavia juuri nyt. Voit tallentaa uusia ajatuksia tai syventaa olemassa
+            Ei uusia tehtäviä juuri nyt. Voit tallentaa uusia ajatuksia tai syventää olemassa
             olevia ajatuksia.
           </p>
         </article>
