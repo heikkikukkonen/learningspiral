@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { NoemaLoadingModal } from "@/app/components/noema-loading-modal";
 import { ANALYSIS_ACTIONS } from "@/lib/analysis-actions";
 import {
   generateSourceTagsAction,
@@ -85,6 +86,13 @@ export function SourceEditorForm({
   const suggestionsLabel = normalizedTagInput ? "Vastaavat tunnisteet" : "Aiemmat tunnisteet";
   const showInlineSuggestions = normalizedTagInput.length > 0 && visibleSuggestions.length > 0;
   const showDefaultSuggestions = normalizedTagInput.length === 0 && visibleSuggestions.length > 0;
+  const sourceLoadingOpen = isRefining || isGeneratingTags;
+  const sourceLoadingLabel = isGeneratingTags ? "Luon tunnisteet automaattisesti" : "Syvennan nakokulmaa";
+  const sourceLoadingDetail = isGeneratingTags
+    ? "Voit poistaa tai lisata itse tunnisteita taman jalkeen."
+    : activeMode === "custom"
+    ? "Paivitan syvennystekstin antamasi ohjeen mukaan."
+    : "Paivitan syvennystekstin. Voit kokeilla valmiita toimintoja tai ohjata omalla ohjeellasi syventamista.";
 
   function addResolvedTag(nextValue?: string) {
     const trimmedValue = (nextValue ?? tagInput).trim();
@@ -366,6 +374,12 @@ export function SourceEditorForm({
           </div>
         </div>
       </form>
+
+      <NoemaLoadingModal
+        open={sourceLoadingOpen}
+        label={sourceLoadingLabel}
+        detail={sourceLoadingDetail}
+      />
     </div>
   );
 }

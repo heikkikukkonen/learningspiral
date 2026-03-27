@@ -102,7 +102,7 @@ const storySteps: StoryStep[] = [
   },
   {
     key: "definition-e",
-    lines: ["Ja kun ne kohtaavat,", "syntyy jotain uutta."]
+    lines: ["Ja kun ne kohtaavat,", "syntyy jotain uutta.", "Syntyy toimintaa."]
   },
   {
     key: "layer-a",
@@ -297,7 +297,7 @@ export function StoryExperience({ mode = "story" }: StoryExperienceProps) {
 
             {step.variant === "cta" ? (
               <div className="story-step-actions">
-                <Link href="/capture?mode=text" className="button-link primary">
+                <Link href="/login?mode=signup&next=%2Fapp" className="button-link primary">
                   Aloita kirjaamalla ajatus
                 </Link>
               </div>

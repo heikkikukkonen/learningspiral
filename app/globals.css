@@ -165,6 +165,8 @@ main.container {
 
 .muted {
   color: var(--muted);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .card {
@@ -218,11 +220,14 @@ textarea {
   background: #fff;
   border-radius: 10px;
   padding: 0.55rem 0.7rem;
+  min-width: 0;
 }
 
 textarea {
   min-height: 150px;
   resize: vertical;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .form-row {
@@ -691,6 +696,8 @@ button.danger {
   color: #41556e;
   line-height: 1.55;
   white-space: pre-line;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -700,6 +707,8 @@ button.danger {
 .status {
   font-size: 0.85rem;
   color: var(--muted);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .source-workspace {
@@ -1059,6 +1068,8 @@ button.danger {
   color: var(--muted);
   font-size: 0.92rem;
   line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .source-task-delete-button {
@@ -1143,11 +1154,22 @@ button.danger {
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(220, 226, 235, 0.95);
+  min-width: 0;
 }
 
 .source-capture-raw-text {
   margin: 0;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.source-capture-details-body,
+.source-meta,
+.source-origin-panel,
+.source-workspace-layout,
+.source-editor-card {
+  min-width: 0;
 }
 
 .source-page-actions {
@@ -1185,6 +1207,8 @@ button.danger {
 .source-page-actions-error {
   margin: 0.75rem 0 0;
   color: var(--danger);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .review-shell {
@@ -1248,6 +1272,8 @@ button.danger {
   line-height: 1.7;
   color: #52647d;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .review-card-form textarea {
@@ -4333,6 +4359,58 @@ svg path[stroke="#067647"] {
   gap: 0.8rem;
   justify-content: center;
   transition-delay: 520ms;
+}
+
+.home-hero-topbar {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin-bottom: 0.9rem;
+}
+
+.home-loader-preview-button {
+  min-height: 2.5rem;
+  padding-inline: 1rem;
+}
+
+.home-loader-preview-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(178, 237, 243, 0.22) 0%, rgba(178, 237, 243, 0) 28%),
+    rgba(232, 241, 246, 0.64);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.home-loader-preview-card {
+  width: min(100%, 38rem);
+  min-height: 48rem;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 1.8rem;
+  padding: 2.8rem 2.4rem 3rem;
+  border-radius: 34px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.44)),
+    linear-gradient(180deg, rgba(247, 249, 250, 0.72), rgba(238, 246, 247, 0.4));
+  border: 1px solid rgba(255, 255, 255, 0.54);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 32px 72px rgba(29, 67, 74, 0.2);
+}
+
+.home-loader-preview-hint {
+  margin: 0;
+  font-size: 0.96rem;
+  color: #5f7488;
+  text-align: center;
+  max-width: 28rem;
 }
 
 @keyframes storyStream {

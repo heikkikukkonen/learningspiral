@@ -1,0 +1,45 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="700"
+  height="700"
+  viewBox="0 0 700 700"
+  role="img"
+  aria-labelledby="noema-logo-title noema-logo-desc"
+>
+  <title id="noema-logo-title">Noema logo</title>
+  <desc id="noema-logo-desc">
+    Exact SVG wrapper for the current Noema logo, with hidden motion guide paths for later animation.
+  </desc>
+
+  <defs>
+    <path
+      id="noema-left-orbit"
+      d="M 339 266
+         C 328 307 304 353 265 387
+         C 229 417 188 427 153 418
+         C 124 409 105 386 102 353
+         C 99 318 121 295 148 269
+         C 181 236 229 213 273 211
+         C 307 210 329 226 339 266"
+    />
+    <path
+      id="noema-flow-path"
+      d="M 339 270
+         C 340 326 340 381 342 430
+         C 344 458 356 474 382 476
+         C 408 474 430 452 457 414
+         C 482 379 486 335 528 302
+         C 553 282 569 272 580 272"
+    />
+    <circle id="noema-right-node" cx="600" cy="300" r="58" />
+  </defs>
+
+  <image
+    x="0"
+    y="0"
+    width="700"
+    height="700"
+    href="/brand/noema-logo/noema-logo-source.png"
+    preserveAspectRatio="xMidYMid meet"
+  />
+</svg>

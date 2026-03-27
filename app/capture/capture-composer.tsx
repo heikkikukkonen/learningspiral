@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IdeaNetworkLoader } from "@/app/components/idea-network-loader";
+import { NoemaLoadingModal } from "@/app/components/noema-loading-modal";
 import { inferCaptureTitle } from "@/lib/source-editor";
 import {
   buildSharedImageRawInput,
@@ -577,9 +578,30 @@ export function CaptureComposer({
   const activeTextProcessingDetail =
     textSaveStage === "saving"
       ? saveIntent === "return"
-        ? "Luon ajatukselle uuden merkinnan ja palautan sinut etusivulle."
-        : "Luon ajatukselle uuden merkinnan ja siirran sinut seuraavaksi muokkausnakymaan."
+        ? "Laitan ajatuksen talteen ja palautan sinut etusivulle."
+        : "Tallennan ajatuksen ja siirran sinut jatkamaan syventamista."
       : textProcessingDetail;
+  const showCaptureLoadingModal =
+    (mode === "text" ? textSaveStage === "saving" : false) ||
+    (mode !== "text" && (isAnalyzing || isSaving));
+  const captureLoadingLabel = mode === "text" && textSaveStage === "saving"
+    ? "Tallennan ajatuksen"
+    : isTextProcessing
+    ? textProcessingLabel
+    : isAnalyzing
+    ? mode === "image"
+      ? "Poimin tekstin kuvasta"
+      : "Muunnan puheen tekstiksi"
+    : "Tallennan ajatuksen";
+  const captureLoadingDetail = isTextProcessing
+    ? activeTextProcessingDetail
+    : isAnalyzing
+    ? mode === "image"
+      ? "Voit tarkistaa ja muokata poimimani tekstin ennen tallentamista."
+      : "Voit tarkistaa ja muokata poimimani tekstin ennen tallentamista."
+    : saveIntent === "return"
+    ? "Laitan ajatuksen talteen ja palautan sinut etusivulle."
+    : "Tallennan ajatuksen ja siirran sinut jatkamaan syventamista.";
 
   return (
     <div className="grid">
@@ -791,9 +813,6 @@ export function CaptureComposer({
                     className="capture-asset-preview capture-image-preview"
                   />
                   <div className="capture-image-preview-meta">
-                    <span className="pill" data-variant="primary">
-                      Kuva litteroitu
-                    </span>
                     <button
                       type="button"
                       className="secondary capture-image-secondary-action"
@@ -805,7 +824,7 @@ export function CaptureComposer({
                 </div>
 
                 <label ref={imageTranscriptRef} className="form-row capture-image-summary-field">
-                  <span>Litteroitu teksti</span>
+                  <span>Poimittu teksti</span>
                   <textarea value={rawInputValue} onChange={(event) => setRawInputValue(event.target.value)} />
                 </label>
 
@@ -1043,6 +1062,12 @@ export function CaptureComposer({
           </p>
         </article>
       ) : null}
+
+      <NoemaLoadingModal
+        open={showCaptureLoadingModal}
+        label={captureLoadingLabel}
+        detail={captureLoadingDetail}
+      />
     </div>
   );
 }

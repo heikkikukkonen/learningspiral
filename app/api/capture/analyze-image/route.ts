@@ -20,6 +20,12 @@ export async function POST(request: Request) {
     });
 
     const rawInput = extracted.data.trim();
+    if (!extracted.ok || !rawInput) {
+      return NextResponse.json(
+        { error: "Kuvan litterointi ei ole käytettävissä, koska yhteys palveluun ei toimi." },
+        { status: 503 }
+      );
+    }
 
     return NextResponse.json({
       rawInput,

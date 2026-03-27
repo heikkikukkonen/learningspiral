@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
-import { IdeaNetworkLoader } from "@/app/components/idea-network-loader";
+import { NoemaLoader } from "@/app/components/noema-loader";
 
 type SubmitButtonProps = {
   children: ReactNode;
@@ -13,7 +13,7 @@ type SubmitButtonProps = {
   name?: string;
   value?: string;
   confirmMessage?: string;
-  loadingVariant?: "spinner" | "idea-network";
+  loadingVariant?: "spinner" | "idea-network" | "noema";
 };
 
 export function SubmitButton({
@@ -25,7 +25,7 @@ export function SubmitButton({
   name,
   value,
   confirmMessage,
-  loadingVariant = "spinner"
+  loadingVariant = "noema"
 }: SubmitButtonProps) {
   const { pending } = useFormStatus();
 
@@ -46,10 +46,10 @@ export function SubmitButton({
     >
       <span className="submit-button-content">
         {pending ? (
-          loadingVariant === "idea-network" ? (
-            <IdeaNetworkLoader label={pendingText} />
-          ) : (
+          loadingVariant === "spinner" ? (
             <span className="spinner" aria-hidden="true" />
+          ) : (
+            <NoemaLoader label={pendingText} />
           )
         ) : null}
         <span>{pending ? pendingText : children}</span>

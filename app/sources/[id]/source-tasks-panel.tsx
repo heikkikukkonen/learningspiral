@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { NoemaLoadingModal } from "@/app/components/noema-loading-modal";
 import {
   deleteCardAction,
   generateCardAction,
@@ -41,6 +42,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
   const [errorMessage, setErrorMessage] = useState("");
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const isGeneratingTask = Boolean(pendingAction?.startsWith("generate:"));
 
   function readEditorFormData() {
     const form = document.getElementById("source-editor-form");
@@ -232,6 +234,12 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
           {errorMessage}
         </p>
       ) : null}
+
+      <NoemaLoadingModal
+        open={isPending && isGeneratingTask}
+        label="Luon tehtavan"
+        detail="Luon tehtavan automaattisesti. Voit itse muokata tehtavaa ja vastausta halutessasi."
+      />
     </div>
   );
 }
