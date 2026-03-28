@@ -176,7 +176,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
 
       {loadError ? (
         <article className="card">
-          <strong>Tietokanta ei ole yhteydessa</strong>
+          <strong>Tietokanta ei ole yhteydessä</strong>
           <p className="status" style={{ marginBottom: 0 }}>
             {loadError}
           </p>
@@ -198,7 +198,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
                 name="q"
                 type="search"
                 defaultValue={rawQuery}
-                placeholder="Hae ajatuksia tunnisteella tai sisallosta."
+                placeholder="Hae ajatuksia tunnisteella tai sisällöstä."
               />
               {activeTag ? <input type="hidden" name="tag" value={activeTag} /> : null}
               <button type="submit" className="button-link secondary">

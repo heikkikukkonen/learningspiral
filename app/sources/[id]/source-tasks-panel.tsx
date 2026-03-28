@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -96,7 +96,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
   }
 
   function handleDeleteCard(cardId: string) {
-    if (!window.confirm("Poistetaanko tehtävä pysyvästi?")) {
+    if (!window.confirm("Poistanko tehtävän pysyvästi?")) {
       return;
     }
 
@@ -127,8 +127,6 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
         ))}
       </div>
 
-      <p className="status source-task-hint">Voit muokata toimintojen ohjeistusta Asetukset-sivulla.</p>
-
       <div className="source-task-custom">
         <input
           value={customInstruction}
@@ -145,6 +143,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
           {pendingAction === "generate:custom" ? "Luon..." : "Luo tehtävä"}
         </button>
       </div>
+
 
       <div className="list" style={{ marginTop: "0.8rem" }}>
         {cards.length === 0 ? (
@@ -186,6 +185,12 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
                   name={`cards[${index}].cardId`}
                   value={card.id}
                 />
+                <input
+                  form="source-editor-form"
+                  type="hidden"
+                  name={`cards[${index}].cardType`}
+                  value={card.card_type}
+                />
                 <label className="form-row">
                   <span>Kysymys</span>
                   <input
@@ -203,21 +208,6 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
                     defaultValue={card.answer}
                     required
                   />
-                </label>
-                <label className="form-row">
-                  <span>Tyyppi</span>
-                  <select
-                    form="source-editor-form"
-                    name={`cards[${index}].cardType`}
-                    defaultValue={card.card_type}
-                  >
-                    <option value="recall">Kertaustehtävä</option>
-                    <option value="apply">Soveltamistehtävä</option>
-                    <option value="reflect">Reflektiotehtävä</option>
-                    <option value="discuss">Keskustelutehtävä</option>
-                    <option value="custom">Oma tehtävä</option>
-                    <option value="decision">Päätöstehtävä</option>
-                  </select>
                 </label>
               </div>
 

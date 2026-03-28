@@ -1,4 +1,4 @@
-export type SourceType =
+﻿export type SourceType =
   | "book"
   | "podcast"
   | "conversation"
@@ -28,28 +28,28 @@ export const QUICK_TASK_TYPES: QuickTaskCardType[] = ["recall", "apply", "reflec
 
 export const QUICK_TASK_GUIDANCE: Record<QuickTaskCardType, QuickTaskGuidance> = {
   recall: {
-    label: "Kertaustehtava",
-    tooltip: "Ohjaa muistamista ja palauttaa ydinajatuksen mieleen ilman, etta vain luet sen uudestaan.",
+    label: "Kertaustehtävä",
+    tooltip: "Ohjaa muistamista ja palauttaa ydinajatuksen mieleen ilman, että vain luet sen uudestaan.",
     summary: "Ohjaa muistamista ja vahvistaa muistijälkeä.",
     cardSupportText: "auttaa muistamaan ydinasian"
   },
   apply: {
-    label: "Soveltamistehtava",
-    tooltip: "Ohjaa kayttoon ja auttaa loytamaan tilanteen, jossa voit soveltaa ideaa kaytannossa.",
+    label: "Soveltamistehtävä",
+    tooltip: "Ohjaa käyttöön ja auttaa löytämään tilanteen, jossa voit soveltaa ideaa käytännössä.",
     summary: "Ohjaa käyttöön ja siirtää idean teoriasta käytäntöön.",
-    cardSupportText: "auttaa viemaan idean kaytantoon"
+    cardSupportText: "auttaa viemään idean käytäntöön"
   },
   reflect: {
-    label: "Reflektiotehtava",
-    tooltip: "Ohjaa syvempaan ymmarrykseen ja auttaa pohtimaan, mita ajatus merkitsee sinulle.",
+    label: "Reflektiotehtävä",
+    tooltip: "Ohjaa syvempään ymmärrykseen ja auttaa pohtimaan, mitä ajatus merkitsee sinulle.",
     summary: "Ohjaa syvempään ymmärrykseen ja auttaa rakentamaan merkitystä.",
-    cardSupportText: "auttaa syventamaan omaa ymmarrysta"
+    cardSupportText: "auttaa syventämään omaa ymmärrystä"
   },
   discuss: {
-    label: "Keskustelutehtava",
-    tooltip: "Ohjaa sosiaaliseen oppimiseen ja kannustaa syventamaan ymmarrysta keskustelun kautta.",
+    label: "Keskustelutehtävä",
+    tooltip: "Ohjaa sosiaaliseen oppimiseen ja kannustaa syventämään ymmärrystä keskustelun kautta.",
     summary: "Ohjaa sosiaaliseen oppimiseen ja tuo uusia näkökulmia.",
-    cardSupportText: "auttaa saamaan uusia nakokulmia"
+    cardSupportText: "auttaa saamaan uusia näkökulmia"
   }
 };
 
@@ -102,12 +102,12 @@ export interface CaptureAsset {
 }
 
 export function cardTypeLabel(cardType: CardType): string {
-  if (cardType === "recall") return "Kertaustehtava";
-  if (cardType === "apply") return "Soveltamistehtava";
-  if (cardType === "reflect") return "Reflektiotehtava";
-  if (cardType === "discuss") return "Keskustelutehtava";
-  if (cardType === "custom") return "Oma tehtava";
-  return "Paatostehtava";
+  if (cardType === "recall") return "Kertaustehtävä";
+  if (cardType === "apply") return "Soveltamistehtävä";
+  if (cardType === "reflect") return "Reflektiotehtävä";
+  if (cardType === "discuss") return "Keskustelutehtävä";
+  if (cardType === "custom") return "Oma tehtävä";
+  return "Päätöstehtävä";
 }
 
 export function cardTypeSupportText(cardType: CardType): string | null {

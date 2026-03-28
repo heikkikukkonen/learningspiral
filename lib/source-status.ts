@@ -5,5 +5,5 @@ export function deriveSourceIdeaStage(hasCards: boolean): SourceIdeaStage {
 }
 
 export function sourceIdeaStageLabel(stage: SourceIdeaStage): string {
-  return stage === "refined" ? "Jalostettu idea" : "Jalostamaton idea";
+  return stage === "refined" ? "Jalostettu ajatus" : "Jalostamaton ajatus";
 }

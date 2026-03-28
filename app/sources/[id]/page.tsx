@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import { SourceEditorForm } from "@/app/sources/[id]/source-editor-form";
 import { SourcePageActions } from "@/app/sources/[id]/source-page-actions";
 import { SourceTasksPanel } from "@/app/sources/[id]/source-tasks-panel";
@@ -204,7 +204,7 @@ export default async function SourceDetailsPage({
         <div className="source-origin-header">
           <div className="page-header source-task-card-header">
             <h2>Luo tehtävät</h2>
-            <p className="muted">Luo haluamasi tehtävät palataksesi ajatukseen myöhemmin.</p>
+            <p className="muted">Luo haluamasi tehtävät palataksesi ajatukseen myöhemmin. Voit muokata toimintojen ohjeistusta Asetukset-sivulla.</p>
           </div>
         </div>
         <SourceTasksPanel sourceId={source.id} cards={cards} />
