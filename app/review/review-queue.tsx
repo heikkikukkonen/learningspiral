@@ -146,7 +146,7 @@ function ReviewCard({
                 >
                   <SubmitButton
                     className="secondary review-schedule-button"
-                    pendingText="Tallennetaan..."
+                    pendingText="Tallennan..."
                     disabled={pending || !userAnswer.trim()}
                   >
                     Heti (3min)
@@ -162,7 +162,7 @@ function ReviewCard({
                 >
                   <SubmitButton
                     className="primary review-schedule-button"
-                    pendingText="Tallennetaan..."
+                    pendingText="Tallennan..."
                     disabled={pending || !userAnswer.trim()}
                   >
                     Pidä lähellä (1 päivä)
@@ -178,7 +178,7 @@ function ReviewCard({
                 >
                   <SubmitButton
                     className="success review-schedule-button"
-                    pendingText="Tallennetaan..."
+                    pendingText="Tallennan..."
                     disabled={pending || !userAnswer.trim()}
                   >
                     Palaa myöhemmin ({">"}10 päivää)

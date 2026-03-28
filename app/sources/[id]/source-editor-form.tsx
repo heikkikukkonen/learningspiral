@@ -287,7 +287,7 @@ export function SourceEditorForm({
                   onClick={handleGenerateTags}
                   disabled={isGeneratingTags}
                 >
-                  {isGeneratingTags ? "Luodaan..." : "Luo automaattisesti"}
+                  {isGeneratingTags ? "Luon..." : "Luo automaattisesti"}
                 </button>
               ) : null}
             </div>
@@ -336,7 +336,7 @@ export function SourceEditorForm({
                   type="button"
                   title={action.summary}
                 >
-                  {isRefining && activeMode === action.id ? "Käsitellään..." : action.label}
+                  {isRefining && activeMode === action.id ? "Käsittelen..." : action.label}
                 </button>
               ))}
             </div>
@@ -357,7 +357,7 @@ export function SourceEditorForm({
                 disabled={isRefining}
                 onClick={() => handleAiAction("custom")}
               >
-                {isRefining && activeMode === "custom" ? "Käsitellään..." : "Syvennä"}
+                {isRefining && activeMode === "custom" ? "Käsittelen..." : "Syvennä"}
               </button>
             </div>
 

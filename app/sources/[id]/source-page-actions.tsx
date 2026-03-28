@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -23,7 +23,7 @@ export function SourcePageActions({
   function readEditorFormData() {
     const form = document.getElementById("source-editor-form");
     if (!(form instanceof HTMLFormElement)) {
-      throw new Error("Ajatuslomaketta ei lÃƒÂ¶ytynyt.");
+      throw new Error("Ajatuslomaketta ei löytynyt.");
     }
 
     const formData = new FormData(form);
@@ -41,14 +41,14 @@ export function SourcePageActions({
         router.refresh();
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Tallennus epÃƒÆ’Ã‚Â¤onnistui. YritÃƒÆ’Ã‚Â¤ uudelleen.";
+          error instanceof Error ? error.message : "Tallennus epäonnistui. Yritä uudelleen.";
         setErrorMessage(message);
       }
     });
   }
 
   function handleDelete() {
-    if (!window.confirm("Poistetaanko ajatus pysyvÃƒÂ¤sti? TÃƒÂ¤mÃƒÂ¤ poistaa myÃƒÂ¶s siihen liittyvÃƒÂ¤t tehtÃƒÂ¤vÃƒÂ¤t.")) {
+    if (!window.confirm("Poistetaanko ajatus pysyvästi? Tämä poistaa myös siihen liittyvät tehtävät.")) {
       return;
     }
 
@@ -61,7 +61,7 @@ export function SourcePageActions({
         await deleteSourceAction(formData);
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Ajatuksen poisto epÃƒÆ’Ã‚Â¤onnistui. YritÃƒÆ’Ã‚Â¤ uudelleen.";
+          error instanceof Error ? error.message : "Ajatuksen poisto epäonnistui. Yritä uudelleen.";
         setErrorMessage(message);
       }
     });
@@ -76,7 +76,7 @@ export function SourcePageActions({
           onClick={handleDelete}
           disabled={isPending}
         >
-          {isPending ? "Kasitellaan..." : "Poista ajatus"}
+          {isPending ? "Käsittelen..." : "Poista ajatus"}
         </button>
 
         <div className="source-page-save-actions">
@@ -90,7 +90,7 @@ export function SourcePageActions({
               onClick={() => handleSave()}
               disabled={isPending}
             >
-              {isPending ? "Tallennetaan..." : "Tallenna"}
+              {isPending ? "Tallennan..." : "Tallenna"}
             </button>
           </div>
         </div>

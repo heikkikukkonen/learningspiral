@@ -122,7 +122,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
             title={task.tooltip}
             onClick={() => handleGenerateTask(task.value)}
           >
-            {pendingAction === `generate:${task.value}` ? "Luodaan..." : task.label}
+            {pendingAction === `generate:${task.value}` ? "Luon..." : task.label}
           </button>
         ))}
       </div>
@@ -142,7 +142,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
           disabled={isPending}
           onClick={() => handleGenerateTask("custom")}
         >
-          {pendingAction === "generate:custom" ? "Luodaan..." : "Luo tehtävä"}
+          {pendingAction === "generate:custom" ? "Luon..." : "Luo tehtävä"}
         </button>
       </div>
 
@@ -222,7 +222,7 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
               </div>
 
               {pendingAction === `delete:${card.id}` ? (
-                <p className="status source-task-delete-status">Poistetaan tehtävää...</p>
+                <p className="status source-task-delete-status">Poistan tehtävän...</p>
               ) : null}
             </article>
           );

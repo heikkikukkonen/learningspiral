@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -57,8 +57,8 @@ async function parseJson<T>(response: Response): Promise<T> {
     } catch {
       if (!response.ok) {
         throw new Error(
-          `PyyntÃ¶ epÃ¤onnistui (${response.status}). ${
-            responseText.slice(0, 200) || "Palvelin ei palauttanut luettavaa virheviestiÃ¤."
+          `Pyyntö epäonnistui (${response.status}). ${
+            responseText.slice(0, 200) || "Palvelin ei palauttanut luettavaa virheviestiä."
           }`
         );
       }
@@ -70,12 +70,12 @@ async function parseJson<T>(response: Response): Promise<T> {
     throw new Error(
       json?.error ||
         json?.message ||
-        `PyyntÃ¶ epÃ¤onnistui (${response.status}).`
+        `Pyyntö epäonnistui (${response.status}).`
     );
   }
 
   if (!json) {
-    throw new Error("Palvelin palautti tyhjÃ¤n vastauksen.");
+    throw new Error("Palvelin palautti tyhjän vastauksen.");
   }
 
   return json;
@@ -154,14 +154,14 @@ function sharedImportErrorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : "";
 
   if (/not found/i.test(message)) {
-    return "Jaetun sisÃ¤llÃ¶n luonnosta ei lÃ¶ytynyt. Jaa sisÃ¤ltÃ¶ uudelleen tai lisÃ¤Ã¤ se manuaalisesti.";
+    return "Jaetun sisällön luonnosta ei löytynyt. Jaa sisältö uudelleen tai lisää se manuaalisesti.";
   }
 
   if (/unauthorized/i.test(message)) {
-    return "Kirjaudu sisÃ¤Ã¤n ja yritÃ¤ jakaa sisÃ¤ltÃ¶ uudelleen.";
+    return "Kirjaudu sisään ja yritä jakaa sisältö uudelleen.";
   }
 
-  return message || "Jaetun sisÃ¤llÃ¶n avaaminen epÃ¤onnistui.";
+  return message || "Jaetun sisällön avaaminen epäonnistui.";
 }
 
 function buildSharedTextDraft(sharedContext: SharedImageCaptureContext | null | undefined): string {
@@ -405,7 +405,7 @@ export function CaptureComposer({
       return true;
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Tallennus epÃ¤onnistui. Tarkista palvelinlokit."
+        err instanceof Error ? err.message : "Tallennus epäonnistui. Tarkista palvelinlokit."
       );
       return false;
     } finally {
@@ -464,7 +464,7 @@ export function CaptureComposer({
       setAsset(json.asset ?? null);
       setRawInputValue(json.rawInput);
       setTitleValue((current) =>
-        current || inferCaptureTitle(json.rawInput, file.name.replace(/\.[^.]+$/, "") || "Ã„Ã¤nitallenne")
+        current || inferCaptureTitle(json.rawInput, file.name.replace(/\.[^.]+$/, "") || "Äänitallenne")
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Audio analysis failed.");
@@ -539,14 +539,12 @@ export function CaptureComposer({
     if (!trimmedText || isSaving || isAnalyzing) return;
 
     setSaveIntent(intent);
-    setTextSaveStage("analyzing");
+    setTextSaveStage("saving");
     const analyzed = await analyzeText(trimmedText);
     if (!analyzed) {
       setTextSaveStage("idle");
       return;
     }
-
-    setTextSaveStage("saving");
     const saved = await saveCapture("text", intent, {
       title: titleValue || inferCaptureTitle(analyzed.rawInput, "Idea"),
       rawInput: analyzed.rawInput
@@ -565,21 +563,21 @@ export function CaptureComposer({
   const imageTranscriptCharacterCount = rawInputValue.trim().length;
   const voiceRawCharacterCount = rawInputValue.trim().length;
   const isTextProcessing = textSaveStage !== "idle";
-  const captureHeading = "Tallenna se, mikÃ¤ on merkityksellistÃ¤";
-  const captureSupportText = "Ajatus ei katoa. Voit palata siihen myÃ¶hemmin tai jatkaa syventÃ¤mistÃ¤ heti.";
-  const imageDropzoneLabel = isImageDragActive ? "Pudota kuva tÃ¤hÃ¤n" : "Raahaa tai liitÃ¤ kuva";
+  const captureHeading = "Tallenna se, mikä on merkityksellistä";
+  const captureSupportText = "Ajatus ei katoa. Voit palata siihen myöhemmin tai jatkaa syventämistä heti.";
+  const imageDropzoneLabel = isImageDragActive ? "Pudota kuva tähän" : "Raahaa tai liitä kuva";
   const textProcessingLabel =
-    textSaveStage === "saving" ? "Tallennetaan ajatusta" : "KÃ¤sittelen kirjoittamaasi ajatusta";
+    textSaveStage === "saving" ? "Tallennan ajatuksen" : "Käsittelen kirjoittamaasi ajatusta";
   const textProcessingDetail =
     textSaveStage === "saving"
-      ? "Luon ajatukselle uuden merkinnÃ¤n ja siirrÃ¤n sinut seuraavaksi muokkausnÃ¤kymÃ¤Ã¤n."
+      ? "Tallennan ajatuksen ja siirrän sinut jatkamaan syventämistä."
       : "Tarkistan tekstin talteen sopivaan muotoon ennen kuin ajatus tallennetaan.";
 
   const activeTextProcessingDetail =
     textSaveStage === "saving"
       ? saveIntent === "return"
         ? "Laitan ajatuksen talteen ja palautan sinut etusivulle."
-        : "Tallennan ajatuksen ja siirrän sinut jatkamaan syventÃ¤mistÃ¤."
+        : "Tallennan ajatuksen ja siirrän sinut jatkamaan syventämistä."
       : textProcessingDetail;
   const showCaptureLoadingModal =
     (mode === "text" ? textSaveStage === "saving" : false) ||
@@ -601,7 +599,7 @@ export function CaptureComposer({
       : "Voit tarkistaa ja muokata poimimani tekstin ennen tallentamista."
     : saveIntent === "return"
     ? "Laitan ajatuksen talteen ja palautan sinut etusivulle."
-    : "Tallennan ajatuksen ja siirrän sinut jatkamaan syventÃ¤mistÃ¤.";
+    : "Tallennan ajatuksen ja siirrän sinut jatkamaan syventämistä.";
 
   return (
     <div className="grid">
@@ -648,7 +646,7 @@ export function CaptureComposer({
               <textarea
                 ref={textAreaRef}
                 value={textValue}
-                placeholder="Kirjoita ajatuksesi tÃ¤hÃ¤n..."
+                placeholder="Kirjoita ajatuksesi tähän..."
                 onChange={(event) => setTextValue(event.target.value)}
                 disabled={isTextProcessing}
                 aria-busy={isTextProcessing}
@@ -663,11 +661,11 @@ export function CaptureComposer({
             <p className="status capture-text-helper" style={{ margin: 0 }}>
               {isTextProcessing
                 ? saveIntent === "return"
-                  ? "KÃ¤sittely kÃ¤ynnissÃ¤. Hetken pÃ¤Ã¤stÃ¤ palaat etusivulle."
-                  : "KÃ¤sittely kÃ¤ynnissÃ¤. Hetken pÃ¤Ã¤stÃ¤ siirryt syventÃ¤mÃ¤Ã¤n ajatusta."
+                  ? "Käsittely käynnissä. Hetken päästä palaat etusivulle."
+                  : "Käsittely käynnissä. Hetken päästä siirryt syventämään ajatusta."
                 : textCharacterCount > 0
-                ? `${textCharacterCount} merkkiÃ¤ valmiina tallennettavaksi.`
-                : "Ctrl+Enter tallentaa ja avaa ajatuksen syventÃ¤misen."}
+                ? `${textCharacterCount} merkkiä valmiina tallennettavaksi.`
+                : "Ctrl+Enter tallentaa ja avaa ajatuksen syventämisen."}
             </p>
 
             <div className="capture-text-footer">
@@ -680,9 +678,9 @@ export function CaptureComposer({
                 >
                   {isTextProcessing && saveIntent === "return"
                     ? textSaveStage === "saving"
-                      ? "Tallennetaan..."
-                      : "KÃ¤sitellÃ¤Ã¤n..."
-                    : "Tallenna ja palaa myÃ¶hemmin"}
+                      ? "Tallennan..."
+                      : "Käsittelen..."
+                    : "Tallenna ja palaa myöhemmin"}
                 </button>
                 <button
                   type="button"
@@ -693,10 +691,10 @@ export function CaptureComposer({
                   {isTextProcessing && saveIntent === "refine" ? (
                     <span className="submit-button-content">
                       <IdeaNetworkLoader label={textProcessingLabel} />
-                      {textSaveStage === "saving" ? "Tallennetaan..." : "Käsittelen..."}
+                      {textSaveStage === "saving" ? "Tallennan..." : "Käsittelen..."}
                     </span>
                   ) : (
-                    "Jatka syventÃ¤mistÃ¤"
+                    "Jatka syventämistä"
                   )}
                 </button>
               </div>
@@ -739,8 +737,8 @@ export function CaptureComposer({
                   <div className="capture-image-dropzone capture-image-dropzone-processing">
                     <IdeaNetworkLoader
                       variant="panel"
-                      label="Luen kuvan tekstiksi"
-                      detail="Teen kuvasta muokattavan litteroinnin ilman lisasyventÃ¤mistÃ¤."
+                      label="Poimin tekstin kuvasta"
+                      detail="Voit tarkistaa ja muokata poimimani tekstin ennen tallentamista."
                     />
                   </div>
                 ) : (
@@ -773,7 +771,7 @@ export function CaptureComposer({
                         void analyzeImage(file);
                         return;
                       }
-                      setError("Pudotettu tiedosto ei ollut tuettu kuva. KÃ¤ytÃ¤ PNG-, JPG- tai muuta kuvatiedostoa.");
+                      setError("Pudotettu tiedosto ei ollut tuettu kuva. Käytä PNG-, JPG- tai muuta kuvatiedostoa.");
                     }}
                     onPaste={(event) => {
                       const file = extractImageFileFromDataTransfer(event.clipboardData);
@@ -787,14 +785,14 @@ export function CaptureComposer({
                         imageInputRef.current?.click();
                       }
                     }}
-                    aria-label="Raahaa, liitÃ¤ tai valitse kuva"
+                    aria-label="Raahaa, liitä tai valitse kuva"
                     tabIndex={0}
                   >
                     <span className="capture-image-dropzone-icon" aria-hidden="true">
                       {isImageDragActive ? "\u2193" : "+"}
                     </span>
                     <strong>{imageDropzoneLabel}</strong>
-                    <span>PNG, JPG tai screenshot. Klikkaa mobiilissa, raahaa desktopissa tai liitÃ¤ leikepÃ¶ydÃ¤ltÃ¤.</span>
+                    <span>PNG, JPG tai screenshot. Klikkaa mobiilissa, raahaa desktopissa tai liitä leikepöydältä.</span>
                   </button>
                 )}
 
@@ -832,8 +830,8 @@ export function CaptureComposer({
                   <div className="capture-image-save-group">
                     <p className="status capture-image-helper" style={{ margin: 0 }}>
                       {imageTranscriptCharacterCount > 0
-                        ? `${imageTranscriptCharacterCount} merkkiÃ¤ valmiina tallennettavaksi.`
-                        : "Muokkaa poimittua tekstiÃ¤ tarvittaessa ennen tallennusta."}
+                        ? `${imageTranscriptCharacterCount} merkkiä valmiina tallennettavaksi.`
+                        : "Muokkaa poimittua tekstiä tarvittaessa ennen tallennusta."}
                     </p>
                     <div className="capture-image-save-actions">
                       <button
@@ -850,7 +848,7 @@ export function CaptureComposer({
                           })
                         }
                       >
-                        {isSaving && saveIntent === "return" ? "Tallennetaan..." : "Tallenna ja palaa myÃ¶hemmin"}
+                        {isSaving && saveIntent === "return" ? "Tallennan..." : "Tallenna ja palaa myöhemmin"}
                       </button>
                       <button
                         type="button"
@@ -866,7 +864,7 @@ export function CaptureComposer({
                           })
                         }
                       >
-                        {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Jatka syventÃ¤mistÃ¤"}
+                        {isSaving && saveIntent === "refine" ? "Tallennan..." : "Jatka syventämistä"}
                       </button>
                       <button type="button" className="capture-image-cancel capture-image-cancel-link" onClick={cancelCapture}>
                         Peruuta
@@ -908,7 +906,7 @@ export function CaptureComposer({
                       {isRecording ? (
                         <div className="capture-voice-recording-status" aria-live="polite">
                           <span className="pill capture-voice-recording-pill" data-variant="primary">
-                            Tallennus kÃ¤ynnissÃ¤
+                            Tallennus käynnissä
                           </span>
                         </div>
                       ) : (
@@ -924,13 +922,15 @@ export function CaptureComposer({
                       >
                         {isRecording ? "Lopeta tallennus" : "Aloita sanelu"}
                       </button>
-                      <button
-                        type="button"
-                        className="secondary capture-voice-file-button"
-                        onClick={() => audioFileInputRef.current?.click()}
-                      >
-                        Valitse tiedosto
-                      </button>
+                      {!isRecording ? (
+                        <button
+                          type="button"
+                          className="secondary capture-voice-file-button"
+                          onClick={() => audioFileInputRef.current?.click()}
+                        >
+                          Valitse tiedosto
+                        </button>
+                      ) : null}
                     </div>
                   </div>
 
@@ -940,7 +940,7 @@ export function CaptureComposer({
                         <span className="pill" data-variant="primary">
                           Esikuuntelu
                         </span>
-                        <span className="status">Tarkista Ã¤Ã¤ni ennen tallennusta.</span>
+                        <span className="status">Tarkista ääni ennen tallennusta.</span>
                       </div>
                       <audio controls className="capture-audio-player capture-voice-player" src={audioPreviewUrl} />
                     </div>
@@ -977,18 +977,6 @@ export function CaptureComposer({
             ) : (
               <div className="capture-voice-result">
                 <div className="capture-voice-preview-shell">
-                  <div className="capture-voice-preview-meta">
-                    <span className="pill" data-variant="primary">
-                      Ã„Ã¤ni litteroitu
-                    </span>
-                    <button
-                      type="button"
-                      className="secondary capture-voice-file-button"
-                      onClick={() => audioFileInputRef.current?.click()}
-                    >
-                      Valitse toinen tiedosto
-                    </button>
-                  </div>
                   {audioPreviewUrl ? (
                     <audio controls className="capture-audio-player capture-voice-player" src={audioPreviewUrl} />
                   ) : null}
@@ -1006,8 +994,8 @@ export function CaptureComposer({
                   <div className="capture-voice-save-group">
                     <p className="status capture-voice-helper" style={{ margin: 0 }}>
                       {voiceRawCharacterCount > 0
-                        ? `${voiceRawCharacterCount} merkkiÃ¤ poimittuna ja valmiina tallennettavaksi.`
-                        : "Varmista, ettÃ¤ poimittu teksti tuntuu oikealta ennen tallennusta."}
+                        ? `${voiceRawCharacterCount} merkkiä poimittuna ja valmiina tallennettavaksi.`
+                        : "Varmista, että poimittu teksti tuntuu oikealta ennen tallennusta."}
                     </p>
                     <button
                       type="button"
@@ -1016,12 +1004,12 @@ export function CaptureComposer({
                       onClick={() =>
                         void saveCapture("audio", "return", {
                           title: inferEditedCaptureTitle(
-                            asset?.fileName.replace(/\.[^.]+$/, "") || "Ã„Ã¤nitallenne"
+                            asset?.fileName.replace(/\.[^.]+$/, "") || "Äänitallenne"
                           )
                         })
                       }
                     >
-                      {isSaving && saveIntent === "return" ? "Tallennetaan..." : "Tallenna ja palaa myÃ¶hemmin"}
+                      {isSaving && saveIntent === "return" ? "Tallennan..." : "Tallenna ja palaa myöhemmin"}
                     </button>
                     <button
                       type="button"
@@ -1030,12 +1018,12 @@ export function CaptureComposer({
                       onClick={() =>
                         void saveCapture("audio", "refine", {
                           title: inferEditedCaptureTitle(
-                            asset?.fileName.replace(/\.[^.]+$/, "") || "Ã„Ã¤nitallenne"
+                            asset?.fileName.replace(/\.[^.]+$/, "") || "Äänitallenne"
                           )
                         })
                       }
                     >
-                      {isSaving && saveIntent === "refine" ? "Tallennetaan..." : "Jatka syventÃ¤mistÃ¤"}
+                      {isSaving && saveIntent === "refine" ? "Tallennan..." : "Jatka syventämistä"}
                     </button>
                   </div>
                 </div>
@@ -1071,3 +1059,4 @@ export function CaptureComposer({
     </div>
   );
 }
+

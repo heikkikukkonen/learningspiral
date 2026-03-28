@@ -59,7 +59,7 @@ export default async function ResetPasswordPage({
                 required
               />
             </label>
-            <SubmitButton className="primary" pendingText="Tallennetaan...">
+            <SubmitButton className="primary" pendingText="Tallennan...">
               Tallenna uusi salasana
             </SubmitButton>
           </form>

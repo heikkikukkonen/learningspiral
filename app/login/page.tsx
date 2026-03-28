@@ -213,7 +213,7 @@ export default async function LoginPage({
                   required
                 />
               </label>
-              <SubmitButton className="primary" pendingText="Luodaan tili...">
+              <SubmitButton className="primary" pendingText="Luon tilin...">
                 Luo tili
               </SubmitButton>
             </form>

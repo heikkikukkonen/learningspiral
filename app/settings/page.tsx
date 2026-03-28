@@ -242,7 +242,7 @@ export default async function SettingsPage({
         />
 
         <div className="actions settings-form-actions">
-          <SubmitButton className="primary" pendingText="Tallennetaan asetuksia...">
+          <SubmitButton className="primary" pendingText="Tallennan asetukset...">
             Tallenna asetukset
           </SubmitButton>
         </div>
