@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SubmitButton } from "@/app/components/submit-button";
 import { signOutAction } from "@/app/login/actions";
 import { ANALYSIS_ACTIONS } from "@/lib/analysis-actions";
@@ -259,6 +260,12 @@ export default async function SettingsPage({
           initialSettings={notificationSettings}
           initialDevices={pushSubscriptions}
         />
+
+        <div className="actions settings-form-actions settings-progress-link-row">
+          <Link href="/progress" className="button-link secondary">
+            Katso eteneminen (Beta)
+          </Link>
+        </div>
 
         <div className="actions settings-form-actions">
           <SubmitButton className="primary" pendingText="Tallennan asetukset...">

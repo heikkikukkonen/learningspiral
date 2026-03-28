@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState, type SyntheticEvent } from "react";
@@ -40,7 +40,7 @@ export function ThoughtsTagBrowser({
   return (
     <details className="thoughts-tags" open={isOpen} onToggle={handleToggle}>
       <summary className="thoughts-tags-summary">
-        <span className="thoughts-search-label">Selaa aihepiireja tunnisteiden avulla</span>
+        <span className="thoughts-search-label">Selaa aihepiirejä tunnisteiden avulla</span>
         {activeTagLabel ? (
           <span className="thoughts-tags-summary-note">Aktiivinen suodatus: #{activeTagLabel}</span>
         ) : null}
@@ -55,7 +55,7 @@ export function ThoughtsTagBrowser({
                 href={tag.href}
                 className={`tag-chip tag-chip-network tag-chip-browser${tag.isActive ? " is-active" : ""}`}
               >
-                <span className="tag-chip-mark" aria-hidden="true">∞</span>
+                <span className="tag-chip-mark" aria-hidden="true">#</span>
                 <span>{tag.label}</span>
                 <span className="thoughts-tag-count tag-chip-meta">{tag.count}</span>
               </Link>

@@ -232,7 +232,7 @@ function IdeaCard({
         <div className="source-meta">
           {idea.tags?.slice(0, 3).map((tag) => (
             <span className="tag-chip tag-chip-network tag-chip-inline" key={tag}>
-              <span className="tag-chip-mark" aria-hidden="true">∞</span>
+              <span className="tag-chip-mark" aria-hidden="true">#</span>
               <span>{tag}</span>
             </span>
           ))}

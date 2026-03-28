@@ -329,7 +329,7 @@ export function SourceEditorForm({
                         onClick={() => removeTag(tag)}
                         type="button"
                       >
-                        <span className="tag-chip-mark" aria-hidden="true">∞</span>
+                        <span className="tag-chip-mark" aria-hidden="true">#</span>
                         <span>{tag}</span>
                         <span className="tag-chip-remove" aria-hidden="true">x</span>
                       </button>
@@ -393,7 +393,7 @@ export function SourceEditorForm({
                           data-active="false"
                           onClick={() => addResolvedTag(suggestion.tag)}
                         >
-                          <span className="tag-chip-mark" aria-hidden="true">∞</span>
+                          <span className="tag-chip-mark" aria-hidden="true">#</span>
                           <span>{suggestion.tag}</span>
                           <span className="source-tag-suggestion-meta tag-chip-meta">{suggestion.usageCount}x</span>
                         </button>
@@ -414,7 +414,7 @@ export function SourceEditorForm({
                           data-active="false"
                           onClick={() => addResolvedTag(suggestion.tag)}
                         >
-                          <span className="tag-chip-mark" aria-hidden="true">∞</span>
+                          <span className="tag-chip-mark" aria-hidden="true">#</span>
                           <span>{suggestion.tag}</span>
                           <span className="source-tag-suggestion-meta tag-chip-meta">{suggestion.usageCount}x</span>
                         </button>

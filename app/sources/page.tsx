@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { listSources } from "@/lib/db";
 import { parseSourceSummaryContent } from "@/lib/source-editor";
@@ -9,7 +9,7 @@ import { ThoughtsTagBrowser } from "./thoughts-tag-browser";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Ajatukset",
-  description: "Selaa tallentamiasi ajatuksia, syvennä niitä ja palaa niihin myöhemmin."
+  description: "Selaa tallentamiasi ajatuksia"
 };
 
 type SourceListItem = {
@@ -160,19 +160,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
   return (
     <section>
       <div className="page-header">
-        <h1>Ajatukset</h1>
-        <p className="muted">
-          Selaa tallentamiasi ajatuksia, syvennä niitä ja palaa niihin myöhemmin.
-        </p>
-      </div>
-
-      <div className="actions" style={{ marginBottom: "1rem" }}>
-        <Link href="/capture?mode=text" className="button-link primary">
-          Tallenna ajatus
-        </Link>
-        <Link href="/progress" className="button-link secondary">
-          Katso eteneminen
-        </Link>
+        <h1>Selaa ajatuksia</h1>
       </div>
 
       {loadError ? (
@@ -190,9 +178,6 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
       {!loadError ? (
         <div className="thoughts-toolbar">
           <form className="thoughts-search" role="search">
-            <label className="thoughts-search-label" htmlFor="thought-search">
-              Hae ajatuksia
-            </label>
             <div className="thoughts-search-row">
               <input
                 id="thought-search"
@@ -238,7 +223,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
                   {source.author ? <span>{source.author}</span> : null}
                   {source.tags?.map((tag) => (
                     <span className="tag-chip tag-chip-network tag-chip-inline" key={tag}>
-                      <span className="tag-chip-mark" aria-hidden="true">∞</span>
+                      <span className="tag-chip-mark" aria-hidden="true">âˆž</span>
                       <span>{tag}</span>
                     </span>
                   ))}

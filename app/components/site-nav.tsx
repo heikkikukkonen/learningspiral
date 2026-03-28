@@ -36,7 +36,7 @@ export function SiteNav() {
   const sourcesActive = pathname === "/sources" || pathname.startsWith("/sources/");
   const settingsActive = pathname === "/settings" || pathname === "/login";
   const primaryHref = "/app";
-  const primaryLabel = "Tallenna";
+  const primaryLabel = "Tallenna ajatus";
 
   return (
     <nav className="header-actions" aria-label="Primary">
@@ -75,7 +75,7 @@ export function SiteNav() {
           />
         </svg>
       </HeaderIcon>
-      <HeaderIcon href="/sources" label="Ajatukset" active={sourcesActive}>
+      <HeaderIcon href="/sources" label="Selaa ajatuksia" active={sourcesActive}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="10.5" cy="10.5" r="4.6" fill="none" stroke="currentColor" strokeWidth="1.8" />
           <path d="M14 14l4.2 4.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
