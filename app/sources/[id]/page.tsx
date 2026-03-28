@@ -2,7 +2,7 @@
 import { SourceEditorForm } from "@/app/sources/[id]/source-editor-form";
 import { SourcePageActions } from "@/app/sources/[id]/source-page-actions";
 import { SourceTasksPanel } from "@/app/sources/[id]/source-tasks-panel";
-import { getSourceWithDetails, listUserTagStats } from "@/lib/db";
+import { getSourceWithDetails, getUserSettings, listUserTagStats } from "@/lib/db";
 import { parseSourceSummaryContent } from "@/lib/source-editor";
 import { deriveSourceIdeaStage, sourceIdeaStageLabel } from "@/lib/source-status";
 import { CardType, SourceType, TagSuggestion } from "@/lib/types";
@@ -65,18 +65,21 @@ export default async function SourceDetailsPage({
   let cards: CardDetails[] = [];
   let captureAssets: CaptureAsset[] = [];
   let tagSuggestions: TagSuggestion[] = [];
+  let settings = null as Awaited<ReturnType<typeof getUserSettings>> | null;
   let loadError = "";
 
   try {
-    const [result, userTags] = await Promise.all([
+    const [result, userTags, userSettings] = await Promise.all([
       getSourceWithDetails(params.id),
-      listUserTagStats()
+      listUserTagStats(),
+      getUserSettings()
     ]);
     source = result.source;
     summary = result.summary;
     cards = result.cards;
     captureAssets = result.captureAssets;
     tagSuggestions = userTags;
+    settings = userSettings;
   } catch (error) {
     loadError =
       error instanceof Error
@@ -115,12 +118,24 @@ export default async function SourceDetailsPage({
     <section className="grid source-workspace">
       <div className="page-header source-workspace-header">
         <h1>Syvenny ajatukseen</h1>
-        <p className="muted">
-          Muokkaa ajatukselle selkeä otsikko ja ajatus. Lisää tunnisteet, jotta autat ajatuksia
-          löytämään toisensa ja muodostamaan yhteyksiä. Syvennä näkökulmaa tarvittaessa. Lopuksi luo
-          haluamasi tehtävät palataksesi ajatukseen myöhemmin. Voit myös vain tallentaa tiedot ja
-          syventää ajatusta myöhemmin.
-        </p>
+        <div className="source-workspace-status">
+          <span className="pill">{sourceStageLabel}</span>
+          {!hasCards ? (
+            <p className="muted">
+              Jalosta ajatus valmiiksi kolmessa vaiheessa: 1. muokkaa ajatukselle selkeä otsikko,
+              ajatus ja tunnisteet, 2. syvennä näkökulmaa tarvittaessa ja 3. luo vähintään yksi
+              tehtävä. Voit myös jättää jalostuksen kesken ja palata tähän myöhemmin. Ajatus näkyy
+              syvenny-listallasi siihen asti, kunnes luot vähintään yhden tehtävän, jolloin se
+              nousee tehtävien kautta jatkotyöstöön automaattisesti.
+            </p>
+          ) : (
+            <p className="muted">
+              Tästä ajatuksesta luodut tehtävät näkyvät syvenny-listallasi. Voit edelleen muokata
+              ajatuksen sisältöä, tunnisteita, syvennystä ja tehtäviä tältä sivulta milloin
+              tahansa.
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="source-workspace-layout">
@@ -133,7 +148,6 @@ export default async function SourceDetailsPage({
               {captureModeLabel(source.capture_mode) ? (
                 <span className="pill">{captureModeLabel(source.capture_mode)}</span>
               ) : null}
-              <span className="pill">{sourceStageLabel}</span>
             </div>
           </div>
 
@@ -146,64 +160,66 @@ export default async function SourceDetailsPage({
             tagSuggestions={tagSuggestions}
             rawInput={summary?.raw_input ?? ""}
             inputModality={summary?.input_modality ?? "text"}
-          />
+            showDebug={settings?.showDebug ?? false}
+            captureDetails={
+              <div className="source-origin-panel source-origin-panel-inline">
+                <details className="capture-details source-capture-details">
+                  <summary>Näytä alkuperäinen tallenne</summary>
 
-          <div className="source-origin-panel">
-            <details className="capture-details source-capture-details">
-              <summary>Näytä alkuperäinen tallenne</summary>
+                  <div className="source-capture-details-body">
+                    <div className="source-meta">
+                      {source.author ? <span>{source.author}</span> : null}
+                      {source.origin ? <span>{source.origin}</span> : null}
+                      {source.url ? (
+                        <a href={source.url} target="_blank" rel="noreferrer">
+                          Avaa linkki
+                        </a>
+                      ) : null}
+                    </div>
 
-              <div className="source-capture-details-body">
-                <div className="source-meta">
-                  {source.author ? <span>{source.author}</span> : null}
-                  {source.origin ? <span>{source.origin}</span> : null}
-                  {source.url ? (
-                    <a href={source.url} target="_blank" rel="noreferrer">
-                      Avaa linkki
-                    </a>
-                  ) : null}
-                </div>
+                    {captureAssets.length > 0 ? (
+                      <div className="source-origin-assets">
+                        {captureAssets.map((asset) => (
+                          <article key={asset.id} className="source-origin-asset">
+                            <div className="source-meta" style={{ marginBottom: "0.6rem" }}>
+                              <span className="pill" data-variant="primary">
+                                {asset.kind}
+                              </span>
+                              <span>{asset.file_name}</span>
+                            </div>
+                            {asset.kind === "image" ? (
+                              <img
+                                src={assetUrl(asset.mime_type, asset.base64_data)}
+                                alt={asset.file_name}
+                                className="capture-asset-preview"
+                              />
+                            ) : (
+                              <audio
+                                controls
+                                className="capture-audio-player"
+                                src={assetUrl(asset.mime_type, asset.base64_data)}
+                              />
+                            )}
+                          </article>
+                        ))}
+                      </div>
+                    ) : null}
 
-                {captureAssets.length > 0 ? (
-                  <div className="source-origin-assets">
-                    {captureAssets.map((asset) => (
-                      <article key={asset.id} className="source-origin-asset">
-                        <div className="source-meta" style={{ marginBottom: "0.6rem" }}>
-                          <span className="pill" data-variant="primary">
-                            {asset.kind}
-                          </span>
-                          <span>{asset.file_name}</span>
-                        </div>
-                        {asset.kind === "image" ? (
-                          <img
-                            src={assetUrl(asset.mime_type, asset.base64_data)}
-                            alt={asset.file_name}
-                            className="capture-asset-preview"
-                          />
-                        ) : (
-                          <audio
-                            controls
-                            className="capture-audio-player"
-                            src={assetUrl(asset.mime_type, asset.base64_data)}
-                          />
-                        )}
-                      </article>
-                    ))}
+                    {summary?.raw_input ? (
+                      <p className="source-capture-raw-text">{summary.raw_input}</p>
+                    ) : null}
                   </div>
-                ) : null}
-
-                {summary?.raw_input ? (
-                  <p className="source-capture-raw-text">{summary.raw_input}</p>
-                ) : null}
+                </details>
               </div>
-            </details>
-          </div>
+            }
+          />
         </article>
       </div>
 
       <article className="card source-editor-card source-task-card">
         <div className="source-origin-header">
           <div className="page-header source-task-card-header">
-            <h2>Luo tehtävät</h2>
+            <h2>Tehtävät</h2>
             <p className="muted">Luo haluamasi tehtävät palataksesi ajatukseen myöhemmin. Voit muokata toimintojen ohjeistusta Asetukset-sivulla.</p>
           </div>
         </div>

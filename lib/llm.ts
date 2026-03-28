@@ -31,6 +31,7 @@ export interface LlmResult<T> {
   ok: boolean;
   data: T;
   model?: string;
+  debugPrompt?: string;
 }
 
 export interface RefinedSourceDraft {
@@ -705,29 +706,30 @@ export async function generateSourceTags(input: {
     "{",
     '  "tags": ["tag 1", "tag 2"]',
     "}",
-    "Generate 3 to 6 short tags.",
     "Prefer concrete, searchable topic labels.",
     "Prefer reusing the user's existing tags when they are relevant.",
     "When an existing tag fits semantically, return that exact existing spelling instead of inventing a new synonym.",
     "Avoid duplicate or near-duplicate synonyms.",
     "Use only information found in the title and idea."
   ], input.settings?.tagGenerationPrompt || DEFAULT_TAG_GENERATION_PROMPT).join("\n");
+  const userPrompt = [
+    `Title:\n${normalizeBlock(input.title) || "(empty)"}`,
+    "",
+    `Idea:\n${normalizeBlock(input.idea) || "(empty)"}`,
+    "",
+    `Relevant existing tags to prefer first:\n${relevantExistingTags.join(", ") || "(none)"}`,
+    "",
+    `Frequently used tags:\n${frequentTags.join(", ") || "(none)"}`,
+    "",
+    `Recent tags:\n${recentTags.join(", ") || "(none)"}`
+  ].join("\n");
+  const debugPrompt = [`[system]`, systemPrompt, "", `[user]`, userPrompt].join("\n");
 
   const reply = await callResponsesApi([
     { role: "system", content: systemPrompt },
     {
       role: "user",
-      content: [
-        `Title:\n${normalizeBlock(input.title) || "(empty)"}`,
-        "",
-        `Idea:\n${normalizeBlock(input.idea) || "(empty)"}`,
-        "",
-        `Relevant existing tags to prefer first:\n${relevantExistingTags.join(", ") || "(none)"}`,
-        "",
-        `Frequently used tags:\n${frequentTags.join(", ") || "(none)"}`,
-        "",
-        `Recent tags:\n${recentTags.join(", ") || "(none)"}`
-      ].join("\n")
+      content: userPrompt
     }
   ]);
 
@@ -735,18 +737,19 @@ export async function generateSourceTags(input: {
   try {
     parsed = JSON.parse(reply.text);
   } catch {
-    return { ok: false, data: fallbackTags, model: reply.model };
+    return { ok: false, data: fallbackTags, model: reply.model, debugPrompt };
   }
 
   const sanitized = sanitizeGeneratedTags(parsed);
   if (!sanitized) {
-    return { ok: false, data: fallbackTags, model: reply.model };
+    return { ok: false, data: fallbackTags, model: reply.model, debugPrompt };
   }
 
   return {
     ok: true,
     data: alignTagsToExisting(sanitized.tags, input.existingTags).slice(0, 6),
-    model: reply.model
+    model: reply.model,
+    debugPrompt
   };
 }
 

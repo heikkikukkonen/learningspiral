@@ -1,5 +1,6 @@
 export interface UserSettings {
   responseLanguage: string;
+  showDebug: boolean;
   analysisPromptRefresh: string;
   analysisPromptDeepen: string;
   analysisPromptSummarize: string;
@@ -86,6 +87,7 @@ export const DEFAULT_TASK_GENERATION_PROMPTS = {
 
 export const DEFAULT_USER_SETTINGS: UserSettings = {
   responseLanguage: "Finnish",
+  showDebug: false,
   analysisPromptRefresh: "",
   analysisPromptDeepen: "",
   analysisPromptSummarize: "",
@@ -105,6 +107,7 @@ function clamp(value: string, maxLength: number): string {
 export function sanitizeUserSettings(input: Partial<UserSettings> | null | undefined): UserSettings {
   return {
     responseLanguage: clamp(input?.responseLanguage || DEFAULT_USER_SETTINGS.responseLanguage, 80) || "Finnish",
+    showDebug: Boolean(input?.showDebug),
     analysisPromptRefresh: clamp(input?.analysisPromptRefresh || "", 1200),
     analysisPromptDeepen: clamp(input?.analysisPromptDeepen || "", 1200),
     analysisPromptSummarize: clamp(input?.analysisPromptSummarize || "", 1200),

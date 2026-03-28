@@ -455,6 +455,7 @@ export async function getUserSettings(userId?: string): Promise<UserSettings> {
 
   return sanitizeUserSettings({
     responseLanguage: data.response_language,
+    showDebug: data.show_debug,
     analysisPromptRefresh: data.analysis_prompt_refresh,
     analysisPromptDeepen: data.analysis_prompt_deepen,
     analysisPromptSummarize: data.analysis_prompt_summarize,
@@ -478,6 +479,7 @@ export async function upsertUserSettings(input: UserSettings, userId?: string) {
     .upsert({
       user_id: resolvedUserId,
       response_language: settings.responseLanguage,
+      show_debug: settings.showDebug,
       analysis_prompt_refresh: settings.analysisPromptRefresh,
       analysis_prompt_deepen: settings.analysisPromptDeepen,
       analysis_prompt_summarize: settings.analysisPromptSummarize,
@@ -497,6 +499,7 @@ export async function upsertUserSettings(input: UserSettings, userId?: string) {
   return {
     user_id: data.user_id,
     responseLanguage: data.response_language,
+    showDebug: Boolean(data.show_debug),
     analysisPromptRefresh: data.analysis_prompt_refresh ?? "",
     analysisPromptDeepen: data.analysis_prompt_deepen ?? "",
     analysisPromptSummarize: data.analysis_prompt_summarize ?? "",

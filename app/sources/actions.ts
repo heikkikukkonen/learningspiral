@@ -194,7 +194,8 @@ export async function generateSourceTagsAction(formData: FormData) {
 
   return {
     tags: generated.data,
-    model: generated.model ?? null
+    model: generated.model ?? null,
+    debugPrompt: generated.debugPrompt ?? null
   };
 }
 

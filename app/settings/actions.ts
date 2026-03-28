@@ -30,6 +30,7 @@ export async function saveUserSettingsAction(formData: FormData) {
   const morningReminderTimezone = asString(formData.get("morningReminderTimezone"));
   const settings = sanitizeUserSettings({
     responseLanguage: asString(formData.get("responseLanguage")),
+    showDebug: asBoolean(formData.get("showDebug")),
     analysisPromptRefresh: asString(formData.get("analysisPromptRefresh")),
     analysisPromptDeepen: asString(formData.get("analysisPromptDeepen")),
     analysisPromptSummarize: asString(formData.get("analysisPromptSummarize")),

@@ -176,6 +176,8 @@ export function CaptureComposer({
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const audioFileInputRef = useRef<HTMLInputElement | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const imageTranscriptTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const voiceTranscriptTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const imagePreviewRef = useRef<HTMLDivElement | null>(null);
   const imageTranscriptRef = useRef<HTMLLabelElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -559,6 +561,15 @@ export function CaptureComposer({
     return inferCaptureTitle(rawInputValue, fallback);
   }
 
+  function getLatestTranscriptValue(inputModality: "image" | "audio") {
+    const liveValue =
+      inputModality === "image"
+        ? imageTranscriptTextareaRef.current?.value
+        : voiceTranscriptTextareaRef.current?.value;
+
+    return (liveValue ?? rawInputValue).trim();
+  }
+
   const textCharacterCount = textValue.trim().length;
   const imageTranscriptCharacterCount = rawInputValue.trim().length;
   const voiceRawCharacterCount = rawInputValue.trim().length;
@@ -823,7 +834,11 @@ export function CaptureComposer({
 
                 <label ref={imageTranscriptRef} className="form-row capture-image-summary-field">
                   <span>Poimittu teksti</span>
-                  <textarea value={rawInputValue} onChange={(event) => setRawInputValue(event.target.value)} />
+                  <textarea
+                    ref={imageTranscriptTextareaRef}
+                    value={rawInputValue}
+                    onChange={(event) => setRawInputValue(event.target.value)}
+                  />
                 </label>
 
                 <div className="capture-image-actions">
@@ -838,15 +853,16 @@ export function CaptureComposer({
                         type="button"
                         className="secondary capture-image-secondary-save"
                         disabled={!rawInputValue.trim() || isSaving}
-                        onClick={() =>
+                        onClick={() => {
+                          const currentRawInput = getLatestTranscriptValue("image");
                           void saveCapture("image", "return", {
-                            title:
-                              titleValue ||
-                              inferEditedCaptureTitle(
-                                asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus"
-                              )
-                          })
-                        }
+                            rawInput: currentRawInput,
+                            title: inferCaptureTitle(
+                              currentRawInput,
+                              asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus"
+                            )
+                          });
+                        }}
                       >
                         {isSaving && saveIntent === "return" ? "Tallennan..." : "Tallenna ja palaa myöhemmin"}
                       </button>
@@ -854,15 +870,16 @@ export function CaptureComposer({
                         type="button"
                         className="primary capture-image-save"
                         disabled={!rawInputValue.trim() || isSaving}
-                        onClick={() =>
+                        onClick={() => {
+                          const currentRawInput = getLatestTranscriptValue("image");
                           void saveCapture("image", "refine", {
-                            title:
-                              titleValue ||
-                              inferEditedCaptureTitle(
-                                asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus"
-                              )
-                          })
-                        }
+                            rawInput: currentRawInput,
+                            title: inferCaptureTitle(
+                              currentRawInput,
+                              asset?.fileName.replace(/\.[^.]+$/, "") || "Kuvakaappaus"
+                            )
+                          });
+                        }}
                       >
                         {isSaving && saveIntent === "refine" ? "Tallennan..." : "Jatka syventämistä"}
                       </button>
@@ -984,7 +1001,11 @@ export function CaptureComposer({
 
                 <label className="form-row capture-voice-transcript-field">
                   <span>Poimittu teksti</span>
-                  <textarea value={rawInputValue} onChange={(event) => setRawInputValue(event.target.value)} />
+                  <textarea
+                    ref={voiceTranscriptTextareaRef}
+                    value={rawInputValue}
+                    onChange={(event) => setRawInputValue(event.target.value)}
+                  />
                 </label>
 
                 <div className="capture-voice-actions">
@@ -1001,13 +1022,16 @@ export function CaptureComposer({
                       type="button"
                       className="secondary capture-voice-secondary-save"
                       disabled={!rawInputValue.trim() || isSaving}
-                      onClick={() =>
+                      onClick={() => {
+                        const currentRawInput = getLatestTranscriptValue("audio");
                         void saveCapture("audio", "return", {
-                          title: inferEditedCaptureTitle(
+                          rawInput: currentRawInput,
+                          title: inferCaptureTitle(
+                            currentRawInput,
                             asset?.fileName.replace(/\.[^.]+$/, "") || "Äänitallenne"
                           )
-                        })
-                      }
+                        });
+                      }}
                     >
                       {isSaving && saveIntent === "return" ? "Tallennan..." : "Tallenna ja palaa myöhemmin"}
                     </button>
@@ -1015,13 +1039,16 @@ export function CaptureComposer({
                       type="button"
                       className="primary capture-voice-save"
                       disabled={!rawInputValue.trim() || isSaving}
-                      onClick={() =>
+                      onClick={() => {
+                        const currentRawInput = getLatestTranscriptValue("audio");
                         void saveCapture("audio", "refine", {
-                          title: inferEditedCaptureTitle(
+                          rawInput: currentRawInput,
+                          title: inferCaptureTitle(
+                            currentRawInput,
                             asset?.fileName.replace(/\.[^.]+$/, "") || "Äänitallenne"
                           )
-                        })
-                      }
+                        });
+                      }}
                     >
                       {isSaving && saveIntent === "refine" ? "Tallennan..." : "Jatka syventämistä"}
                     </button>

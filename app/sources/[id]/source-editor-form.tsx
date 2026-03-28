@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
-import { useState } from "react";
+import type { ReactNode } from "react";
+import { useRef, useState } from "react";
 import { NoemaLoadingModal } from "@/app/components/noema-loading-modal";
 import { ANALYSIS_ACTIONS } from "@/lib/analysis-actions";
 import {
@@ -21,6 +22,8 @@ type SourceEditorFormProps = {
   tagSuggestions: TagSuggestion[];
   rawInput: string;
   inputModality: string;
+  showDebug: boolean;
+  captureDetails?: ReactNode;
 };
 
 export function SourceEditorForm({
@@ -31,8 +34,11 @@ export function SourceEditorForm({
   initialTags,
   tagSuggestions,
   rawInput,
-  inputModality
+  inputModality,
+  showDebug,
+  captureDetails
 }: SourceEditorFormProps) {
+  const formRef = useRef<HTMLFormElement | null>(null);
   const [title, setTitle] = useState(initialTitle);
   const [idea, setIdea] = useState(initialIdea);
   const [analysis, setAnalysis] = useState(initialAnalysis);
@@ -41,10 +47,12 @@ export function SourceEditorForm({
   const [customInstruction, setCustomInstruction] = useState("");
   const [aiNote, setAiNote] = useState("");
   const [tagNote, setTagNote] = useState("");
+  const [tagDebugPrompt, setTagDebugPrompt] = useState("");
   const [activeMode, setActiveMode] = useState<AnalysisModeOrCustom | null>(null);
   const [isRefining, setIsRefining] = useState(false);
   const [isGeneratingTags, setIsGeneratingTags] = useState(false);
   const hasTags = tags.length > 0;
+  const canGenerateTags = title.trim().length > 0 && idea.trim().length > 0;
 
   const selectedTags = new Set(tags.map((tag) => normalizeTagValue(tag)));
   const availableTagSuggestions = tagSuggestions.filter(
@@ -80,10 +88,23 @@ export function SourceEditorForm({
       right.usageCount - left.usageCount ||
       left.tag.localeCompare(right.tag, "fi-FI")
   );
+  const popularSuggestions = [...availableTagSuggestions].sort(
+    (left, right) =>
+      right.usageCount - left.usageCount ||
+      right.lastUsedAt.localeCompare(left.lastUsedAt) ||
+      left.tag.localeCompare(right.tag, "fi-FI")
+  );
+  const mergedDefaultSuggestions = [
+    ...recentSuggestions.slice(0, 6),
+    ...popularSuggestions.slice(0, 6)
+  ].filter(
+    (suggestion, index, list) =>
+      index === list.findIndex((candidate) => normalizeTagValue(candidate.tag) === normalizeTagValue(suggestion.tag))
+  );
   const visibleSuggestions = normalizedTagInput
     ? orderedMatchingSuggestions.slice(0, 12)
-    : recentSuggestions.slice(0, 12);
-  const suggestionsLabel = normalizedTagInput ? "Vastaavat tunnisteet" : "Aiemmat tunnisteet";
+    : mergedDefaultSuggestions.slice(0, 12);
+  const suggestionsLabel = normalizedTagInput ? "Vastaavat tunnisteet" : "Viimeksi ja eniten käytetyt tunnisteet";
   const showInlineSuggestions = normalizedTagInput.length > 0 && visibleSuggestions.length > 0;
   const showDefaultSuggestions = normalizedTagInput.length === 0 && visibleSuggestions.length > 0;
   const sourceLoadingOpen = isRefining || isGeneratingTags;
@@ -169,12 +190,16 @@ export function SourceEditorForm({
     setIsGeneratingTags(true);
     void (async () => {
       try {
-        const formData = new FormData();
-        formData.set("title", title);
-        formData.set("idea", idea);
+        const formData = formRef.current ? new FormData(formRef.current) : new FormData();
+        const currentTitle = String(formData.get("title") ?? "").trim();
+        const currentIdea = String(formData.get("idea") ?? "").trim();
+
+        formData.set("title", currentTitle);
+        formData.set("idea", currentIdea);
 
         const result = await generateSourceTagsAction(formData);
         setTags(dedupeTags(result.tags));
+        setTagDebugPrompt(result.debugPrompt ?? "");
         setTagNote(
           result.tags.length > 0
             ? result.model
@@ -183,6 +208,7 @@ export function SourceEditorForm({
             : "Tunnisteita ei saatu luotua nykyisistä kentistä."
         );
       } catch (error) {
+        setTagDebugPrompt("");
         setTagNote(error instanceof Error ? error.message : "Tunnisteiden luonti epäonnistui.");
       } finally {
         setIsGeneratingTags(false);
@@ -192,12 +218,26 @@ export function SourceEditorForm({
 
   return (
     <div className="source-editor-stack">
-      <form id="source-editor-form" className="form source-edit-form" action={saveSourceDraftAction}>
+      <form
+        id="source-editor-form"
+        ref={formRef}
+        className="form source-edit-form"
+        action={saveSourceDraftAction}
+      >
         <input type="hidden" name="sourceId" value={sourceId} />
         <input type="hidden" name="rawInput" value={rawInput} />
         <input type="hidden" name="inputModality" value={inputModality} />
         <input type="hidden" name="tags" value={tags.join(",")} />
 
+        <section className="source-form-section">
+          <div className="source-form-section-header">
+            <h2>Ajatus ja tunnisteet</h2>
+            <p className="muted">
+              Kirkasta ajatuksen ydin ja nimeä se selkeästi. Tämän osion avulla rakennat ajatukselle
+              hyvän perustan ennen syventämistä ja tehtäviä.
+            </p>
+          </div>
+          <div className="source-form-section-body">
         <label className="form-row source-edit-field">
           <span>Otsikko</span>
           <input
@@ -219,6 +259,8 @@ export function SourceEditorForm({
             required
           />
         </label>
+
+        {captureDetails}
 
         <div className="form-row source-edit-field">
           <div className="source-analysis-header">
@@ -242,21 +284,45 @@ export function SourceEditorForm({
               </div>
             ) : null}
 
-            <div className="source-tag-add">
-              <input
-                value={tagInput}
-                onChange={(event) => setTagInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    addResolvedTag();
-                  }
-                }}
-                placeholder="Lisää tunniste tai hae olemassa olevista"
-              />
-            </div>
+            {!hasTags ? (
+              <div className="source-tag-empty-state">
+                <p className="status source-tag-guidance">
+                  Kun otsikko ja ajatus ovat valmiit, luo tunnisteet automaattisesti ja tarkenna
+                  niitä tarvittaessa.
+                </p>
+                <div className="source-tag-primary-action">
+                  <button
+                    type="button"
+                    className="primary source-tag-inline-action"
+                    onClick={handleGenerateTags}
+                    disabled={isGeneratingTags || !canGenerateTags}
+                  >
+                    {isGeneratingTags ? "Luon..." : "Luo automaattisesti"}
+                  </button>
+                </div>
+              </div>
+            ) : null}
 
-            {showInlineSuggestions ? (
+            {hasTags ? (
+              <div className="source-tag-add">
+                <input
+                  value={tagInput}
+                  onChange={(event) => setTagInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      addResolvedTag();
+                    }
+                  }}
+                  placeholder="Lisää tunniste tai hae olemassa olevista"
+                />
+                <button type="button" className="secondary source-tag-inline-action" onClick={() => addResolvedTag()}>
+                  {exactAutocompleteSuggestion ? "Käytä olemassa olevaa" : "Lisää uusi tunniste"}
+                </button>
+              </div>
+            ) : null}
+
+            {hasTags && showInlineSuggestions ? (
               <div className="source-tag-section source-tag-section-inline">
                 <span className="source-tag-section-label">{suggestionsLabel}</span>
                 <div className="source-tag-suggestion-list">
@@ -265,7 +331,7 @@ export function SourceEditorForm({
                       key={`${suggestion.tag}-${suggestion.lastUsedAt}`}
                       type="button"
                       className="source-tag-suggestion"
-                      data-active={index === 0 ? "true" : "false"}
+                      data-active="false"
                       onClick={() => addResolvedTag(suggestion.tag)}
                     >
                       <span>#{suggestion.tag}</span>
@@ -276,25 +342,7 @@ export function SourceEditorForm({
               </div>
             ) : null}
 
-            <div className="source-tag-add source-tag-add-actions">
-              <button type="button" className="secondary" onClick={() => addResolvedTag()}>
-                {exactAutocompleteSuggestion ? "Käytä olemassa olevaa" : "Lisää uusi tunniste"}
-              </button>
-              {!hasTags ? (
-                <button
-                  type="button"
-                  className="secondary source-tag-inline-action"
-                  onClick={handleGenerateTags}
-                  disabled={isGeneratingTags}
-                >
-                  {isGeneratingTags ? "Luon..." : "Luo automaattisesti"}
-                </button>
-              ) : null}
-            </div>
-
-            {tagNote ? <p className="status source-analysis-note">{tagNote}</p> : null}
-
-            {showDefaultSuggestions ? (
+            {hasTags && showDefaultSuggestions ? (
               <div className="source-tag-section">
                 <span className="source-tag-section-label">{suggestionsLabel}</span>
                 <div className="source-tag-suggestion-list">
@@ -303,7 +351,7 @@ export function SourceEditorForm({
                       key={`${suggestion.tag}-${suggestion.lastUsedAt}`}
                       type="button"
                       className="source-tag-suggestion"
-                      data-active={index === 0 ? "true" : "false"}
+                      data-active="false"
                       onClick={() => addResolvedTag(suggestion.tag)}
                     >
                       <span>#{suggestion.tag}</span>
@@ -313,16 +361,30 @@ export function SourceEditorForm({
                 </div>
               </div>
             ) : null}
+
+            {showDebug && tagDebugPrompt ? (
+              <details className="source-tag-debug">
+                <summary>Käytetty prompti (debug)</summary>
+                <pre>{tagDebugPrompt}</pre>
+              </details>
+            ) : null}
           </div>
         </div>
+          </div>
+        </section>
+        <section className="source-form-section">
+          <div className="source-form-section-header">
+            <h2>Ajatuksen syventäminen</h2>
+            <p className="muted">
+              Valitse valmis tapa jatkaa ajatusta tai anna oma suunta. Voit muokata toimintojen
+              ohjeistusta Asetukset-sivulla.
+            </p>
+          </div>
+          <div className="source-form-section-body">
 
         <div className="form-row source-edit-field">
           <div className="source-analysis-header">
             <span>Syvennä näkökulmaa</span>
-            <p className="status" style={{ margin: 0 }}>
-              Valitse valmis toiminto tai anna oma suunta. Voit muokata toimintojen ohjeistusta
-              Asetukset-sivulla.
-            </p>
           </div>
 
           <div className="source-analysis-shell">
@@ -373,6 +435,9 @@ export function SourceEditorForm({
             />
           </div>
         </div>
+          </div>
+        </section>
+
       </form>
 
       <NoemaLoadingModal
