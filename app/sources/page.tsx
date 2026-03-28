@@ -1,4 +1,5 @@
 ﻿import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { listSources } from "@/lib/db";
 import { parseSourceSummaryContent } from "@/lib/source-editor";
@@ -160,7 +161,17 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
   return (
     <section>
       <div className="page-header">
-        <h1>Selaa ajatuksia</h1>
+        <div className="page-title-with-icon">
+          <Image
+            src="/brand/action-icons/SelaaAjatuksia.PNG"
+            alt=""
+            aria-hidden="true"
+            width={64}
+            height={64}
+            className="page-title-icon"
+          />
+          <h1>Selaa ajatuksia</h1>
+        </div>
       </div>
 
       {loadError ? (

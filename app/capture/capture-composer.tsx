@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IdeaNetworkLoader } from "@/app/components/idea-network-loader";
@@ -646,7 +647,17 @@ export function CaptureComposer({
           <div className="capture-text-shell">
             <div className="capture-text-header">
               <div className="capture-text-copy">
-                <h2 style={{ margin: 0 }}>{captureHeading}</h2>
+                <div className="page-title-with-icon page-title-with-icon-compact">
+                  <Image
+                    src="/brand/action-icons/KirjoitaAjatus.PNG"
+                    alt=""
+                    aria-hidden="true"
+                    width={64}
+                    height={64}
+                    className="page-title-icon"
+                  />
+                  <h2 style={{ margin: 0 }}>{captureHeading}</h2>
+                </div>
                 <div className="source-meta" style={{ marginTop: "0.45rem" }}>
                   <span className="pill">{captureStageLabel}</span>
                 </div>
@@ -739,7 +750,17 @@ export function CaptureComposer({
           <div className="capture-image-shell">
             <div className="capture-image-header">
               <div className="capture-image-copy">
-                <h2 style={{ margin: 0 }}>{captureHeading}</h2>
+                <div className="page-title-with-icon page-title-with-icon-compact">
+                  <Image
+                    src="/brand/action-icons/TallennaKuva.PNG"
+                    alt=""
+                    aria-hidden="true"
+                    width={64}
+                    height={64}
+                    className="page-title-icon"
+                  />
+                  <h2 style={{ margin: 0 }}>{captureHeading}</h2>
+                </div>
                 <div className="source-meta" style={{ marginTop: "0.45rem" }}>
                   <span className="pill">{captureStageLabel}</span>
                 </div>
@@ -915,7 +936,17 @@ export function CaptureComposer({
           <div className="capture-voice-shell">
             <div className="capture-voice-header">
               <div className="capture-voice-copy">
-                <h2 style={{ margin: 0 }}>{captureHeading}</h2>
+                <div className="page-title-with-icon page-title-with-icon-compact">
+                  <Image
+                    src="/brand/action-icons/Sanele.PNG"
+                    alt=""
+                    aria-hidden="true"
+                    width={64}
+                    height={64}
+                    className="page-title-icon"
+                  />
+                  <h2 style={{ margin: 0 }}>{captureHeading}</h2>
+                </div>
                 <div className="source-meta" style={{ marginTop: "0.45rem" }}>
                   <span className="pill">{captureStageLabel}</span>
                 </div>

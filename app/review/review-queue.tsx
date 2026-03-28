@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { completeReviewAction } from "@/app/sources/actions";
@@ -302,7 +303,17 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
   return (
     <>
       <div className="page-header">
-        <h1>Syvenny</h1>
+        <div className="page-title-with-icon">
+          <Image
+            src="/brand/action-icons/Syvenna.PNG"
+            alt=""
+            aria-hidden="true"
+            width={64}
+            height={64}
+            className="page-title-icon"
+          />
+          <h1>Syvenny</h1>
+        </div>
         {currentStageLabel ? (
           <div className="source-workspace-status">
             <span className="pill">{currentStageLabel}</span>

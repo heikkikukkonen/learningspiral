@@ -138,7 +138,15 @@ a {
   color: #44587b;
 }
 
-.header-icon svg {
+.header-icon.is-active {
+  border: 1px solid rgba(110, 195, 132, 0.46);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.66),
+    0 0 0 2px rgba(183, 234, 194, 0.22);
+}
+
+.header-icon svg,
+.header-icon-image {
   width: 1.45rem;
   height: 1.45rem;
 }
@@ -146,28 +154,28 @@ a {
 .header-icon-cta {
   width: 2.45rem;
   height: 2.45rem;
-  border: 1px solid rgba(226, 188, 82, 0.34);
+  border: 1px solid rgba(108, 193, 128, 0.38);
   background:
-    linear-gradient(135deg, rgba(255, 249, 224, 0.86), rgba(245, 229, 167, 0.42)),
-    linear-gradient(180deg, rgba(255, 246, 205, 0.72), rgba(247, 237, 194, 0.34));
-  color: #9c6f00;
+    linear-gradient(135deg, rgba(236, 252, 239, 0.9), rgba(180, 233, 193, 0.45)),
+    linear-gradient(180deg, rgba(221, 248, 227, 0.76), rgba(189, 236, 203, 0.34));
+  color: #2f7f4e;
   box-shadow:
-    inset 0 1px 0 rgba(255, 252, 233, 0.82),
-    inset 0 -1px 0 rgba(230, 202, 122, 0.22),
-    0 12px 24px rgba(190, 153, 52, 0.14);
+    inset 0 1px 0 rgba(247, 255, 249, 0.84),
+    inset 0 -1px 0 rgba(112, 184, 130, 0.22),
+    0 12px 24px rgba(76, 150, 97, 0.16);
 }
 
 .header-icon-cta:hover,
 .header-icon-cta.is-active {
-  border-color: rgba(220, 177, 59, 0.44);
+  border-color: rgba(93, 179, 116, 0.52);
   background:
-    linear-gradient(135deg, rgba(255, 251, 232, 0.92), rgba(247, 232, 175, 0.48)),
-    linear-gradient(180deg, rgba(255, 248, 212, 0.78), rgba(247, 237, 194, 0.38));
-  color: #8f6400;
+    linear-gradient(135deg, rgba(242, 254, 245, 0.94), rgba(191, 239, 203, 0.5)),
+    linear-gradient(180deg, rgba(229, 251, 234, 0.82), rgba(197, 239, 209, 0.4));
+  color: #266b40;
   box-shadow:
-    inset 0 1px 0 rgba(255, 252, 233, 0.88),
-    inset 0 -1px 0 rgba(230, 202, 122, 0.28),
-    0 16px 28px rgba(190, 153, 52, 0.18);
+    inset 0 1px 0 rgba(249, 255, 250, 0.9),
+    inset 0 -1px 0 rgba(112, 184, 130, 0.28),
+    0 16px 28px rgba(76, 150, 97, 0.2);
 }
 
 main.container {
@@ -188,6 +196,37 @@ main.container {
 .page-header h1 {
   margin: 0 0 0.35rem;
   font-size: 1.55rem;
+}
+
+.page-title-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.page-title-with-icon-compact {
+  gap: 0.7rem;
+}
+
+.page-title-icon {
+  width: clamp(2.35rem, 4.6vw, 3.2rem);
+  height: clamp(2.35rem, 4.6vw, 3.2rem);
+  flex: 0 0 auto;
+  object-fit: contain;
+  padding: 0.42rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.46);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    0 8px 20px rgba(31, 124, 128, 0.08);
+}
+
+.page-title-with-icon h1,
+.page-title-with-icon h2,
+.page-title-with-icon h3 {
+  margin: 0;
 }
 
 .muted {
@@ -3240,6 +3279,7 @@ button.danger {
 }
 
 .home-list-icon svg,
+.home-list-icon-image,
 .home-list-arrow svg {
   width: 100%;
   height: 100%;
@@ -3263,33 +3303,33 @@ button.danger {
 
 .home-list-card[data-accent="highlight"] {
   background:
-    linear-gradient(135deg, rgba(255, 249, 224, 0.86), rgba(245, 229, 167, 0.42)),
-    linear-gradient(180deg, rgba(255, 246, 205, 0.72), rgba(247, 237, 194, 0.34));
-  border-color: rgba(226, 188, 82, 0.34);
+    linear-gradient(135deg, rgba(237, 252, 240, 0.9), rgba(183, 234, 196, 0.46)),
+    linear-gradient(180deg, rgba(224, 249, 230, 0.76), rgba(193, 236, 206, 0.36));
+  border-color: rgba(108, 193, 128, 0.38);
   box-shadow:
-    inset 0 1px 0 rgba(255, 252, 233, 0.82),
-    inset 0 -1px 0 rgba(230, 202, 122, 0.22),
-    0 16px 32px rgba(190, 153, 52, 0.18);
+    inset 0 1px 0 rgba(248, 255, 249, 0.84),
+    inset 0 -1px 0 rgba(112, 184, 130, 0.22),
+    0 16px 32px rgba(76, 150, 97, 0.18);
 }
 
 .home-list-card[data-accent="highlight"]:hover {
-  border-color: rgba(220, 177, 59, 0.44);
+  border-color: rgba(93, 179, 116, 0.52);
   box-shadow:
-    inset 0 1px 0 rgba(255, 252, 233, 0.88),
-    inset 0 -1px 0 rgba(230, 202, 122, 0.28),
-    0 20px 36px rgba(190, 153, 52, 0.22);
+    inset 0 1px 0 rgba(249, 255, 250, 0.9),
+    inset 0 -1px 0 rgba(112, 184, 130, 0.28),
+    0 20px 36px rgba(76, 150, 97, 0.22);
   background:
-    linear-gradient(135deg, rgba(255, 251, 232, 0.92), rgba(247, 232, 175, 0.48)),
-    linear-gradient(180deg, rgba(255, 248, 212, 0.78), rgba(247, 237, 194, 0.38));
+    linear-gradient(135deg, rgba(243, 254, 245, 0.94), rgba(192, 239, 204, 0.52)),
+    linear-gradient(180deg, rgba(230, 251, 235, 0.82), rgba(199, 239, 210, 0.4));
 }
 
 .home-list-card[data-accent="highlight"] .home-list-icon {
-  color: #9c6f00;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 248, 219, 0.4));
-  border-color: rgba(238, 205, 107, 0.34);
+  color: #2f7f4e;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(226, 247, 231, 0.42));
+  border-color: rgba(125, 205, 144, 0.34);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.68),
-    0 8px 18px rgba(190, 153, 52, 0.16);
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 8px 18px rgba(76, 150, 97, 0.16);
 }
 
 .home-list-copy {
@@ -3723,6 +3763,19 @@ body::before {
   transform: translateY(-1px);
 }
 
+.header-icon.is-active {
+  border-color: rgba(110, 195, 132, 0.46);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    0 10px 24px rgba(47, 164, 169, 0.12),
+    0 0 0 2px rgba(183, 234, 194, 0.24);
+}
+
+.header-icon-image {
+  display: block;
+  object-fit: contain;
+}
+
 .page-header h1,
 .page-header h2,
 .page-header h3,
@@ -3968,6 +4021,13 @@ button.danger {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.62),
     0 8px 20px rgba(31, 124, 128, 0.08);
+}
+
+.home-list-icon-image {
+  display: block;
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
 }
 
 .home-list-card[data-accent="teal"] .home-list-icon,

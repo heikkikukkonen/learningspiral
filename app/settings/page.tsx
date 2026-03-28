@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { SubmitButton } from "@/app/components/submit-button";
 import { signOutAction } from "@/app/login/actions";
@@ -45,7 +46,17 @@ export default async function SettingsPage({
       <div className="page-header">
         <div className="settings-page-heading">
           <div>
-            <h1>Asetukset</h1>
+            <div className="page-title-with-icon">
+              <Image
+                src="/brand/action-icons/Asetukset.PNG"
+                alt=""
+                aria-hidden="true"
+                width={64}
+                height={64}
+                className="page-title-icon"
+              />
+              <h1>Asetukset</h1>
+            </div>
             <p className="muted">Hallitse omaa Noemaasi ja sovelluksen asetuksia</p>
           </div>
           {user ? (

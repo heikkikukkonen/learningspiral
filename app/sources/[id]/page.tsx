@@ -1,4 +1,5 @@
-﻿import { notFound } from "next/navigation";
+import Image from "next/image";
+import { notFound } from "next/navigation";
 import { SourceEditorForm } from "@/app/sources/[id]/source-editor-form";
 import { SourcePageActions } from "@/app/sources/[id]/source-page-actions";
 import { SourceTasksPanel } from "@/app/sources/[id]/source-tasks-panel";
@@ -92,7 +93,17 @@ export default async function SourceDetailsPage({
     return (
       <section className="review-shell">
         <div className="page-header">
-          <h1>Ajatus</h1>
+          <div className="page-title-with-icon">
+            <Image
+              src="/brand/action-icons/Syvenna.PNG"
+              alt=""
+              aria-hidden="true"
+              width={64}
+              height={64}
+              className="page-title-icon"
+            />
+            <h1>Ajatus</h1>
+          </div>
         </div>
         <article className="card">
           <strong>Tietokanta ei ole yhteydessä</strong>
@@ -129,7 +140,17 @@ export default async function SourceDetailsPage({
   return (
     <section className="grid source-workspace">
       <div className="page-header source-workspace-header">
-        <h1>Työstä ajatusta</h1>
+        <div className="page-title-with-icon">
+          <Image
+            src="/brand/action-icons/Syvenna.PNG"
+            alt=""
+            aria-hidden="true"
+            width={64}
+            height={64}
+            className="page-title-icon"
+          />
+          <h1>Työstä ajatusta</h1>
+        </div>
         <div className="source-workspace-status">
           <div className="source-workspace-status-line">
             <span className="pill">{sourceStageLabel}</span>
@@ -239,10 +260,7 @@ export default async function SourceDetailsPage({
         </article>
       </div>
 
-      <SourcePageActions
-        sourceId={source.id}
-        lastSavedLabel={lastSavedLabel}
-      />
+      <SourcePageActions sourceId={source.id} lastSavedLabel={lastSavedLabel} />
     </section>
   );
 }
