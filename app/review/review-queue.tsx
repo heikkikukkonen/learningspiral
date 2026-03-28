@@ -60,7 +60,6 @@ function ReviewCard({
 
       <div className="review-card-head">
         <div className="source-meta">
-          <span className="pill">Syvenee noemaksi</span>
           <span className="pill" data-variant="primary">
             {cardTypeLabel(card.card_type)}
           </span>
@@ -215,7 +214,6 @@ function IdeaCard({
 
       <div className="review-card-head">
         <div className="source-meta">
-          <span className="pill">Työstössä</span>
           {idea.tags?.slice(0, 3).map((tag) => (
             <span className="pill" key={tag}>
               #{tag}
@@ -258,6 +256,12 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
       : currentItem?.kind === "idea"
         ? "Yksi asia kerrallaan. Nyt on hyvä hetki syventää aiemmin tallentamaasi ajatusta. Lisää siihen puuttuvat tagit ja luo tehtävät niin saat tehtävät automaattisesti nousemaan tälle sivulle."
         : "Yksi asia kerrallaan. Vastaa ensin itse, nayta sitten tiedot tai nosta keskenerainen ajatus syvennettavaksi.";
+  const currentStageLabel =
+    currentItem?.kind === "review"
+      ? "Syvenee noemaksi"
+      : currentItem?.kind === "idea"
+        ? "Työstössä"
+        : null;
 
   function removeCurrentItem() {
     setItems((current) => current.slice(1));
@@ -282,6 +286,11 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
     <>
       <div className="page-header">
         <h1>Syvenny</h1>
+        {currentStageLabel ? (
+          <div className="source-workspace-status">
+            <span className="pill">{currentStageLabel}</span>
+          </div>
+        ) : null}
         <p className="muted">{headerLead}</p>
       </div>
 

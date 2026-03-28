@@ -4,7 +4,7 @@ import { SourcePageActions } from "@/app/sources/[id]/source-page-actions";
 import { SourceTasksPanel } from "@/app/sources/[id]/source-tasks-panel";
 import { getSourceWithDetails, getUserSettings, listUserTagStats } from "@/lib/db";
 import { parseSourceSummaryContent } from "@/lib/source-editor";
-import { sourceIdeaStageLabel } from "@/lib/source-status";
+import { resolveSourceIdeaStatus, sourceIdeaStageLabel } from "@/lib/source-status";
 import { CardType, IdeaStatus, SourceType, TagSuggestion } from "@/lib/types";
 
 type SourceDetails = {
@@ -113,27 +113,32 @@ export default async function SourceDetailsPage({
     ? `Viimeksi tallennettu ${new Date(summary.updated_at).toLocaleString("fi-FI")}`
     : "Ei tallennettu vielä";
   const hasCards = cards.length > 0;
-  const sourceStageLabel = sourceIdeaStageLabel(source.idea_status);
+  const resolvedIdeaStatus = resolveSourceIdeaStatus({
+    ideaStatus: source.idea_status,
+    hasCards,
+    tags: source.tags
+  });
+  const sourceStageLabel = sourceIdeaStageLabel(resolvedIdeaStatus);
+  const sourceStageActionText =
+    resolvedIdeaStatus === "refined_with_cards"
+      ? "Luodut tehtävät nousevat automaattisesti Syvenny-sivulle."
+      : resolvedIdeaStatus === "refined_without_cards"
+        ? "Luo vähintään yksi tunniste ja tehtävä, jotta ajatus siirtyy seuraavaan vaiheeseen."
+        : "Aloita kirkastamalla ajatuksen ydin ja jatka sitten tunnisteisiin.";
 
   return (
     <section className="grid source-workspace">
       <div className="page-header source-workspace-header">
         <h1>Työstä ajatusta</h1>
         <div className="source-workspace-status">
-          <span className="pill">{sourceStageLabel}</span>
-          {!hasCards ? (
-            <p className="muted">
-              Tällä sivulla jatkat tallentamasi merkityksellisen ajatuksen työstämistä ja teet
-              siitä helpommin löydettävän ja hyödynnettävän. Kirkasta ensin ajatuksen ydin, lisää
-              tunnisteet ja luo ainakin yksi tehtävä.
-            </p>
-          ) : (
-            <p className="muted">
-              Tällä sivulla jatkat tallentamasi merkityksellisen ajatuksen työstämistä ja teet
-              siitä helpommin löydettävän ja hyödynnettävän. Voit jatkaa ajatuksen kehittämistä ja
-              muokata sen sisältöjä milloin tahansa.
-            </p>
-          )}
+          <div className="source-workspace-status-line">
+            <span className="pill">{sourceStageLabel}</span>
+            <p className="muted source-workspace-status-copy">{sourceStageActionText}</p>
+          </div>
+          <p className="muted">
+            Tällä sivulla jatkat tallentamasi merkityksellisen ajatuksen työstämistä ja teet siitä
+            helpommin löydettävän ja hyödynnettävän.
+          </p>
         </div>
       </div>
 

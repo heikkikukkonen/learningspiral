@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { listSources } from "@/lib/db";
 import { parseSourceSummaryContent } from "@/lib/source-editor";
-import { sourceIdeaStageLabel } from "@/lib/source-status";
+import { resolveSourceIdeaStatus, sourceIdeaStageLabel } from "@/lib/source-status";
 import { IdeaStatus, SourceType } from "@/lib/types";
 import { ThoughtsTagBrowser } from "./thoughts-tag-browser";
 
@@ -227,7 +227,13 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
                     <span className="pill">{captureModeLabel(source.capture_mode)}</span>
                   ) : null}
                   <span className="pill">
-                    {sourceIdeaStageLabel(source.idea_status)}
+                    {sourceIdeaStageLabel(
+                      resolveSourceIdeaStatus({
+                        ideaStatus: source.idea_status,
+                        hasCards: source.has_cards,
+                        tags: source.tags
+                      })
+                    )}
                   </span>
                   {source.author ? <span>{source.author}</span> : null}
                   {source.tags?.map((tag) => (

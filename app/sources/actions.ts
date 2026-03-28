@@ -123,7 +123,7 @@ export async function saveSourceDraftAction(formData: FormData) {
     sourceId,
     title,
     tags,
-    ideaStatus: hasCards ? "refined_with_cards" : "refined_without_cards"
+    ideaStatus: hasCards && tags.length > 0 ? "refined_with_cards" : "refined_without_cards"
   });
 
   await upsertSummary(sourceId, buildSourceSummaryContent({ idea, analysis }), {

@@ -253,6 +253,14 @@ function sanitizeTimezone(value: string | null | undefined): string {
   }
 }
 
+function deriveIdeaStatus(input: {
+  hasCards: boolean;
+  tags?: string[] | null;
+}): IdeaStatus {
+  const hasTags = Array.isArray(input.tags) && input.tags.some((tag) => tag.trim().length > 0);
+  return input.hasCards && hasTags ? "refined_with_cards" : "refined_without_cards";
+}
+
 export function sanitizeUserNotificationSettings(
   input: Partial<UserNotificationSettings> | null | undefined
 ): UserNotificationSettings {
@@ -1509,11 +1517,19 @@ export async function generateSuggestedCard(params: {
     payload: { source_id: params.sourceId, card_type: insertedCard.card_type }
   });
 
-  await supabase
+  const { error: sourceStatusError } = await supabase
     .from("sources")
-    .update({ idea_status: "refined_with_cards" })
+    .update({
+      idea_status: deriveIdeaStatus({
+        hasCards: true,
+        tags
+      })
+    })
     .eq("id", params.sourceId)
     .eq("user_id", userId);
+  if (sourceStatusError && !isMissingIdeaStatusColumnError(sourceStatusError)) {
+    throw sourceStatusError;
+  }
 
   return {
     cardId: insertedCard.id,
@@ -1567,9 +1583,20 @@ export async function deleteCard(params: { cardId: string; sourceId: string }) {
   if (cardError) throw cardError;
 
   const hasRemainingCards = await sourceHasCards(params.sourceId);
+  const { data: source } = await supabase
+    .from("sources")
+    .select("tags")
+    .eq("id", params.sourceId)
+    .eq("user_id", userId)
+    .maybeSingle();
   const { error: sourceError } = await supabase
     .from("sources")
-    .update({ idea_status: hasRemainingCards ? "refined_with_cards" : "refined_without_cards" })
+    .update({
+      idea_status: deriveIdeaStatus({
+        hasCards: hasRemainingCards,
+        tags: source?.tags ?? []
+      })
+    })
     .eq("id", params.sourceId)
     .eq("user_id", userId);
   if (sourceError && !isMissingIdeaStatusColumnError(sourceError)) throw sourceError;
