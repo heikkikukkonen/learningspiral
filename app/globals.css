@@ -3416,11 +3416,17 @@ button.danger {
   }
 
   .source-edit-save,
+  .source-tag-add input,
   .source-tag-add button,
   .source-task-create-button,
   .source-page-delete,
   .source-edit-later {
     width: 100%;
+  }
+
+  .source-tag-add input {
+    flex: 0 0 auto;
+    min-height: 3rem;
   }
 
   .source-task-custom input {
