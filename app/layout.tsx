@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PwaRegister } from "./components/pwa-register";
 import { SiteNav } from "./components/site-nav";
 import { UserAuthControls } from "./components/user-auth-controls";
+import { getCurrentUser } from "@/lib/auth";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const buildVersion = process.env.NEXT_PUBLIC_BUILD_VERSION ?? "dev";
+  const user = await getCurrentUser();
 
   return (
     <html lang="fi">
@@ -40,8 +42,8 @@ export default async function RootLayout({
               </Link>
             </div>
             <div className="topbar-actions">
-              <SiteNav />
-              <UserAuthControls />
+              {user ? <SiteNav /> : null}
+              <UserAuthControls user={user} />
             </div>
           </div>
         </header>
