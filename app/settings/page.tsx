@@ -142,25 +142,6 @@ export default async function SettingsPage({
 
           <div className="settings-subsection">
             <div className="settings-subsection-copy">
-              <h3 style={{ margin: 0 }}>Debug</h3>
-              <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-                Näytä käyttöliittymässä debug-tietoja, kuten tunnisteiden luonnissa käytetty prompti.
-              </p>
-            </div>
-            <label className="form-row settings-toggle-row">
-              <input type="hidden" name="showDebug" value="false" />
-              <span>Näytä debug</span>
-              <input
-                type="checkbox"
-                name="showDebug"
-                value="true"
-                defaultChecked={settings.showDebug}
-              />
-            </label>
-          </div>
-
-          <div className="settings-subsection">
-            <div className="settings-subsection-copy">
               <h3 style={{ margin: 0 }}>Tunnisteet</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
                 Miten haluat jäsentää ajatuksiasi? Tunnisteet auttavat ajatuksia löytämään toisensa ja
@@ -250,6 +231,25 @@ export default async function SettingsPage({
                 />
               </label>
             </div>
+          </div>
+
+          <div className="settings-subsection">
+            <div className="settings-subsection-copy">
+              <h3 style={{ margin: 0 }}>Debug</h3>
+              <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+                Näytä käyttöliittymässä debug-tietoja, kuten tunnisteiden luonnissa käytetty prompti.
+              </p>
+            </div>
+            <label className="form-row settings-toggle-row">
+              <input type="hidden" name="showDebug" value="false" />
+              <span>Näytä debug</span>
+              <input
+                type="checkbox"
+                name="showDebug"
+                value="true"
+                defaultChecked={settings.showDebug}
+              />
+            </label>
           </div>
         </article>
 
