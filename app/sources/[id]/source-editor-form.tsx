@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import type { ReactNode } from "react";
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { NoemaLoadingModal } from "@/app/components/noema-loading-modal";
 import { ANALYSIS_ACTIONS } from "@/lib/analysis-actions";
 import {
@@ -39,16 +39,23 @@ export function SourceEditorForm({
   captureDetails
 }: SourceEditorFormProps) {
   const formRef = useRef<HTMLFormElement | null>(null);
+  const ideaTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const analysisTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [title, setTitle] = useState(initialTitle);
   const [idea, setIdea] = useState(initialIdea);
   const [analysis, setAnalysis] = useState(initialAnalysis);
   const [tags, setTags] = useState(() => dedupeTags(initialTags));
   const [tagInput, setTagInput] = useState("");
   const [customInstruction, setCustomInstruction] = useState("");
-  const [aiNote, setAiNote] = useState("");
   const [tagNote, setTagNote] = useState("");
   const [tagDebugPrompt, setTagDebugPrompt] = useState("");
+  const [analysisDebugPrompt, setAnalysisDebugPrompt] = useState("");
   const [activeMode, setActiveMode] = useState<AnalysisModeOrCustom | null>(null);
+  const [pendingMergeMode, setPendingMergeMode] = useState<{
+    mode: AnalysisModeOrCustom;
+    customInstruction: string;
+    currentAnalysis: string;
+  } | null>(null);
   const [isRefining, setIsRefining] = useState(false);
   const [isGeneratingTags, setIsGeneratingTags] = useState(false);
   const hasTags = tags.length > 0;
@@ -115,6 +122,24 @@ export function SourceEditorForm({
       ? "Päivitän näkökulmatekstin antamasi ohjeen mukaan."
       : "Päivitän näkökulmatekstin. Voit kokeilla valmiita toimintoja tai ohjata omalla ohjeellasi näkökulmien hakua.";
 
+  useLayoutEffect(() => {
+    const textarea = ideaTextareaRef.current;
+    if (!textarea) return;
+
+    const maxHeight = 360;
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
+  }, [idea]);
+
+  useLayoutEffect(() => {
+    const textarea = analysisTextareaRef.current;
+    if (!textarea) return;
+
+    const maxHeight = 420;
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
+  }, [analysis]);
+
   function addResolvedTag(nextValue?: string) {
     const trimmedValue = (nextValue ?? tagInput).trim();
     if (!trimmedValue) return;
@@ -145,13 +170,13 @@ export function SourceEditorForm({
     setTags((current) => current.filter((tag) => tag !== tagToRemove));
   }
 
-  function handleAiAction(mode: AnalysisModeOrCustom) {
-    const nextCustomInstruction = customInstruction.trim();
-    if (mode === "custom" && !nextCustomInstruction) {
-      setAiNote("Kirjoita oma pyyntösi ennen kuin painat Tutki.");
-      return;
-    }
-
+  function startAiAction(
+    mode: AnalysisModeOrCustom,
+    mergeMode: "replace" | "prepend",
+    nextCustomInstruction: string,
+    currentAnalysis: string
+  ) {
+    setPendingMergeMode(null);
     setActiveMode(mode);
     setIsRefining(true);
     void (async () => {
@@ -159,7 +184,7 @@ export function SourceEditorForm({
         const formData = new FormData();
         formData.set("title", title);
         formData.set("idea", idea);
-        formData.set("analysis", analysis);
+        formData.set("analysis", mergeMode === "prepend" ? "" : analysis);
         formData.set("rawInput", rawInput);
         formData.set("tags", tags.join(","));
         formData.set("mode", mode);
@@ -168,22 +193,42 @@ export function SourceEditorForm({
         }
 
         const result = await refineSourceDraftAction(formData);
-        setAnalysis(result.analysis);
-        setAiNote(
-          result.model
-            ? `Päivitin "Uusia näkökulmia" -tekstin toiminnolla "${result.modeLabel}". Muista tallentaa muutokset, jos haluat säilyttää ne.`
-            : `"Uusia näkökulmia" -teksti päivittyi toiminnolla "${result.modeLabel}". Muista tallentaa muutokset.`
-        );
+        const nextAnalysis =
+          mergeMode === "prepend" && currentAnalysis
+            ? [result.analysis, currentAnalysis].filter(Boolean).join("\n\n")
+            : result.analysis;
+        setAnalysis(nextAnalysis);
+        setAnalysisDebugPrompt(result.debugPrompt ?? "");
         if (mode === "custom") {
           setCustomInstruction("");
         }
       } catch (error) {
-        setAiNote(error instanceof Error ? error.message : '"Uusia näkökulmia" -tekstin päivitys epäonnistui.');
+        setAnalysisDebugPrompt("");
+        console.error(error);
       } finally {
         setActiveMode(null);
         setIsRefining(false);
       }
     })();
+  }
+
+  function handleAiAction(mode: AnalysisModeOrCustom) {
+    const nextCustomInstruction = customInstruction.trim();
+    if (mode === "custom" && !nextCustomInstruction) {
+      return;
+    }
+
+    const currentAnalysis = analysis.trim();
+    if (currentAnalysis) {
+      setPendingMergeMode({
+        mode,
+        customInstruction: nextCustomInstruction,
+        currentAnalysis
+      });
+      return;
+    }
+
+    startAiAction(mode, "replace", nextCustomInstruction, currentAnalysis);
   }
 
   function handleGenerateTags() {
@@ -231,162 +276,171 @@ export function SourceEditorForm({
 
         <section className="source-form-section">
           <div className="source-form-section-header">
-            <h2>Ajatus ja tunnisteet</h2>
+            <h2>Ajatuksen ydin</h2>
             <p className="muted">
-              Kirkasta ajatuksen ydin ja nimeä se selkeästi. Tämän osion avulla rakennat ajatukselle
-              hyvän perustan ennen syventämistä ja tehtäviä.
+              Nimeä ajatus selkeästi ja kirkasta sen ydinsisältö. Tässä osiossa viimeistelet
+              otsikon ja itse ajatuksen ennen tunnisteita, uusia näkökulmia ja tehtäviä.
             </p>
           </div>
           <div className="source-form-section-body">
-        <label className="form-row source-edit-field">
-          <span>Otsikko</span>
-          <input
-            name="title"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Anna ajatukselle selkeä otsikko"
-            required
-          />
-        </label>
+            <label className="form-row source-edit-field">
+              <span>Otsikko</span>
+              <input
+                name="title"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="Anna ajatukselle selkeä otsikko"
+                required
+              />
+            </label>
 
-        <label className="form-row source-edit-field">
-          <span>Ajatus</span>
-          <textarea
-            name="idea"
-            value={idea}
-            onChange={(event) => setIdea(event.target.value)}
-            placeholder="Kirjoita ytimekäs pääoivallus tai varsinainen ajatus."
-            required
-          />
-        </label>
+            <label className="form-row source-edit-field">
+              <span>Ajatus</span>
+              <textarea
+                ref={ideaTextareaRef}
+                name="idea"
+                value={idea}
+                onChange={(event) => setIdea(event.target.value)}
+                placeholder="Kirjoita ytimekäs pääoivallus tai varsinainen ajatus."
+                required
+              />
+            </label>
 
-        {captureDetails}
-
-        <div className="form-row source-edit-field">
-          <div className="source-analysis-header">
-            <span>Tunnisteet</span>
+            {captureDetails}
           </div>
+        </section>
 
-          <div className="source-tag-editor">
-            {hasTags ? (
-              <div className="source-tag-list">
-                {tags.map((tag) => (
-                  <button
-                    key={tag}
-                    className="source-tag-chip"
-                    onClick={() => removeTag(tag)}
-                    type="button"
-                  >
-                    <span>{tag}</span>
-                    <span aria-hidden="true">x</span>
-                  </button>
-                ))}
-              </div>
-            ) : null}
+        <section className="source-form-section">
+          <div className="source-form-section-header">
+            <h2>Tunnisteet</h2>
+            <p className="muted">
+              Tunnisteet auttavat ajatuksia löytämään toisensa ja muodostamaan yhteyksiä.
+            </p>
+          </div>
+          <div className="source-form-section-body">
+            <div className="form-row source-edit-field">
+              <div className="source-tag-editor">
+                {hasTags ? (
+                  <div className="source-tag-list">
+                    {tags.map((tag) => (
+                      <button
+                        key={tag}
+                        className="source-tag-chip"
+                        onClick={() => removeTag(tag)}
+                        type="button"
+                      >
+                        <span>{tag}</span>
+                        <span aria-hidden="true">x</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
 
             {!hasTags ? (
               <div className="source-tag-empty-state">
                 <p className="status source-tag-guidance">
-                  Kun otsikko ja ajatus ovat valmiit, luo tunnisteet automaattisesti ja tarkenna
-                  niitä tarvittaessa.
+                  Kun ajatuksen ydin on valmis, luo tunnisteet automaattisesti ja tarkenna niitä
+                  tarvittaessa.
+                  <br />
+                  Voit muokata tunnisteiden luonnin ohjeistusta Asetukset-sivulla.
                 </p>
                 <div className="source-tag-primary-action">
                   <button
-                    type="button"
-                    className="primary source-tag-inline-action"
-                    onClick={handleGenerateTags}
-                    disabled={isGeneratingTags || !canGenerateTags}
-                  >
-                    {isGeneratingTags ? "Luon..." : "Luo automaattisesti"}
-                  </button>
-                </div>
-              </div>
-            ) : null}
+                        type="button"
+                        className="primary source-tag-inline-action"
+                        onClick={handleGenerateTags}
+                        disabled={isGeneratingTags || !canGenerateTags}
+                      >
+                        {isGeneratingTags ? "Luon..." : "Luo automaattisesti"}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
 
-            {hasTags ? (
-              <div className="source-tag-add">
-                <input
-                  value={tagInput}
-                  onChange={(event) => setTagInput(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      addResolvedTag();
-                    }
-                  }}
-                  placeholder="Lisää tunniste tai hae olemassa olevista"
-                />
-                <button type="button" className="secondary source-tag-inline-action" onClick={() => addResolvedTag()}>
-                  {exactAutocompleteSuggestion ? "Käytä olemassa olevaa" : "Lisää uusi tunniste"}
-                </button>
-              </div>
-            ) : null}
-
-            {hasTags && showInlineSuggestions ? (
-              <div className="source-tag-section source-tag-section-inline">
-                <span className="source-tag-section-label">{suggestionsLabel}</span>
-                <div className="source-tag-suggestion-list">
-                  {visibleSuggestions.map((suggestion, index) => (
+                {hasTags ? (
+                  <div className="source-tag-add">
+                    <input
+                      value={tagInput}
+                      onChange={(event) => setTagInput(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          addResolvedTag();
+                        }
+                      }}
+                      placeholder="Lisää tunniste tai hae olemassa olevista"
+                    />
                     <button
-                      key={`${suggestion.tag}-${suggestion.lastUsedAt}`}
                       type="button"
-                      className="source-tag-suggestion"
-                      data-active="false"
-                      onClick={() => addResolvedTag(suggestion.tag)}
+                      className="secondary source-tag-inline-action"
+                      onClick={() => addResolvedTag()}
                     >
-                      <span>#{suggestion.tag}</span>
-                      <span className="source-tag-suggestion-meta">{suggestion.usageCount}x</span>
+                      {exactAutocompleteSuggestion ? "Käytä olemassa olevaa" : "Lisää uusi tunniste"}
                     </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
+                  </div>
+                ) : null}
 
-            {hasTags && showDefaultSuggestions ? (
-              <div className="source-tag-section">
-                <span className="source-tag-section-label">{suggestionsLabel}</span>
-                <div className="source-tag-suggestion-list">
-                  {visibleSuggestions.map((suggestion, index) => (
-                    <button
-                      key={`${suggestion.tag}-${suggestion.lastUsedAt}`}
-                      type="button"
-                      className="source-tag-suggestion"
-                      data-active="false"
-                      onClick={() => addResolvedTag(suggestion.tag)}
-                    >
-                      <span>#{suggestion.tag}</span>
-                      <span className="source-tag-suggestion-meta">{suggestion.usageCount}x</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
+                {hasTags && showInlineSuggestions ? (
+                  <div className="source-tag-section source-tag-section-inline">
+                    <span className="source-tag-section-label">{suggestionsLabel}</span>
+                    <div className="source-tag-suggestion-list">
+                      {visibleSuggestions.map((suggestion) => (
+                        <button
+                          key={`${suggestion.tag}-${suggestion.lastUsedAt}`}
+                          type="button"
+                          className="source-tag-suggestion"
+                          data-active="false"
+                          onClick={() => addResolvedTag(suggestion.tag)}
+                        >
+                          <span>#{suggestion.tag}</span>
+                          <span className="source-tag-suggestion-meta">{suggestion.usageCount}x</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
 
-            {showDebug && tagDebugPrompt ? (
-              <details className="source-tag-debug">
-                <summary>Käytetty prompti (debug)</summary>
-                <pre>{tagDebugPrompt}</pre>
-              </details>
-            ) : null}
-          </div>
-        </div>
+                {hasTags && showDefaultSuggestions ? (
+                  <div className="source-tag-section">
+                    <span className="source-tag-section-label">{suggestionsLabel}</span>
+                    <div className="source-tag-suggestion-list">
+                      {visibleSuggestions.map((suggestion) => (
+                        <button
+                          key={`${suggestion.tag}-${suggestion.lastUsedAt}`}
+                          type="button"
+                          className="source-tag-suggestion"
+                          data-active="false"
+                          onClick={() => addResolvedTag(suggestion.tag)}
+                        >
+                          <span>#{suggestion.tag}</span>
+                          <span className="source-tag-suggestion-meta">{suggestion.usageCount}x</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {showDebug && tagDebugPrompt ? (
+                  <details className="source-tag-debug">
+                    <summary>Käytetty prompti (debug)</summary>
+                    <pre>{tagDebugPrompt}</pre>
+                  </details>
+                ) : null}
+              </div>
+            </div>
           </div>
         </section>
         <section className="source-form-section">
           <div className="source-form-section-header">
             <h2>Uusia näkökulmia</h2>
             <p className="muted">
-              Etsi ajatukselle uusia näkökulmia valmiilla tavoilla tai anna oma suunta. Voit muokata toimintojen
-              ohjeistusta Asetukset-sivulla.
+              Etsi ajatukselle uusia näkökulmia valmiilla toiminnoilla tai ohjaa hakua omalla
+              ohjeellasi. Voit muokata toimintojen ohjeistusta Asetukset-sivulla.
             </p>
           </div>
           <div className="source-form-section-body">
 
         <div className="form-row source-edit-field">
-          <div className="source-analysis-header">
-            <span>Uusia näkökulmia</span>
-          </div>
-
           <div className="source-analysis-shell">
             <div className="source-analysis-actions" role="group" aria-label="Uusia näkökulmia">
               {ANALYSIS_ACTIONS.map((action) => (
@@ -422,11 +476,56 @@ export function SourceEditorForm({
               </button>
             </div>
 
-            {aiNote ? <p className="status source-analysis-note">{aiNote}</p> : null}
+            {pendingMergeMode ? (
+              <div className="source-analysis-merge-choice" role="status" aria-live="polite">
+                <p>Kentässä on jo tekstiä. Haluatko korvata sen vai lisätä uuden näkökulman alkuun?</p>
+                <div className="source-analysis-merge-actions">
+                  <button
+                    type="button"
+                    className="secondary source-task-create-button source-analysis-merge-button"
+                    disabled={isRefining}
+                    onClick={() =>
+                      startAiAction(
+                        pendingMergeMode.mode,
+                        "replace",
+                        pendingMergeMode.customInstruction,
+                        pendingMergeMode.currentAnalysis
+                      )
+                    }
+                  >
+                    Korvaa nykyinen
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary source-task-create-button source-analysis-merge-button"
+                    disabled={isRefining}
+                    onClick={() =>
+                      startAiAction(
+                        pendingMergeMode.mode,
+                        "prepend",
+                        pendingMergeMode.customInstruction,
+                        pendingMergeMode.currentAnalysis
+                      )
+                    }
+                  >
+                    Lisää alkuun
+                  </button>
+                  <button
+                    type="button"
+                    className="ghost source-analysis-merge-cancel"
+                    disabled={isRefining}
+                    onClick={() => setPendingMergeMode(null)}
+                  >
+                    Peruuta
+                  </button>
+                </div>
+              </div>
+            ) : null}
 
             <label className="form-row source-analysis-result-field">
-              <span>Tähän tallentuu uusi näkökulma, jota voit muokata vapaasti.</span>
+              <span>Uusi näkökulma</span>
               <textarea
+                ref={analysisTextareaRef}
                 name="analysis"
                 value={analysis}
                 onChange={(event) => setAnalysis(event.target.value)}
@@ -435,6 +534,13 @@ export function SourceEditorForm({
                 required
               />
             </label>
+
+            {showDebug && analysisDebugPrompt ? (
+              <details className="source-tag-debug">
+                <summary>Käytetty prompti (debug)</summary>
+                <pre>{analysisDebugPrompt}</pre>
+              </details>
+            ) : null}
           </div>
         </div>
           </div>

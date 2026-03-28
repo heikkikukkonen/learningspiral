@@ -60,6 +60,7 @@ function ReviewCard({
 
       <div className="review-card-head">
         <div className="source-meta">
+          <span className="pill">Syvenee noemaksi</span>
           <span className="pill" data-variant="primary">
             {cardTypeLabel(card.card_type)}
           </span>
@@ -214,9 +215,7 @@ function IdeaCard({
 
       <div className="review-card-head">
         <div className="source-meta">
-          <span className="pill" data-variant="primary">
-            Keskeneräinen ajatus
-          </span>
+          <span className="pill">Työstössä</span>
           {idea.tags?.slice(0, 3).map((tag) => (
             <span className="pill" key={tag}>
               #{tag}

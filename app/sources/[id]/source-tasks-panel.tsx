@@ -26,6 +26,7 @@ type CardDetails = {
 type Props = {
   sourceId: string;
   cards: CardDetails[];
+  showDebug: boolean;
 };
 
 const presetTaskButtons: Array<{ value: CardType; label: string; tooltip: string }> = QUICK_TASK_TYPES.map(
@@ -36,10 +37,11 @@ const presetTaskButtons: Array<{ value: CardType; label: string; tooltip: string
   })
 );
 
-export function SourceTasksPanel({ sourceId, cards }: Props) {
+export function SourceTasksPanel({ sourceId, cards, showDebug }: Props) {
   const router = useRouter();
   const [customInstruction, setCustomInstruction] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [taskDebugPrompt, setTaskDebugPrompt] = useState("");
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const isGeneratingTask = Boolean(pendingAction?.startsWith("generate:"));
@@ -88,7 +90,8 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
         formData.set("instruction", instruction);
       }
 
-      await generateCardAction(formData);
+      const result = await generateCardAction(formData);
+      setTaskDebugPrompt(result?.debugPrompt ?? "");
       if (variant === "custom") {
         setCustomInstruction("");
       }
@@ -144,14 +147,14 @@ export function SourceTasksPanel({ sourceId, cards }: Props) {
         </button>
       </div>
 
+      {showDebug && taskDebugPrompt ? (
+        <details className="source-tag-debug">
+          <summary>Käytetty prompti (debug)</summary>
+          <pre>{taskDebugPrompt}</pre>
+        </details>
+      ) : null}
 
       <div className="list" style={{ marginTop: "0.8rem" }}>
-        {cards.length === 0 ? (
-          <div className="source-task-empty">
-            <p>Luo tehtävä yllä olevista painikkeista. Uusin tehtävä tulee aina ylimmäksi.</p>
-          </div>
-        ) : null}
-
         {cards.map((card, index) => {
           const supportText = cardTypeSupportText(card.card_type);
 

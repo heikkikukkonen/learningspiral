@@ -1,9 +1,7 @@
-export type SourceIdeaStage = "unrefined" | "refined";
+import type { IdeaStatus } from "@/lib/types";
 
-export function deriveSourceIdeaStage(hasCards: boolean): SourceIdeaStage {
-  return hasCards ? "refined" : "unrefined";
-}
-
-export function sourceIdeaStageLabel(stage: SourceIdeaStage): string {
-  return stage === "refined" ? "Jalostettu ajatus" : "Jalostamaton ajatus";
+export function sourceIdeaStageLabel(stage: IdeaStatus): string {
+  if (stage === "draft") return "Tallennettu";
+  if (stage === "refined_with_cards") return "Syvenee noemaksi";
+  return "Työstössä";
 }

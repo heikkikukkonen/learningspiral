@@ -575,20 +575,21 @@ export function CaptureComposer({
   const voiceRawCharacterCount = rawInputValue.trim().length;
   const isTextProcessing = textSaveStage !== "idle";
   const captureHeading = "Tallenna se, mikä on merkityksellistä";
-  const captureSupportText = "Ajatus ei katoa. Voit palata siihen myöhemmin tai jatkaa syventämistä heti.";
+  const captureSupportText = "Ajatus ei katoa. Voit palata siihen myöhemmin tai jatkaa työstämistä heti.";
+  const captureStageLabel = "Tallennus";
   const imageDropzoneLabel = isImageDragActive ? "Pudota kuva tähän" : "Raahaa tai liitä kuva";
   const textProcessingLabel =
     textSaveStage === "saving" ? "Tallennan ajatuksen" : "Käsittelen kirjoittamaasi ajatusta";
   const textProcessingDetail =
     textSaveStage === "saving"
-      ? "Tallennan ajatuksen ja siirrän sinut jatkamaan syventämistä."
+      ? "Tallennan ajatuksen ja siirrän sinut jatkamaan työstämistä."
       : "Tarkistan tekstin talteen sopivaan muotoon ennen kuin ajatus tallennetaan.";
 
   const activeTextProcessingDetail =
     textSaveStage === "saving"
       ? saveIntent === "return"
         ? "Laitan ajatuksen talteen ja palautan sinut etusivulle."
-        : "Tallennan ajatuksen ja siirrän sinut jatkamaan syventämistä."
+        : "Tallennan ajatuksen ja siirrän sinut jatkamaan työstämistä."
       : textProcessingDetail;
   const showCaptureLoadingModal =
     (mode === "text" ? textSaveStage === "saving" : false) ||
@@ -610,7 +611,7 @@ export function CaptureComposer({
       : "Voit tarkistaa ja muokata poimimani tekstin ennen tallentamista."
     : saveIntent === "return"
     ? "Laitan ajatuksen talteen ja palautan sinut etusivulle."
-    : "Tallennan ajatuksen ja siirrän sinut jatkamaan syventämistä.";
+    : "Tallennan ajatuksen ja siirrän sinut jatkamaan työstämistä.";
 
   return (
     <div className="grid">
@@ -646,6 +647,9 @@ export function CaptureComposer({
             <div className="capture-text-header">
               <div className="capture-text-copy">
                 <h2 style={{ margin: 0 }}>{captureHeading}</h2>
+                <div className="source-meta" style={{ marginTop: "0.45rem" }}>
+                  <span className="pill">{captureStageLabel}</span>
+                </div>
                 <p className="status capture-text-status">
                   {captureSupportText}
                 </p>
@@ -673,10 +677,10 @@ export function CaptureComposer({
               {isTextProcessing
                 ? saveIntent === "return"
                   ? "Käsittely käynnissä. Hetken päästä palaat etusivulle."
-                  : "Käsittely käynnissä. Hetken päästä siirryt syventämään ajatusta."
+                  : "Käsittely käynnissä. Hetken päästä siirryt työstämään ajatusta."
                 : textCharacterCount > 0
                 ? `${textCharacterCount} merkkiä valmiina tallennettavaksi.`
-                : "Ctrl+Enter tallentaa ja avaa ajatuksen syventämisen."}
+                : "Ctrl+Enter tallentaa ja avaa ajatuksen työstämisen."}
             </p>
 
             <div className="capture-text-footer">
@@ -705,7 +709,7 @@ export function CaptureComposer({
                       {textSaveStage === "saving" ? "Tallennan..." : "Käsittelen..."}
                     </span>
                   ) : (
-                    "Jatka syventämistä"
+                      "Jatka työstämistä"
                   )}
                 </button>
               </div>
@@ -736,6 +740,9 @@ export function CaptureComposer({
             <div className="capture-image-header">
               <div className="capture-image-copy">
                 <h2 style={{ margin: 0 }}>{captureHeading}</h2>
+                <div className="source-meta" style={{ marginTop: "0.45rem" }}>
+                  <span className="pill">{captureStageLabel}</span>
+                </div>
                 <p className="status capture-image-status">
                   {captureSupportText}
                 </p>
@@ -881,7 +888,7 @@ export function CaptureComposer({
                           });
                         }}
                       >
-                        {isSaving && saveIntent === "refine" ? "Tallennan..." : "Jatka syventämistä"}
+                        {isSaving && saveIntent === "refine" ? "Tallennan..." : "Jatka työstämistä"}
                       </button>
                       <button type="button" className="capture-image-cancel capture-image-cancel-link" onClick={cancelCapture}>
                         Peruuta
@@ -909,6 +916,9 @@ export function CaptureComposer({
             <div className="capture-voice-header">
               <div className="capture-voice-copy">
                 <h2 style={{ margin: 0 }}>{captureHeading}</h2>
+                <div className="source-meta" style={{ marginTop: "0.45rem" }}>
+                  <span className="pill">{captureStageLabel}</span>
+                </div>
                 <p className="status capture-voice-status">
                   {captureSupportText}
                 </p>
@@ -1050,7 +1060,7 @@ export function CaptureComposer({
                         });
                       }}
                     >
-                      {isSaving && saveIntent === "refine" ? "Tallennan..." : "Jatka syventämistä"}
+                      {isSaving && saveIntent === "refine" ? "Tallennan..." : "Jatka työstämistä"}
                     </button>
                   </div>
                 </div>

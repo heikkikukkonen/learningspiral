@@ -586,8 +586,10 @@ export async function generateReviewCardsFromSummary(input: {
 }
 
 export async function generateReviewCardFromSummary(input: {
-  summary: string;
-  rawInput: string;
+  title: string;
+  idea: string;
+  analysis: string;
+  tags: string[];
   cardType?: CardType;
   instruction?: string;
   settings?: UserSettings;
@@ -615,20 +617,26 @@ export async function generateReviewCardFromSummary(input: {
     typeInstruction,
     `Allowed card types: ${allowedCardTypes.join(", ")}.`
   ], input.instruction).join("\n");
+  const userPrompt = [
+    "Title:",
+    normalizeBlock(input.title) || "(empty)",
+    "",
+    "Idea:",
+    normalizeBlock(input.idea) || "(empty)",
+    "",
+    "Tags:",
+    input.tags.join(", ") || "(none)",
+    "",
+    "New perspective text:",
+    normalizeBlock(input.analysis) || "(empty)"
+  ].join("\n");
+  const debugPrompt = [`[system]`, systemPrompt, "", `[user]`, userPrompt].join("\n");
 
   const reply = await callResponsesApi([
     { role: "system", content: systemPrompt },
     {
       role: "user",
-      content: [
-        "Generate a single review card using both the original capture and the refined summary.",
-        "",
-        "Original capture:",
-        input.rawInput || "(none)",
-        "",
-        "Summary:",
-        input.summary
-      ].join("\n")
+      content: userPrompt
     }
   ]);
 
@@ -636,11 +644,11 @@ export async function generateReviewCardFromSummary(input: {
   try {
     parsed = JSON.parse(reply.text);
   } catch {
-    return { ok: false, data: null };
+    return { ok: false, data: null, debugPrompt };
   }
 
   if (!parsed || typeof parsed !== "object") {
-    return { ok: false, data: null };
+    return { ok: false, data: null, debugPrompt };
   }
 
   const parsedRecord = parsed as { card?: Partial<GeneratedCard> } & Partial<GeneratedCard>;
@@ -648,7 +656,7 @@ export async function generateReviewCardFromSummary(input: {
     parsedRecord.card && typeof parsedRecord.card === "object" ? parsedRecord.card : parsedRecord;
   const card = sanitizeCard(rawCard);
   if (!card) {
-    return { ok: false, data: null };
+    return { ok: false, data: null, debugPrompt };
   }
 
   if (input.cardType) {
@@ -658,11 +666,12 @@ export async function generateReviewCardFromSummary(input: {
         ...card,
         cardType: input.cardType
       },
-      model: reply.model
+      model: reply.model,
+      debugPrompt
     };
   }
 
-  return { ok: true, data: card, model: reply.model };
+  return { ok: true, data: card, model: reply.model, debugPrompt };
 }
 
 export async function generateSourceTags(input: {
@@ -775,14 +784,10 @@ export async function refineSourceDraft(input: {
   }
 
   const instructionByMode = {
-    clarify:
-      "Clarify the analysis into a clean and easy-to-understand summary without losing the main message.",
-    deepen:
-      "Deepen the analysis with sharper reasoning, implications, examples, and next actions.",
-    condense:
-      "Condense the analysis into its clearest core message while keeping the meaning intact.",
-    network:
-      "Suggest the kinds of people or experts the user should talk with to deepen the topic further.",
+    clarify: "",
+    deepen: "",
+    condense: "",
+    network: "",
     custom:
       "Rewrite the analysis according to the user's custom instruction while staying grounded in the original capture."
   } as const;
@@ -792,7 +797,6 @@ export async function refineSourceDraft(input: {
     : getAnalysisPrompt(input.settings, input.mode);
 
   const systemPrompt = appendOptionalInstruction([
-    "You are a learning capture editor.",
     buildLanguageInstruction(input.settings?.responseLanguage || "Finnish"),
     "Keep the writing concise.",
     "Preserve readable paragraph breaks when the response is longer than a couple of sentences.",
@@ -803,26 +807,25 @@ export async function refineSourceDraft(input: {
     "}",
     "Do not rewrite the title, idea, or tags.",
     "Keep analysis directly editable by the user.",
-    "Preserve the user's intent and wording where possible."
+    "Preserve the user's intent and wording where possible.",
+    "Use the given tags as supporting context when you form new perspectives."
   ], customInstruction).join("\n");
+  const userPrompt = [
+    instructionByMode[input.mode],
+    "",
+    `Title:\n${normalizeBlock(input.title) || "(empty)"}`,
+    "",
+    `Idea:\n${normalizeBlock(input.idea) || "(empty)"}`,
+    "",
+    `Given tags:\n${input.tags.join(", ") || "(none)"}`
+  ].join("\n");
+  const debugPrompt = [`[system]`, systemPrompt, "", `[user]`, userPrompt].join("\n");
 
   const reply = await callResponsesApi([
     { role: "system", content: systemPrompt },
     {
       role: "user",
-      content: [
-        instructionByMode[input.mode],
-        "",
-        `Title:\n${normalizeBlock(input.title) || "(empty)"}`,
-        "",
-        `Idea:\n${normalizeBlock(input.idea) || "(empty)"}`,
-        "",
-        `Analysis:\n${normalizeBlock(input.analysis) || "(empty)"}`,
-        "",
-        `Original capture:\n${normalizeBlock(input.rawInput) || "(empty)"}`,
-        "",
-        `Existing tags:\n${input.tags.join(", ") || "(none)"}`
-      ].join("\n")
+      content: userPrompt
     }
   ]);
 
@@ -833,7 +836,8 @@ export async function refineSourceDraft(input: {
     return {
       ok: true,
       data: fallbackRefinedSourceDraft(input),
-      model: reply.model
+      model: reply.model,
+      debugPrompt
     };
   }
 
@@ -842,7 +846,8 @@ export async function refineSourceDraft(input: {
     return {
       ok: true,
       data: fallbackRefinedSourceDraft(input),
-      model: reply.model
+      model: reply.model,
+      debugPrompt
     };
   }
 
@@ -854,6 +859,7 @@ export async function refineSourceDraft(input: {
       analysis: sanitized.analysis,
       tags: input.tags
     },
-    model: reply.model
+    model: reply.model,
+    debugPrompt
   };
 }

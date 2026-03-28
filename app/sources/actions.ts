@@ -11,6 +11,7 @@ import {
   generateSuggestedCard,
   getUserSettings,
   listUserTagStats,
+  sourceHasCards,
   updateSource,
   updateCard,
   upsertSummary
@@ -116,11 +117,13 @@ export async function saveSourceDraftAction(formData: FormData) {
   const inputModality = asString(formData.get("inputModality")) as InputModality;
   const tags = readTags(asString(formData.get("tags")));
   const cardDrafts = readCardDrafts(formData);
+  const hasCards = await sourceHasCards(sourceId);
 
   await updateSource({
     sourceId,
     title,
-    tags
+    tags,
+    ideaStatus: hasCards ? "refined_with_cards" : "refined_without_cards"
   });
 
   await upsertSummary(sourceId, buildSourceSummaryContent({ idea, analysis }), {
@@ -176,7 +179,8 @@ export async function refineSourceDraftAction(formData: FormData) {
     tags: refined.data.tags,
     mode,
     modeLabel: analysisModeLabel(mode),
-    model: refined.model ?? null
+    model: refined.model ?? null,
+    debugPrompt: refined.debugPrompt ?? null
   };
 }
 
@@ -228,7 +232,7 @@ export async function generateCardAction(formData: FormData) {
     throw new Error("Kirjoita ohje tehtävän luontia varten.");
   }
 
-  await generateSuggestedCard({
+  const generated = await generateSuggestedCard({
     sourceId,
     cardType,
     instruction: instruction || undefined
@@ -236,6 +240,11 @@ export async function generateCardAction(formData: FormData) {
   revalidatePath(`/sources/${sourceId}`);
   revalidatePath("/review");
   revalidatePath("/progress");
+
+  return {
+    debugPrompt: generated?.debugPrompt ?? null,
+    model: generated?.model ?? null
+  };
 }
 
 export async function deleteCardAction(formData: FormData) {

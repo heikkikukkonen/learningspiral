@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { listSources } from "@/lib/db";
 import { parseSourceSummaryContent } from "@/lib/source-editor";
-import { deriveSourceIdeaStage, sourceIdeaStageLabel } from "@/lib/source-status";
-import { SourceType } from "@/lib/types";
+import { sourceIdeaStageLabel } from "@/lib/source-status";
+import { IdeaStatus, SourceType } from "@/lib/types";
 import { ThoughtsTagBrowser } from "./thoughts-tag-browser";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +20,7 @@ type SourceListItem = {
   origin: string | null;
   tags: string[] | null;
   capture_mode: string;
+  idea_status: IdeaStatus;
   has_cards: boolean;
   created_at: string;
   summary_content?: string | null;
@@ -226,7 +227,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
                     <span className="pill">{captureModeLabel(source.capture_mode)}</span>
                   ) : null}
                   <span className="pill">
-                    {sourceIdeaStageLabel(deriveSourceIdeaStage(source.has_cards))}
+                    {sourceIdeaStageLabel(source.idea_status)}
                   </span>
                   {source.author ? <span>{source.author}</span> : null}
                   {source.tags?.map((tag) => (

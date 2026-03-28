@@ -14,7 +14,12 @@ import {
   isLlmConfigured,
   transcribeCaptureAudio
 } from "@/lib/llm";
-import { dedupeTags, normalizeCaptureSummary, normalizeTagValue } from "@/lib/source-editor";
+import {
+  dedupeTags,
+  normalizeCaptureSummary,
+  normalizeTagValue,
+  parseSourceSummaryContent
+} from "@/lib/source-editor";
 import {
   DEFAULT_TASK_GENERATION_PROMPTS,
   DEFAULT_USER_SETTINGS,
@@ -1399,16 +1404,34 @@ export async function generateSuggestedCard(params: {
   const supabase = getSupabaseAdmin();
   const userId = await appUserId();
   const settings = await getUserSettings(userId);
-  const { data: summary, error: summaryError } = await supabase
+  const [
+    { data: summary, error: summaryError },
+    { data: source, error: sourceError }
+  ] = await Promise.all([
+    supabase
     .from("summaries")
     .select("id, content, raw_input")
     .eq("source_id", params.sourceId)
     .eq("user_id", userId)
-    .maybeSingle();
+    .maybeSingle(),
+    supabase
+      .from("sources")
+      .select("title, tags")
+      .eq("id", params.sourceId)
+      .eq("user_id", userId)
+      .maybeSingle()
+  ]);
   if (summaryError) throw summaryError;
+  if (sourceError) throw sourceError;
   if (!summary?.content?.trim()) return;
+  if (!source) return;
 
-  const trimmed = summary.content.trim();
+  const parsedSummary = parseSourceSummaryContent(summary.content, summary.raw_input);
+  const title = source.title?.trim() || "Untitled idea";
+  const idea = parsedSummary.idea.trim();
+  const analysis = parsedSummary.analysis.trim();
+  const tags = Array.isArray(source.tags) ? dedupeTags(source.tags) : [];
+  const combinedContext = [idea, analysis].filter(Boolean).join("\n\n").trim();
   const requestedCardType = params.cardType ?? "custom";
   const instruction = joinInstructions(
     settings.cardGenerationPrompt,
@@ -1418,26 +1441,13 @@ export async function generateSuggestedCard(params: {
       : "",
     params.instruction
   );
-  let rawInput = (summary.raw_input || "").trim();
-  if (!rawInput) {
-    const { data: captureMessages, error: captureError } = await supabase
-      .from("capture_messages")
-      .select("content, role")
-      .eq("source_id", params.sourceId)
-      .eq("user_id", userId)
-      .eq("role", "user")
-      .order("created_at", { ascending: true });
-    if (captureError) throw captureError;
-    rawInput = (captureMessages ?? [])
-      .map((message) => message.content.trim())
-      .filter(Boolean)
-      .join("\n\n");
-  }
 
   const llmCard = await generateReviewCardFromSummary({
     settings,
-    summary: trimmed,
-    rawInput,
+    title,
+    idea,
+    analysis,
+    tags,
     cardType: requestedCardType,
     instruction
   }).catch((error) => {
@@ -1459,7 +1469,7 @@ export async function generateSuggestedCard(params: {
   const nextCard = llmCard.ok && llmCard.data
     ? llmCard.data
     : buildFallbackGeneratedCard({
-        summary: trimmed,
+        summary: combinedContext || title,
         cardType: requestedCardType,
         instruction: params.instruction
       });
@@ -1498,6 +1508,19 @@ export async function generateSuggestedCard(params: {
     entityId: insertedCard.id,
     payload: { source_id: params.sourceId, card_type: insertedCard.card_type }
   });
+
+  await supabase
+    .from("sources")
+    .update({ idea_status: "refined_with_cards" })
+    .eq("id", params.sourceId)
+    .eq("user_id", userId);
+
+  return {
+    cardId: insertedCard.id,
+    cardType: insertedCard.card_type,
+    debugPrompt: llmCard.debugPrompt ?? null,
+    model: llmCard.model ?? CARD_GENERATION_MODEL
+  };
 }
 
 export async function updateCard(params: {
@@ -1542,6 +1565,14 @@ export async function deleteCard(params: { cardId: string; sourceId: string }) {
     .eq("source_id", params.sourceId)
     .eq("user_id", userId);
   if (cardError) throw cardError;
+
+  const hasRemainingCards = await sourceHasCards(params.sourceId);
+  const { error: sourceError } = await supabase
+    .from("sources")
+    .update({ idea_status: hasRemainingCards ? "refined_with_cards" : "refined_without_cards" })
+    .eq("id", params.sourceId)
+    .eq("user_id", userId);
+  if (sourceError && !isMissingIdeaStatusColumnError(sourceError)) throw sourceError;
 }
 
 export async function listDueCards() {

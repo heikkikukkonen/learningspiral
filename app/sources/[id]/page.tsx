@@ -4,8 +4,8 @@ import { SourcePageActions } from "@/app/sources/[id]/source-page-actions";
 import { SourceTasksPanel } from "@/app/sources/[id]/source-tasks-panel";
 import { getSourceWithDetails, getUserSettings, listUserTagStats } from "@/lib/db";
 import { parseSourceSummaryContent } from "@/lib/source-editor";
-import { deriveSourceIdeaStage, sourceIdeaStageLabel } from "@/lib/source-status";
-import { CardType, SourceType, TagSuggestion } from "@/lib/types";
+import { sourceIdeaStageLabel } from "@/lib/source-status";
+import { CardType, IdeaStatus, SourceType, TagSuggestion } from "@/lib/types";
 
 type SourceDetails = {
   id: string;
@@ -16,6 +16,7 @@ type SourceDetails = {
   url: string | null;
   tags: string[] | null;
   capture_mode: string;
+  idea_status: IdeaStatus;
 };
 
 type SummaryDetails = {
@@ -112,27 +113,25 @@ export default async function SourceDetailsPage({
     ? `Viimeksi tallennettu ${new Date(summary.updated_at).toLocaleString("fi-FI")}`
     : "Ei tallennettu vielä";
   const hasCards = cards.length > 0;
-  const sourceStageLabel = sourceIdeaStageLabel(deriveSourceIdeaStage(hasCards));
+  const sourceStageLabel = sourceIdeaStageLabel(source.idea_status);
 
   return (
     <section className="grid source-workspace">
       <div className="page-header source-workspace-header">
-        <h1>Syvenny ajatukseen</h1>
+        <h1>Työstä ajatusta</h1>
         <div className="source-workspace-status">
           <span className="pill">{sourceStageLabel}</span>
           {!hasCards ? (
             <p className="muted">
-              Jalosta ajatus valmiiksi kolmessa vaiheessa: 1. muokkaa ajatukselle selkeä otsikko,
-              ajatus ja tunnisteet, 2. etsi ajatukselle uusia näkökulmia tarvittaessa ja 3. luo vähintään yksi
-              tehtävä. Voit myös jättää jalostuksen kesken ja palata tähän myöhemmin. Ajatus näkyy
-              syvenny-listallasi siihen asti, kunnes luot vähintään yhden tehtävän, jolloin se
-              nousee tehtävien kautta jatkotyöstöön automaattisesti.
+              Tällä sivulla jatkat tallentamasi merkityksellisen ajatuksen työstämistä ja teet
+              siitä helpommin löydettävän ja hyödynnettävän. Kirkasta ensin ajatuksen ydin, lisää
+              tunnisteet ja luo ainakin yksi tehtävä.
             </p>
           ) : (
             <p className="muted">
-              Tästä ajatuksesta luodut tehtävät näkyvät syvenny-listallasi. Voit edelleen muokata
-              ajatuksen sisältöä, tunnisteita, uusia näkökulmia ja tehtäviä tältä sivulta milloin
-              tahansa.
+              Tällä sivulla jatkat tallentamasi merkityksellisen ajatuksen työstämistä ja teet
+              siitä helpommin löydettävän ja hyödynnettävän. Voit jatkaa ajatuksen kehittämistä ja
+              muokata sen sisältöjä milloin tahansa.
             </p>
           )}
         </div>
@@ -164,7 +163,10 @@ export default async function SourceDetailsPage({
             captureDetails={
               <div className="source-origin-panel source-origin-panel-inline">
                 <details className="capture-details source-capture-details">
-                  <summary>Näytä alkuperäinen tallenne</summary>
+                  <summary>
+                    <span className="source-capture-summary-closed">Näytä alkuperäinen tallenne</span>
+                    <span className="source-capture-summary-open">Piilota alkuperäinen tallenne</span>
+                  </summary>
 
                   <div className="source-capture-details-body">
                     <div className="source-meta">
@@ -215,14 +217,18 @@ export default async function SourceDetailsPage({
           />
           <section className="source-form-section source-task-card">
             <div className="source-form-section-header">
-              <h2>Tehtävien luonti</h2>
+              <h2>Tehtävät</h2>
               <p className="muted">
                 Luo haluamasi tehtävät palataksesi ajatukseen myöhemmin. Voit muokata toimintojen
                 ohjeistusta Asetukset-sivulla.
               </p>
             </div>
             <div className="source-form-section-body">
-              <SourceTasksPanel sourceId={source.id} cards={cards} />
+              <SourceTasksPanel
+                sourceId={source.id}
+                cards={cards}
+                showDebug={settings?.showDebug ?? false}
+              />
             </div>
           </section>
         </article>
