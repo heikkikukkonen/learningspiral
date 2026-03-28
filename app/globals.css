@@ -839,7 +839,7 @@ button.danger {
 
 .source-edit-field input,
 .source-edit-field textarea,
-.source-analysis-custom-field textarea,
+.source-analysis-custom-field input,
 .source-tag-add input {
   border-radius: 16px;
   border-color: rgba(209, 219, 231, 0.95);
@@ -860,13 +860,12 @@ button.danger {
 }
 
 .source-analysis-shell {
+  display: grid;
   gap: 0.7rem;
-  padding: 1rem;
-  border-radius: 24px;
-  border: 1px solid rgba(215, 223, 233, 0.95);
-  background:
-    radial-gradient(circle at 92% 12%, rgba(255, 220, 150, 0.22) 0%, rgba(255, 255, 255, 0) 22%),
-    linear-gradient(180deg, rgba(247, 250, 255, 0.98), rgba(255, 255, 255, 0.98));
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .source-analysis-header {
@@ -890,19 +889,19 @@ button.danger {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.8rem;
   align-items: end;
-  padding: 0.95rem;
-  border: 1px solid rgba(215, 223, 233, 0.95);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.72);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .source-analysis-custom-field {
   margin: 0;
+  min-width: 0;
 }
 
-.source-analysis-custom-field textarea {
+.source-analysis-custom-field input {
   width: 100%;
-  min-height: 104px;
 }
 
 .source-analysis-custom-button {
@@ -1121,6 +1120,7 @@ button.danger {
 .source-task-card {
   display: grid;
   gap: 0.9rem;
+  margin-top: 0.6rem;
 }
 
 .source-task-stack {
@@ -1146,11 +1146,13 @@ button.danger {
   align-items: center;
   gap: 0.65rem;
   flex: 0 1 auto;
+  width: 100%;
 }
 
 .source-task-custom input {
-  width: clamp(14rem, 20vw, 19rem);
-  min-width: 14rem;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
 }
 
 .source-task-hint {
@@ -1207,20 +1209,6 @@ button.danger {
   color: var(--danger);
 }
 
-.source-task-card-header {
-  margin-bottom: 0;
-}
-
-.source-task-card-header h2 {
-  margin: 0 0 0.35rem;
-  font-size: 1.25rem;
-}
-
-.source-task-card-header p {
-  margin: 0;
-  max-width: 64ch;
-}
-
 .source-task-empty {
   padding: 1rem;
   border-radius: 22px;
@@ -1235,13 +1223,45 @@ button.danger {
 }
 
 .source-capture-details {
-  background: rgba(240, 243, 250, 0.7);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .source-capture-details-body {
   display: grid;
   gap: 0.9rem;
-  margin-top: 0.9rem;
+  margin-top: 0.45rem;
+  padding-left: 0.1rem;
+}
+
+.source-capture-details summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0;
+  background: transparent;
+  color: #5f7288;
+  font-size: 0.94rem;
+  font-weight: 600;
+  list-style: none;
+}
+
+.source-capture-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.source-capture-details summary::before {
+  content: "▸";
+  font-size: 0.82rem;
+  color: #8a99aa;
+  transform-origin: center;
+  transition: transform 160ms ease;
+}
+
+.source-capture-details[open] summary::before {
+  transform: rotate(90deg);
 }
 
 .source-origin-assets {
@@ -3546,7 +3566,6 @@ body::before {
 .source-task-empty,
 .source-origin-asset,
 .source-tag-editor,
-.source-analysis-shell,
 .capture-details,
 .home-story-panel,
 .idea-network-loader-panel,

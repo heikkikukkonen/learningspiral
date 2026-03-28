@@ -108,12 +108,12 @@ export function SourceEditorForm({
   const showInlineSuggestions = normalizedTagInput.length > 0 && visibleSuggestions.length > 0;
   const showDefaultSuggestions = normalizedTagInput.length === 0 && visibleSuggestions.length > 0;
   const sourceLoadingOpen = isRefining || isGeneratingTags;
-  const sourceLoadingLabel = isGeneratingTags ? "Luon tunnisteet automaattisesti" : "Syvennän näkökulmaa";
+  const sourceLoadingLabel = isGeneratingTags ? "Luon tunnisteet automaattisesti" : "Etsin uusia näkökulmia";
   const sourceLoadingDetail = isGeneratingTags
     ? "Voit poistaa tai lisätä itse tunnisteita tämän jälkeen."
     : activeMode === "custom"
-      ? "Päivitän syvennystekstin antamasi ohjeen mukaan."
-      : "Päivitän syvennystekstin. Voit kokeilla valmiita toimintoja tai ohjata omalla ohjeellasi syventämistä.";
+      ? "Päivitän näkökulmatekstin antamasi ohjeen mukaan."
+      : "Päivitän näkökulmatekstin. Voit kokeilla valmiita toimintoja tai ohjata omalla ohjeellasi näkökulmien hakua.";
 
   function addResolvedTag(nextValue?: string) {
     const trimmedValue = (nextValue ?? tagInput).trim();
@@ -148,7 +148,7 @@ export function SourceEditorForm({
   function handleAiAction(mode: AnalysisModeOrCustom) {
     const nextCustomInstruction = customInstruction.trim();
     if (mode === "custom" && !nextCustomInstruction) {
-      setAiNote("Kirjoita oma pyyntösi ennen kuin painat Syvennä.");
+      setAiNote("Kirjoita oma pyyntösi ennen kuin painat Tutki.");
       return;
     }
 
@@ -171,14 +171,14 @@ export function SourceEditorForm({
         setAnalysis(result.analysis);
         setAiNote(
           result.model
-            ? `Päivitin "Syvennä näkökulmaa" -tekstin toiminnolla "${result.modeLabel}". Muista tallentaa muutokset, jos haluat säilyttää ne.`
-            : `"Syvennä näkökulmaa" -teksti päivittyi toiminnolla "${result.modeLabel}". Muista tallentaa muutokset.`
+            ? `Päivitin "Uusia näkökulmia" -tekstin toiminnolla "${result.modeLabel}". Muista tallentaa muutokset, jos haluat säilyttää ne.`
+            : `"Uusia näkökulmia" -teksti päivittyi toiminnolla "${result.modeLabel}". Muista tallentaa muutokset.`
         );
         if (mode === "custom") {
           setCustomInstruction("");
         }
       } catch (error) {
-        setAiNote(error instanceof Error ? error.message : '"Syvennä näkökulmaa" -tekstin päivitys epäonnistui.');
+        setAiNote(error instanceof Error ? error.message : '"Uusia näkökulmia" -tekstin päivitys epäonnistui.');
       } finally {
         setActiveMode(null);
         setIsRefining(false);
@@ -374,9 +374,9 @@ export function SourceEditorForm({
         </section>
         <section className="source-form-section">
           <div className="source-form-section-header">
-            <h2>Ajatuksen syventäminen</h2>
+            <h2>Uusia näkökulmia</h2>
             <p className="muted">
-              Valitse valmis tapa jatkaa ajatusta tai anna oma suunta. Voit muokata toimintojen
+              Etsi ajatukselle uusia näkökulmia valmiilla tavoilla tai anna oma suunta. Voit muokata toimintojen
               ohjeistusta Asetukset-sivulla.
             </p>
           </div>
@@ -384,11 +384,11 @@ export function SourceEditorForm({
 
         <div className="form-row source-edit-field">
           <div className="source-analysis-header">
-            <span>Syvennä näkökulmaa</span>
+            <span>Uusia näkökulmia</span>
           </div>
 
           <div className="source-analysis-shell">
-            <div className="source-analysis-actions" role="group" aria-label="Syvennä näkökulmaa">
+            <div className="source-analysis-actions" role="group" aria-label="Uusia näkökulmia">
               {ANALYSIS_ACTIONS.map((action) => (
                 <button
                   key={action.id}
@@ -405,11 +405,10 @@ export function SourceEditorForm({
 
             <div className="source-analysis-custom">
               <div className="source-analysis-custom-field">
-                <textarea
+                <input
                   value={customInstruction}
                   onChange={(event) => setCustomInstruction(event.target.value)}
-                  placeholder="Kirjoita oma pyyntösi, jos haluat ohjata syventämistä tarkemmin."
-                  rows={3}
+                  placeholder="Kirjoita oma pyyntösi, jos haluat ohjata näkökulmien hakua tarkemmin."
                   disabled={isRefining}
                 />
               </div>
@@ -419,20 +418,23 @@ export function SourceEditorForm({
                 disabled={isRefining}
                 onClick={() => handleAiAction("custom")}
               >
-                {isRefining && activeMode === "custom" ? "Käsittelen..." : "Syvennä"}
+                {isRefining && activeMode === "custom" ? "Käsittelen..." : "Tutki"}
               </button>
             </div>
 
             {aiNote ? <p className="status source-analysis-note">{aiNote}</p> : null}
 
-            <textarea
-              name="analysis"
-              value={analysis}
-              onChange={(event) => setAnalysis(event.target.value)}
-              className="source-analysis-textarea"
-              placeholder="Kokoa tähän kirkastus, syvennys, tiivistys tai verkostoitumisidea."
-              required
-            />
+            <label className="form-row source-analysis-result-field">
+              <span>Tähän tallentuu uusi näkökulma, jota voit muokata vapaasti.</span>
+              <textarea
+                name="analysis"
+                value={analysis}
+                onChange={(event) => setAnalysis(event.target.value)}
+                className="source-analysis-textarea"
+                placeholder="Tähän ilmestyy uusi näkökulma, kun käytät toimintoa yllä."
+                required
+              />
+            </label>
           </div>
         </div>
           </div>

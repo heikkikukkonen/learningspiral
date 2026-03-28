@@ -123,7 +123,7 @@ export default async function SourceDetailsPage({
           {!hasCards ? (
             <p className="muted">
               Jalosta ajatus valmiiksi kolmessa vaiheessa: 1. muokkaa ajatukselle selkeä otsikko,
-              ajatus ja tunnisteet, 2. syvennä näkökulmaa tarvittaessa ja 3. luo vähintään yksi
+              ajatus ja tunnisteet, 2. etsi ajatukselle uusia näkökulmia tarvittaessa ja 3. luo vähintään yksi
               tehtävä. Voit myös jättää jalostuksen kesken ja palata tähän myöhemmin. Ajatus näkyy
               syvenny-listallasi siihen asti, kunnes luot vähintään yhden tehtävän, jolloin se
               nousee tehtävien kautta jatkotyöstöön automaattisesti.
@@ -131,7 +131,7 @@ export default async function SourceDetailsPage({
           ) : (
             <p className="muted">
               Tästä ajatuksesta luodut tehtävät näkyvät syvenny-listallasi. Voit edelleen muokata
-              ajatuksen sisältöä, tunnisteita, syvennystä ja tehtäviä tältä sivulta milloin
+              ajatuksen sisältöä, tunnisteita, uusia näkökulmia ja tehtäviä tältä sivulta milloin
               tahansa.
             </p>
           )}
@@ -213,18 +213,20 @@ export default async function SourceDetailsPage({
               </div>
             }
           />
+          <section className="source-form-section source-task-card">
+            <div className="source-form-section-header">
+              <h2>Tehtävien luonti</h2>
+              <p className="muted">
+                Luo haluamasi tehtävät palataksesi ajatukseen myöhemmin. Voit muokata toimintojen
+                ohjeistusta Asetukset-sivulla.
+              </p>
+            </div>
+            <div className="source-form-section-body">
+              <SourceTasksPanel sourceId={source.id} cards={cards} />
+            </div>
+          </section>
         </article>
       </div>
-
-      <article className="card source-editor-card source-task-card">
-        <div className="source-origin-header">
-          <div className="page-header source-task-card-header">
-            <h2>Tehtävät</h2>
-            <p className="muted">Luo haluamasi tehtävät palataksesi ajatukseen myöhemmin. Voit muokata toimintojen ohjeistusta Asetukset-sivulla.</p>
-          </div>
-        </div>
-        <SourceTasksPanel sourceId={source.id} cards={cards} />
-      </article>
 
       <SourcePageActions
         sourceId={source.id}

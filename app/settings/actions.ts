@@ -23,6 +23,10 @@ function asBoolean(value: FormDataEntryValue | null): boolean {
   return value === "true";
 }
 
+function hasTrueValue(formData: FormData, key: string): boolean {
+  return formData.getAll(key).some((value) => value === "true");
+}
+
 export async function saveUserSettingsAction(formData: FormData) {
   const motivation = asString(formData.get("motivation"));
   const morningReminderEnabled = asBoolean(formData.get("morningReminderEnabled"));
@@ -30,7 +34,7 @@ export async function saveUserSettingsAction(formData: FormData) {
   const morningReminderTimezone = asString(formData.get("morningReminderTimezone"));
   const settings = sanitizeUserSettings({
     responseLanguage: asString(formData.get("responseLanguage")),
-    showDebug: asBoolean(formData.get("showDebug")),
+    showDebug: hasTrueValue(formData, "showDebug"),
     analysisPromptRefresh: asString(formData.get("analysisPromptRefresh")),
     analysisPromptDeepen: asString(formData.get("analysisPromptDeepen")),
     analysisPromptSummarize: asString(formData.get("analysisPromptSummarize")),
