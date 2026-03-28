@@ -1463,7 +1463,7 @@ export async function generateSuggestedCard(params: {
       sourceId: params.sourceId,
       cardType: requestedCardType
     });
-    return { ok: false, data: null, model: undefined };
+    return { ok: false, data: null, model: undefined, debugPrompt: undefined };
   });
 
   if (!llmCard.ok && isLlmConfigured()) {
