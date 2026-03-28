@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
@@ -26,7 +26,7 @@ type Props = {
 function buildIdeaPreview(idea: UnrefinedIdeaQueueItem): string {
   const primary = idea.raw_input?.trim() || idea.summary_content?.trim() || "";
   if (!primary) {
-    return "Keskeneräinen ajatus odottaa vielä otsikointia ja syventämistä.";
+    return "Keskeneräinen ajatus odottaa vielä otsikointia ja työstämistä.";
   }
 
   return primary.length > 280 ? `${primary.slice(0, 277)}...` : primary;
@@ -88,6 +88,22 @@ function ReviewCard({
           >
             {showAnswer ? "Piilota tiedot" : "Näytä tiedot"}
           </button>
+          <form
+            action={(formData) => {
+              formData.set("cardId", card.id);
+              formData.set("userAnswer", userAnswer);
+              formData.set("schedule", "near");
+              onCompleted(formData);
+            }}
+          >
+            <SubmitButton
+              className="secondary review-reveal-button"
+              pendingText="Tallennan..."
+              disabled={pending}
+            >
+              Ohita nyt
+            </SubmitButton>
+          </form>
         </div>
 
         {showAnswer ? (
@@ -126,7 +142,7 @@ function ReviewCard({
                   Lähde: {card.source_title}
                 </p>
                 <p style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>
-                  {card.summary_content || "Teoriaa ei löytynyt tästä lähteestä vielä."}
+                  {card.summary_content || "Teoriaa ei lÃ¶ytynyt tästä lähteestä vielä."}
                 </p>
               </div>
             </details>
@@ -181,7 +197,7 @@ function ReviewCard({
                     pendingText="Tallennan..."
                     disabled={pending || !userAnswer.trim()}
                   >
-                    Palaa myöhemmin ({">"}10 päivää)
+                    Palaa myÃ¶hemmin ({">"}10 päivää)
                   </SubmitButton>
                 </form>
               </div>
@@ -215,25 +231,26 @@ function IdeaCard({
       <div className="review-card-head">
         <div className="source-meta">
           {idea.tags?.slice(0, 3).map((tag) => (
-            <span className="pill" key={tag}>
-              #{tag}
+            <span className="tag-chip tag-chip-network tag-chip-inline" key={tag}>
+              <span className="tag-chip-mark" aria-hidden="true">∞</span>
+              <span>{tag}</span>
             </span>
           ))}
         </div>
-        <h2 className="review-card-title">Haluatko syventää tämän ajatuksen valmiiksi?</h2>
+        <h2 className="review-card-title">Haluatko työstää tätä ajatusta eteenpäin?</h2>
         <p className="review-card-lead">{buildIdeaPreview(idea)}</p>
       </div>
 
       <div className="card review-answer-panel">
         <p className="review-panel-label">Miksi tämä on nyt jonossa</p>
         <p style={{ margin: 0 }}>
-          Ajatus on tallessa, mutta sitä ei ole vielä syvennetty riittävästi eikä muutettu tehtäviksi.
+          Ajatus on tallessa, mutta sitä ei ole vielä työstetty riittävästi eikä muutettu tehtäviksi.
         </p>
       </div>
 
       <div className="actions review-idea-actions">
         <Link href={`/sources/${idea.id}`} className="button-link primary review-idea-button">
-          Syvenny nyt
+          Työstä nyt
         </Link>
         <button type="button" className="secondary review-idea-button" onClick={onSkip}>
           Jatka myöhemmin
@@ -254,8 +271,8 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
     currentItem?.kind === "review"
       ? "Yksi asia kerrallaan. Yritä vastata ensin tehtävään itse, näytä vasta sitten tiedot."
       : currentItem?.kind === "idea"
-        ? "Yksi asia kerrallaan. Nyt on hyvä hetki syventää aiemmin tallentamaasi ajatusta. Lisää siihen puuttuvat tagit ja luo tehtävät niin saat tehtävät automaattisesti nousemaan tälle sivulle."
-        : "Yksi asia kerrallaan. Vastaa ensin itse, nayta sitten tiedot tai nosta keskenerainen ajatus syvennettavaksi.";
+        ? "Yksi asia kerrallaan. Nyt on hyvä hetki työstää aiemmin tallentamaasi ajatusta. Lisää siihen puuttuvat tagit ja luo tehtävät niin saat tehtävät automaattisesti nousemaan tälle sivulle."
+        : "Yksi asia kerrallaan. Vastaa ensin itse, näytä sitten tiedot tai nosta keskeneräinen ajatus työstettäväksi.";
   const currentStageLabel =
     currentItem?.kind === "review"
       ? "Syvenee noemaksi"

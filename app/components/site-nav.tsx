@@ -6,18 +6,20 @@ import { usePathname } from "next/navigation";
 function HeaderIcon({
   active,
   children,
+  className,
   href,
   label
 }: {
   active: boolean;
   children: React.ReactNode;
+  className?: string;
   href: string;
   label: string;
 }) {
   return (
     <Link
       href={href}
-      className={active ? "header-icon is-active" : "header-icon"}
+      className={active ? `header-icon is-active ${className ?? ""}`.trim() : `header-icon ${className ?? ""}`.trim()}
       aria-label={label}
       aria-current={active ? "page" : undefined}
       title={label}
@@ -45,7 +47,7 @@ export function SiteNav() {
           <path d="M13.7 7.1l3.2 3.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
         </svg>
       </HeaderIcon>
-      <HeaderIcon href="/review" label="Syvenny" active={reviewActive}>
+      <HeaderIcon href="/review" label="Syvenny" active={reviewActive} className="header-icon-cta">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path
             d="M9.4 6.3a2.9 2.9 0 00-5.2 1.8c0 .6.1 1.1.4 1.6A3.2 3.2 0 004 15.6c.8.8 1.9 1.2 3 1.2h1.5"

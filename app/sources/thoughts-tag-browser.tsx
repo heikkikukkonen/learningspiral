@@ -53,10 +53,11 @@ export function ThoughtsTagBrowser({
               <Link
                 key={tag.value}
                 href={tag.href}
-                className="pill"
-                data-variant={tag.isActive ? "primary" : undefined}
+                className={`tag-chip tag-chip-network tag-chip-browser${tag.isActive ? " is-active" : ""}`}
               >
-                #{tag.label} <span className="thoughts-tag-count">{tag.count}</span>
+                <span className="tag-chip-mark" aria-hidden="true">∞</span>
+                <span>{tag.label}</span>
+                <span className="thoughts-tag-count tag-chip-meta">{tag.count}</span>
               </Link>
             ))}
           </div>

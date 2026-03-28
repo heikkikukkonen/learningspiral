@@ -143,6 +143,33 @@ a {
   height: 1.45rem;
 }
 
+.header-icon-cta {
+  width: 2.45rem;
+  height: 2.45rem;
+  border: 1px solid rgba(226, 188, 82, 0.34);
+  background:
+    linear-gradient(135deg, rgba(255, 249, 224, 0.86), rgba(245, 229, 167, 0.42)),
+    linear-gradient(180deg, rgba(255, 246, 205, 0.72), rgba(247, 237, 194, 0.34));
+  color: #9c6f00;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 252, 233, 0.82),
+    inset 0 -1px 0 rgba(230, 202, 122, 0.22),
+    0 12px 24px rgba(190, 153, 52, 0.14);
+}
+
+.header-icon-cta:hover,
+.header-icon-cta.is-active {
+  border-color: rgba(220, 177, 59, 0.44);
+  background:
+    linear-gradient(135deg, rgba(255, 251, 232, 0.92), rgba(247, 232, 175, 0.48)),
+    linear-gradient(180deg, rgba(255, 248, 212, 0.78), rgba(247, 237, 194, 0.38));
+  color: #8f6400;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 252, 233, 0.88),
+    inset 0 -1px 0 rgba(230, 202, 122, 0.28),
+    0 16px 28px rgba(190, 153, 52, 0.18);
+}
+
 main.container {
   padding-top: 0;
   padding-bottom: 2rem;
@@ -977,31 +1004,86 @@ button.danger {
   box-shadow: none;
 }
 
-.source-tag-list {
-  display: flex;
-  gap: 0.55rem;
-  flex-wrap: wrap;
-}
-
-.source-tag-chip {
+.tag-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.35rem;
+  min-height: 1.9rem;
+  padding: 0.26rem 0.62rem;
   border-radius: 999px;
-  border: 1px solid rgba(87, 162, 187, 0.28);
-  background: rgba(232, 246, 250, 0.88);
-  color: #315a72;
-  padding: 0.42rem 0.78rem;
-  font-size: 0.88rem;
-  font-weight: 650;
-  box-shadow: none;
+  border: 1px solid rgba(93, 178, 196, 0.34);
+  background: rgba(238, 248, 251, 0.94);
+  color: #346276;
+  font-size: 0.84rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.source-tag-chip:hover {
-  background: rgba(223, 241, 247, 0.96);
+.tag-chip-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  font-size: 0.72rem;
+  line-height: 1;
+  color: #3d8aa0;
 }
 
-.source-tag-chip span:last-child {
+.tag-chip-network {
+  border-color: rgba(144, 196, 208, 0.28);
+  background: rgba(245, 251, 253, 0.92);
+  color: #5f7d8d;
+}
+
+.tag-chip-network:hover {
+  background: rgba(236, 248, 251, 0.98);
+  border-color: rgba(94, 174, 193, 0.38);
+  color: #40687a;
+}
+
+.tag-chip-selected {
+  background:
+    linear-gradient(180deg, rgba(127, 227, 232, 0.28), rgba(47, 164, 169, 0.14)),
+    rgba(255, 255, 255, 0.8);
+  border-color: rgba(74, 165, 184, 0.42);
+  color: #13384d;
+}
+
+.tag-chip-suggestion {
+  color: #6f8696;
+  border-style: dashed;
+}
+
+.tag-chip-inline {
+  padding-inline: 0.58rem;
+  font-size: 0.8rem;
+}
+
+.tag-chip-browser {
+  text-decoration: none;
+}
+
+.tag-chip-browser.is-active {
+  background:
+    linear-gradient(180deg, rgba(127, 227, 232, 0.28), rgba(47, 164, 169, 0.14)),
+    rgba(255, 255, 255, 0.8);
+  border-color: rgba(74, 165, 184, 0.42);
+  color: #13384d;
+}
+
+.tag-chip-meta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(93, 111, 135, 0.08);
+  color: #73859a;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.tag-chip-remove {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1012,6 +1094,24 @@ button.danger {
   color: #5a7387;
   font-size: 0.72rem;
   line-height: 1;
+}
+
+.source-tag-list {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.source-tag-chip {
+  gap: 0.42rem;
+  padding: 0.38rem 0.72rem;
+  font-size: 0.82rem;
+  font-weight: 650;
+  box-shadow: none;
+}
+
+.source-tag-chip:hover {
+  transform: translateY(-1px);
 }
 
 .source-tag-add {
@@ -1086,13 +1186,7 @@ button.danger {
 }
 
 .source-tag-suggestion {
-  display: inline-flex;
-  align-items: center;
   gap: 0.5rem;
-  border-radius: 999px;
-  border: 1px solid rgba(170, 184, 201, 0.46);
-  background: rgba(248, 250, 253, 0.9);
-  color: #64788f;
   padding: 0.34rem 0.68rem;
   font-size: 0.8rem;
   font-weight: 600;
@@ -1101,9 +1195,7 @@ button.danger {
 }
 
 .source-tag-suggestion:hover {
-  background: rgba(242, 247, 251, 0.98);
-  border-color: rgba(135, 165, 191, 0.58);
-  color: #4f6780;
+  transform: translateY(-1px);
 }
 
 .source-tag-suggestion[data-active="true"] {
@@ -1114,14 +1206,7 @@ button.danger {
 }
 
 .source-tag-suggestion-meta {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.1rem 0.42rem;
-  border-radius: 999px;
-  background: rgba(93, 111, 135, 0.08);
-  color: #73859a;
-  font-size: 0.72rem;
-  font-weight: 700;
+  margin-left: 0.1rem;
 }
 
 .source-tag-debug {

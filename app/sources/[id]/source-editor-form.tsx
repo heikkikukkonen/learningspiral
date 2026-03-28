@@ -325,12 +325,13 @@ export function SourceEditorForm({
                     {tags.map((tag) => (
                       <button
                         key={tag}
-                        className="source-tag-chip"
+                        className="source-tag-chip tag-chip tag-chip-network tag-chip-selected"
                         onClick={() => removeTag(tag)}
                         type="button"
                       >
+                        <span className="tag-chip-mark" aria-hidden="true">∞</span>
                         <span>{tag}</span>
-                        <span aria-hidden="true">x</span>
+                        <span className="tag-chip-remove" aria-hidden="true">x</span>
                       </button>
                     ))}
                   </div>
@@ -388,12 +389,13 @@ export function SourceEditorForm({
                         <button
                           key={`${suggestion.tag}-${suggestion.lastUsedAt}`}
                           type="button"
-                          className="source-tag-suggestion"
+                          className="source-tag-suggestion tag-chip tag-chip-network tag-chip-suggestion"
                           data-active="false"
                           onClick={() => addResolvedTag(suggestion.tag)}
                         >
-                          <span>#{suggestion.tag}</span>
-                          <span className="source-tag-suggestion-meta">{suggestion.usageCount}x</span>
+                          <span className="tag-chip-mark" aria-hidden="true">∞</span>
+                          <span>{suggestion.tag}</span>
+                          <span className="source-tag-suggestion-meta tag-chip-meta">{suggestion.usageCount}x</span>
                         </button>
                       ))}
                     </div>
@@ -408,12 +410,13 @@ export function SourceEditorForm({
                         <button
                           key={`${suggestion.tag}-${suggestion.lastUsedAt}`}
                           type="button"
-                          className="source-tag-suggestion"
+                          className="source-tag-suggestion tag-chip tag-chip-network tag-chip-suggestion"
                           data-active="false"
                           onClick={() => addResolvedTag(suggestion.tag)}
                         >
-                          <span>#{suggestion.tag}</span>
-                          <span className="source-tag-suggestion-meta">{suggestion.usageCount}x</span>
+                          <span className="tag-chip-mark" aria-hidden="true">∞</span>
+                          <span>{suggestion.tag}</span>
+                          <span className="source-tag-suggestion-meta tag-chip-meta">{suggestion.usageCount}x</span>
                         </button>
                       ))}
                     </div>
