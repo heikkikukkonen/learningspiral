@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SubmitButton } from "@/app/components/submit-button";
 import { getCurrentUser, getSafeNextPath } from "@/lib/auth";
@@ -19,15 +19,15 @@ function getStatusMessage(searchParams?: Record<string, string | undefined>) {
   }
 
   if (searchParams?.success === "check-email") {
-    return "Rekisteroityminen onnistui. Vahvista tilisi sahkopostissa olevasta linkista ennen ensimmaista kirjautumista.";
+    return "Rekisteröityminen onnistui. Vahvista tilisi sähköpostissa olevasta linkistä ennen ensimmäistä kirjautumista.";
   }
 
   if (searchParams?.success === "reset-password-email") {
-    return "Salasanan palautuslinkki on lahetetty sahkopostiisi.";
+    return "Salasanan palautuslinkki on lähetetty sähköpostiisi.";
   }
 
   if (searchParams?.success === "password-reset-complete") {
-    return "Salasana on paivitetty. Voit nyt kirjautua uudella salasanalla.";
+    return "Salasana on päivitetty. Voit nyt kirjautua uudella salasanalla.";
   }
 
   if (searchParams?.signedOut === "1") {
@@ -37,31 +37,31 @@ function getStatusMessage(searchParams?: Record<string, string | undefined>) {
   switch (searchParams?.error) {
     case "signin":
       if (authErrorCode === "email_not_confirmed" || authErrorMessage === "Email not confirmed") {
-        return "Tili on luotu, mutta sÃ¤hkÃ¶postiosoitetta ei ole vielÃ¤ vahvistettu. Avaa vahvistusviesti ja kokeile sitten uudelleen.";
+        return "Tili on luotu, mutta sähköpostiosoitetta ei ole vielä vahvistettu. Avaa vahvistusviesti ja kokeile sitten uudelleen.";
       }
-      return "Kirjautuminen epaonnistui. Tarkista sahkoposti ja salasana.";
+      return "Kirjautuminen epäonnistui. Tarkista sähköposti ja salasana.";
     case "signup":
       if (authErrorMessage?.toLowerCase().includes("error sending confirmation email")) {
-        return "Rekisteroityminen epaonnistui, koska Supabase ei saanut lahetettya vahvistusviestia. Tarkista Supabasen SMTP-asetukset ja SendGrid-integraatio.";
+        return "Rekisteröityminen epäonnistui, koska Supabase ei saanut lähetettyä vahvistusviestiä. Tarkista Supabasen SMTP-asetukset ja SendGrid-integraatio.";
       }
       if (authErrorMessage?.toLowerCase().includes("rate limit")) {
-        return "Vahvistusviesteja on pyydetty liian nopeasti. Odota hetki ja kokeile uudelleen.";
+        return "Vahvistusviestejä on pyydetty liian nopeasti. Odota hetki ja kokeile uudelleen.";
       }
       if (authErrorMessage) {
-        return `Rekisteroityminen epaonnistui: ${authErrorMessage}`;
+        return `Rekisteröityminen epäonnistui: ${authErrorMessage}`;
       }
-      return "Rekisteroityminen epaonnistui. Tarkista tiedot tai kokeile toista sahkopostia.";
+      return "Rekisteröityminen epäonnistui. Tarkista tiedot tai kokeile toista sähköpostia.";
     case "oauth-start":
-      return "OAuth-kirjautumisen aloitus epaonnistui. Varmista, etta provider on aktivoitu Supabasessa.";
+      return "OAuth-kirjautumisen aloitus epäonnistui. Varmista, että provider on aktivoitu Supabasessa.";
     case "oauth-provider":
-      return "Valittu kirjautumistapa ei ole kÃ¤ytÃ¶ssÃ¤ tÃ¤ssÃ¤ ympÃ¤ristÃ¶ssÃ¤.";
+      return "Valittu kirjautumistapa ei ole käytössä tässä ympäristössä.";
     case "auth-callback":
-      return "Tilin vahvistus tai kirjautumisen viimeistely epaonnistui. Kokeile linkkia uudelleen.";
+      return "Tilin vahvistus tai kirjautumisen viimeistely epäonnistui. Kokeile linkkiä uudelleen.";
     case "reset-password":
       if (authErrorMessage) {
-        return `Salasanan palautus epaonnistui: ${authErrorMessage}`;
+        return `Salasanan palautus epäonnistui: ${authErrorMessage}`;
       }
-      return "Salasanan palautus epaonnistui. Kokeile hetken paasta uudelleen.";
+      return "Salasanan palautus epäonnistui. Kokeile hetken päästä uudelleen.";
     default:
       return "";
   }
@@ -115,14 +115,14 @@ export default async function LoginPage({
           className={mode === "signup" ? "auth-mode-pill is-active" : "auth-mode-pill"}
           aria-current={mode === "signup" ? "page" : undefined}
         >
-          Rekisteroidy
+          Rekisteröidy
         </Link>
       </div>
 
       <div className="auth-grid auth-grid-single">
         <article className="card auth-card auth-card-wide is-active">
           <div className="page-header">
-            <h2>{mode === "signin" ? "Kirjaudu" : "Rekisteroidy"}</h2>
+            <h2>{mode === "signin" ? "Kirjaudu" : "Rekisteröidy"}</h2>
           </div>
 
           {mode === "signin" ? (
@@ -138,7 +138,7 @@ export default async function LoginPage({
                   <input name="password" type="password" autoComplete="current-password" required />
                 </label>
                 <SubmitButton className="primary" pendingText="Kirjaudutaan...">
-                  Kirjaudu sisaan
+                  Kirjaudu sisään
                 </SubmitButton>
               </form>
 
@@ -150,8 +150,8 @@ export default async function LoginPage({
                     <span>Email</span>
                     <input name="email" type="email" autoComplete="email" required />
                   </label>
-                  <SubmitButton className="secondary" pendingText="Lahetetaan...">
-                    Laheta palautuslinkki
+                  <SubmitButton className="secondary" pendingText="Lähetetään...">
+                    Lähetä palautuslinkki
                   </SubmitButton>
                 </form>
               </details>
@@ -166,7 +166,7 @@ export default async function LoginPage({
                         <input type="hidden" name="provider" value={provider.id} />
                         <SubmitButton
                           className="secondary auth-provider-button"
-                          pendingText="Siirrytaan..."
+                          pendingText="Siirrytään..."
                         >
                           Jatka {provider.label}
                         </SubmitButton>
@@ -179,7 +179,7 @@ export default async function LoginPage({
           ) : isAwaitingEmailConfirmation ? (
             <div className="auth-account-summary">
               <p>
-                Tarkista sahkopostisi ja avaa vahvistuslinkki viimeistellaaksesi tilin
+                Tarkista sähköpostisi ja avaa vahvistuslinkki viimeistelläksesi tilin
                 aktivoinnin.
               </p>
             </div>
@@ -220,12 +220,12 @@ export default async function LoginPage({
           )}
 
           <p className="muted auth-mode-meta">
-            {mode === "signin" ? "EikÃ¶ sinulla vielÃ¤ ole tiliÃ¤?" : "Onko sinulla jo tili?"}{" "}
+            {mode === "signin" ? "Eikö sinulla vielä ole tiliä?" : "Onko sinulla jo tili?"}{" "}
             <Link
               href={`/login?mode=${alternateMode}&next=${encodeURIComponent(nextPath)}`}
               className="landing-inline-link"
             >
-              {mode === "signin" ? "Rekisteroidy tasta" : "Kirjaudu tasta"}
+              {mode === "signin" ? "Rekisteröidy tästä" : "Kirjaudu tästä"}
             </Link>
           </p>
         </article>

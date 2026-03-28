@@ -29,15 +29,15 @@ export default async function ProgressPage() {
 
       <div className="grid grid-cols-2">
         <article className="card">
-          <h3 style={{ marginTop: 0 }}>PÃƒÂ¤ivÃƒÂ¤t jolloin palasit (30 pv)</h3>
+          <h3 style={{ marginTop: 0 }}>Päivät jolloin palasit (30 pv)</h3>
           <p style={{ fontSize: "1.8rem", margin: "0.3rem 0" }}>{snapshot.activeReviewDays30}</p>
         </article>
         <article className="card">
-          <h3 style={{ marginTop: 0 }}>Luodut tehtÃ¤vÃ¤t (30 pv)</h3>
+          <h3 style={{ marginTop: 0 }}>Luodut tehtävät (30 pv)</h3>
           <p style={{ fontSize: "1.8rem", margin: "0.3rem 0" }}>{snapshot.cardsAccepted30}</p>
         </article>
         <article className="card">
-          <h3 style={{ marginTop: 0 }}>TÃƒÂ¤mÃƒÂ¤n pÃƒÂ¤ivÃƒÂ¤n liike</h3>
+          <h3 style={{ marginTop: 0 }}>Tämän päivän liike</h3>
           <p style={{ fontSize: "1.8rem", margin: "0.3rem 0" }}>
             +{snapshot.todayDelta.toFixed(3)} LMS
           </p>
@@ -60,7 +60,7 @@ export default async function ProgressPage() {
           </svg>
         </article>
         <article className="card">
-          <h3 style={{ marginTop: 0 }}>Tehtavien luonti</h3>
+          <h3 style={{ marginTop: 0 }}>Tehtävien luonti</h3>
           <svg viewBox="0 0 1000 150" width="100%" height="150">
             <path d={sparklinePath(acceptedValues, 1000, 150)} stroke="#067647" strokeWidth="3" fill="none" />
           </svg>
