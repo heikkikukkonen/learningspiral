@@ -149,6 +149,8 @@ export interface UserSettingsRow extends UserSettings {
   updated_at: string;
 }
 
+export type ThoughtNetworkLayoutMap = Record<string, { x: number; y: number }>;
+
 type TagAggregate = {
   tag: string;
   usageCount: number;
@@ -358,6 +360,35 @@ function buildFallbackAssistantSummary(text: string): string {
   ].join("\n");
 }
 
+function sanitizeThoughtNetworkLayout(
+  input: unknown
+): ThoughtNetworkLayoutMap {
+  if (!input || typeof input !== "object") {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(input).flatMap(([nodeId, value]) => {
+      if (
+        !value ||
+        typeof value !== "object" ||
+        typeof (value as { x?: unknown }).x !== "number" ||
+        typeof (value as { y?: unknown }).y !== "number"
+      ) {
+        return [];
+      }
+
+      const x = Number((value as { x: number }).x);
+      const y = Number((value as { y: number }).y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        return [];
+      }
+
+      return [[nodeId, { x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100 }]];
+    })
+  );
+}
+
 function logLlmError(
   context: string,
   error: unknown,
@@ -538,6 +569,41 @@ export async function upsertUserSettings(input: UserSettings, userId?: string) {
     created_at: data.created_at,
     updated_at: data.updated_at
   } as UserSettingsRow;
+}
+
+export async function getThoughtNetworkLayout(userId?: string): Promise<ThoughtNetworkLayoutMap> {
+  const supabase = getSupabaseAdmin();
+  const resolvedUserId = userId ?? (await appUserId());
+  const { data, error } = await supabase
+    .from("user_settings")
+    .select("thought_network_layout")
+    .eq("user_id", resolvedUserId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return sanitizeThoughtNetworkLayout(data?.thought_network_layout);
+}
+
+export async function upsertThoughtNetworkLayout(
+  layout: ThoughtNetworkLayoutMap,
+  userId?: string
+) {
+  const supabase = getSupabaseAdmin();
+  const resolvedUserId = userId ?? (await appUserId());
+  const sanitizedLayout = sanitizeThoughtNetworkLayout(layout);
+
+  const { error } = await supabase
+    .from("user_settings")
+    .upsert(
+      {
+        user_id: resolvedUserId,
+        thought_network_layout: sanitizedLayout
+      },
+      { onConflict: "user_id" }
+    );
+
+  if (error) throw error;
+  return sanitizedLayout;
 }
 
 export async function listPushSubscriptions(userId?: string) {

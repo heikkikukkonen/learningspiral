@@ -1,7 +1,8 @@
 ﻿import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { listSources } from "@/lib/db";
+import { ThoughtsViewSwitch } from "@/app/ajatusverkko/view-switch";
+import { getUserSettings, listSources } from "@/lib/db";
 import { parseSourceSummaryContent } from "@/lib/source-editor";
 import { resolveSourceIdeaStatus, sourceIdeaStageLabel } from "@/lib/source-status";
 import { IdeaStatus, SourceType } from "@/lib/types";
@@ -100,6 +101,7 @@ function buildSourcePreview(source: Pick<SourceListItem, "summary_content" | "ra
 export default async function SourcesPage({ searchParams }: SourcesPageProps) {
   let sources: SourceListItem[] = [];
   let loadError = "";
+  const settings = await getUserSettings();
 
   try {
     sources = await listSources();
@@ -188,6 +190,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
 
       {!loadError ? (
         <div className="thoughts-toolbar">
+          {settings.showBetaFeatures ? <ThoughtsViewSwitch active="list" /> : null}
           <form className="thoughts-search" role="search">
             <div className="thoughts-search-row">
               <input
