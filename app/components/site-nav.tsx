@@ -69,7 +69,7 @@ export function SiteNav({ showBetaFeatures = false }: { showBetaFeatures?: boole
           label="Ajatusverkko (Beta)"
           active={thoughtNetworkActive}
           className="header-icon-network"
-          iconSrc="/brand/action-icons/SelaaAjatuksia.PNG"
+          iconSrc="/brand/action-icons/Ajatusverkko.png"
         />
       ) : null}
       <HeaderIcon

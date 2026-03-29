@@ -18,14 +18,19 @@ export default async function ThoughtNetworkPage() {
         <div className="page-header">
           <div className="page-title-with-icon">
             <Image
-              src="/brand/action-icons/SelaaAjatuksia.PNG"
+              src="/brand/action-icons/Ajatusverkko.png"
               alt=""
               aria-hidden="true"
               width={64}
               height={64}
-              className="page-title-icon"
+              className="page-title-icon page-title-icon-network"
             />
-            <h1>Ajatusverkko</h1>
+            <div className="page-title-copy">
+              <h1>Ajatusverkko</h1>
+              <span className="pill thought-network-beta-symbol" data-variant="primary" aria-label="Beta">
+                β
+              </span>
+            </div>
           </div>
           <p className="muted">Toiminto avautuu, kun sallit beta-toiminnot asetuksissa.</p>
         </div>
@@ -50,14 +55,19 @@ export default async function ThoughtNetworkPage() {
       <div className="page-header">
         <div className="page-title-with-icon">
           <Image
-            src="/brand/action-icons/SelaaAjatuksia.PNG"
+            src="/brand/action-icons/Ajatusverkko.png"
             alt=""
             aria-hidden="true"
             width={64}
             height={64}
-            className="page-title-icon"
+            className="page-title-icon page-title-icon-network"
           />
-          <h1>Ajatusverkko</h1>
+          <div className="page-title-copy">
+            <h1>Ajatusverkko</h1>
+            <span className="pill thought-network-beta-symbol" data-variant="primary" aria-label="Beta">
+              β
+            </span>
+          </div>
         </div>
         <p className="muted">Beta-pohja ajatusten välisten yhteyksien tutkimiseen.</p>
       </div>
