@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   addThoughtTagAction,
   deleteThoughtFromNetworkAction,
@@ -81,6 +82,7 @@ type DragState = {
   startY: number;
   originX: number;
   originY: number;
+  didMove: boolean;
 };
 
 type NodeDragState = {
@@ -118,6 +120,8 @@ const STAGE_HEIGHT = 2100;
 const MIN_SCALE = 0.34;
 const MAX_SCALE = 1.75;
 const DEFAULT_TRANSFORM: TransformState = { x: 18, y: 16, scale: 0.42 };
+const DRAG_THRESHOLD = 5;
+const DRAG_CLICK_SUPPRESSION_MS = 220;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -558,6 +562,7 @@ export function ThoughtNetworkView({
   const dragStateRef = useRef<DragState | null>(null);
   const nodeDragStateRef = useRef<NodeDragState | null>(null);
   const skipClickNodeIdRef = useRef<string | null>(null);
+  const lastViewportDragEndedAtRef = useRef(0);
   const touchDistanceRef = useRef<number | null>(null);
   const touchScaleRef = useRef<number>(DEFAULT_TRANSFORM.scale);
   const [thoughtItems, setThoughtItems] = useState(thoughts);
@@ -911,7 +916,7 @@ export function ThoughtNetworkView({
     const deltaX = (event.clientX - drag.startX) / stageFactor;
     const deltaY = (event.clientY - drag.startY) / stageFactor;
     const travel = Math.abs(event.clientX - drag.startX) + Math.abs(event.clientY - drag.startY);
-    if (!drag.didMove && travel <= 5) {
+    if (!drag.didMove && travel <= DRAG_THRESHOLD) {
       return;
     }
     if (!drag.didMove) {
@@ -940,6 +945,16 @@ export function ThoughtNetworkView({
           skipClickNodeIdRef.current = null;
         }
       }, 0);
+    }
+  }
+
+  function clearViewportDrag(pointerId: number) {
+    const drag = dragStateRef.current;
+    if (!drag || drag.pointerId !== pointerId) return;
+    dragStateRef.current = null;
+
+    if (drag.didMove) {
+      lastViewportDragEndedAtRef.current = performance.now();
     }
   }
 
@@ -1141,29 +1156,33 @@ export function ThoughtNetworkView({
               startX: event.clientX,
               startY: event.clientY,
               originX: transform.x,
-              originY: transform.y
+              originY: transform.y,
+              didMove: false
             };
             event.currentTarget.setPointerCapture(event.pointerId);
           }}
           onPointerMove={(event) => {
             const dragState = dragStateRef.current;
             if (!dragState || dragState.pointerId !== event.pointerId) return;
+            const travel =
+              Math.abs(event.clientX - dragState.startX) + Math.abs(event.clientY - dragState.startY);
+
+            if (!dragState.didMove && travel <= DRAG_THRESHOLD) {
+              return;
+            }
+
+            if (!dragState.didMove) {
+              dragState.didMove = true;
+            }
+
             setTransform((current) => ({
               ...current,
               x: dragState.originX + (event.clientX - dragState.startX),
               y: dragState.originY + (event.clientY - dragState.startY)
             }));
           }}
-          onPointerUp={(event) => {
-            if (dragStateRef.current?.pointerId === event.pointerId) {
-              dragStateRef.current = null;
-            }
-          }}
-          onPointerCancel={(event) => {
-            if (dragStateRef.current?.pointerId === event.pointerId) {
-              dragStateRef.current = null;
-            }
-          }}
+          onPointerUp={(event) => clearViewportDrag(event.pointerId)}
+          onPointerCancel={(event) => clearViewportDrag(event.pointerId)}
           onTouchMove={(event) => {
             if (event.touches.length !== 2) {
               touchDistanceRef.current = null;
@@ -1194,6 +1213,9 @@ export function ThoughtNetworkView({
           }}
           onClick={(event) => {
             if ((event.target as HTMLElement).closest("[data-network-node]")) return;
+            if (performance.now() - lastViewportDragEndedAtRef.current < DRAG_CLICK_SUPPRESSION_MS) {
+              return;
+            }
             setSelectedNodeId(null);
             closeThoughtMenu();
           }}
@@ -1369,7 +1391,7 @@ export function ThoughtNetworkView({
               );
             })}
 
-            {thoughtMenu && menuThought ? (
+            {thoughtMenu && menuThought && typeof document !== "undefined" ? createPortal(
               <div className="thought-network-modal-backdrop" onPointerDown={() => closeThoughtMenu()}>
                 <div
                   ref={thoughtMenuRef}
@@ -1584,7 +1606,8 @@ export function ThoughtNetworkView({
                     </aside>
                   </div>
                 </div>
-              </div>
+              </div>,
+              document.body
             ) : null}
           </div>
         </div>
