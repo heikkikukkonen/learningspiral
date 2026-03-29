@@ -27,27 +27,29 @@ type SourceListItem = {
   raw_input?: string | null;
 };
 
-function buildSourcePreview(source: Pick<SourceListItem, "summary_content" | "raw_input">) {
+function buildSourceDraft(source: Pick<SourceListItem, "summary_content" | "raw_input">) {
   const summaryContent = source.summary_content?.trim() ?? "";
   const rawInput = source.raw_input?.trim() ?? "";
-
-  if (!summaryContent) {
-    return rawInput;
-  }
-
-  if (!/(^|\n)Idea:\s*/i.test(summaryContent)) {
-    return summaryContent;
-  }
-
   const parsed = parseSourceSummaryContent(summaryContent, rawInput);
   const idea = parsed.idea.trim();
   const analysis = parsed.analysis.trim();
 
-  if (idea && analysis && idea !== analysis) {
-    return `${idea}\n${analysis}`;
+  let preview = "";
+  if (!summaryContent) {
+    preview = rawInput;
+  } else if (!/(^|\n)Idea:\s*/i.test(summaryContent)) {
+    preview = summaryContent;
+  } else if (idea && analysis && idea !== analysis) {
+    preview = `${idea}\n${analysis}`;
+  } else {
+    preview = idea || analysis;
   }
 
-  return idea || analysis;
+  return {
+    preview,
+    idea,
+    analysis
+  };
 }
 
 export default async function ThoughtNetworkPage() {
@@ -107,21 +109,27 @@ export default async function ThoughtNetworkPage() {
         : "Could not load data. Check Supabase configuration.";
   }
 
-  const thoughts = sources.map((source) => ({
-    id: source.id,
-    title: source.title,
-    tags: source.tags ?? [],
-    preview: buildSourcePreview(source),
-    createdAt: source.created_at,
-    hasCards: source.has_cards,
-    stageLabel: sourceIdeaStageLabel(
-      resolveSourceIdeaStatus({
-        ideaStatus: source.idea_status,
-        hasCards: source.has_cards,
-        tags: source.tags
-      })
-    )
-  }));
+  const thoughts = sources.map((source) => {
+    const draft = buildSourceDraft(source);
+
+    return {
+      id: source.id,
+      title: source.title,
+      tags: source.tags ?? [],
+      preview: draft.preview,
+      idea: draft.idea,
+      analysis: draft.analysis,
+      createdAt: source.created_at,
+      hasCards: source.has_cards,
+      stageLabel: sourceIdeaStageLabel(
+        resolveSourceIdeaStatus({
+          ideaStatus: source.idea_status,
+          hasCards: source.has_cards,
+          tags: source.tags
+        })
+      )
+    };
+  });
 
   return (
     <section className="thought-network-page">

@@ -4113,7 +4113,7 @@ body::before {
   justify-content: center;
   transform: translate(-50%, -50%);
   text-align: center;
-  cursor: grab;
+  cursor: pointer;
   user-select: none;
   transition:
     opacity 0.18s ease,
@@ -4130,6 +4130,7 @@ body::before {
 
 .thought-network-node.is-dimmed {
   opacity: 0.22;
+  pointer-events: none;
 }
 
 .thought-network-node.is-dragging {
@@ -4254,26 +4255,97 @@ body::before {
   gap: 0.55rem;
 }
 
-.thought-network-menu {
-  position: absolute;
-  z-index: 5;
-  display: grid;
-  gap: 0.9rem;
-  width: min(20rem, calc(100% - 1.5rem));
-  max-height: calc(100% - 1.5rem);
-  overflow: auto;
-  padding: 0.95rem;
-  border-radius: 24px;
-  border: 1px solid rgba(164, 209, 217, 0.34);
+.thought-network-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.9rem, 2.8vw, 1.6rem);
   background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.96), rgba(243, 251, 252, 0.94)),
-    rgba(255, 255, 255, 0.92);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 22px 42px rgba(73, 149, 169, 0.24),
-    0 0 0 1px rgba(196, 235, 225, 0.32);
+    radial-gradient(circle at top, rgba(206, 247, 228, 0.18), transparent 34%),
+    rgba(228, 244, 248, 0.62);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
+}
+
+.thought-network-modal {
+  display: grid;
+  gap: 1rem;
+  width: min(76rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: clamp(1rem, 2vw, 1.35rem);
+  border-radius: 32px;
+  border: 1px solid rgba(164, 209, 217, 0.34);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.97), rgba(243, 251, 252, 0.95)),
+    rgba(255, 255, 255, 0.94);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 28px 56px rgba(73, 149, 169, 0.24),
+    0 0 0 1px rgba(196, 235, 225, 0.32);
+}
+
+.thought-network-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.thought-network-modal-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(20rem, 0.95fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.thought-network-modal-main,
+.thought-network-modal-side {
+  display: grid;
+  gap: 0.8rem;
+  align-content: start;
+}
+
+.thought-network-modal-section,
+.thought-network-modal-side > .thought-network-menu-section,
+.thought-network-modal-side > .thought-network-menu-actions,
+.thought-network-modal-side > .thought-network-menu-feedback {
+  padding: 0.95rem 1rem;
+  border-radius: 22px;
+  border: 1px solid rgba(164, 207, 216, 0.24);
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
+}
+
+.thought-network-modal-side > .thought-network-menu-divider {
+  margin: 0.1rem 0;
+}
+
+.thought-network-modal-copy,
+.thought-network-modal-empty {
+  margin: 0;
+}
+
+.thought-network-modal-copy {
+  color: #294e65;
+  font-size: 0.97rem;
+  line-height: 1.62;
+  white-space: pre-wrap;
+}
+
+.thought-network-modal-copy.is-title {
+  font-size: 1.06rem;
+  font-weight: 700;
+  line-height: 1.36;
+}
+
+.thought-network-modal-empty {
+  color: #70879a;
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 .thought-network-menu-header {
@@ -4283,8 +4355,13 @@ body::before {
 
 .thought-network-menu-header strong {
   color: #26485f;
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: 1.24;
+}
+
+.thought-network-modal .thought-network-menu-header .muted {
+  margin: 0;
+  max-width: 42rem;
 }
 
 .thought-network-menu-section,
@@ -4469,6 +4546,10 @@ body::before {
   color: #5d778a;
   font-size: 0.82rem;
   line-height: 1.35;
+}
+
+.thought-network-modal .thought-network-menu-suggestions {
+  display: none;
 }
 
 .thought-network-detail-panel {
@@ -5076,8 +5157,14 @@ button.danger {
     height: 68dvh;
   }
 
-  .thought-network-menu {
-    width: calc(100% - 1rem);
+  .thought-network-modal {
+    width: calc(100vw - 1rem);
+    max-height: calc(100vh - 1rem);
+    padding: 0.95rem;
+  }
+
+  .thought-network-modal-body {
+    grid-template-columns: 1fr;
   }
 
   .thought-network-quick-create {
