@@ -2,7 +2,6 @@
 
 import { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
-import { NoemaLoader } from "@/app/components/noema-loader";
 
 type SubmitButtonProps = {
   children: ReactNode;
@@ -13,7 +12,6 @@ type SubmitButtonProps = {
   name?: string;
   value?: string;
   confirmMessage?: string;
-  loadingVariant?: "spinner" | "idea-network" | "noema";
 };
 
 export function SubmitButton({
@@ -24,8 +22,7 @@ export function SubmitButton({
   form,
   name,
   value,
-  confirmMessage,
-  loadingVariant = "noema"
+  confirmMessage
 }: SubmitButtonProps) {
   const { pending } = useFormStatus();
 
@@ -45,13 +42,6 @@ export function SubmitButton({
       }}
     >
       <span className="submit-button-content">
-        {pending ? (
-          loadingVariant === "spinner" ? (
-            <span className="spinner" aria-hidden="true" />
-          ) : (
-            <NoemaLoader label={pendingText} />
-          )
-        ) : null}
         <span>{pending ? pendingText : children}</span>
       </span>
     </button>

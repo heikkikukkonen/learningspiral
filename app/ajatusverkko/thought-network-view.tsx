@@ -1054,6 +1054,7 @@ export function ThoughtNetworkView({
       setTransform((current) => {
         const nextScale = clamp(current.scale + zoomDelta, MIN_SCALE, MAX_SCALE);
         if (nextScale === current.scale) return current;
+        if (!viewport) return current;
 
         const rect = viewport.getBoundingClientRect();
         const originX = event.clientX ?? rect.left + rect.width / 2;

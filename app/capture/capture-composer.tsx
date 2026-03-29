@@ -715,12 +715,9 @@ export function CaptureComposer({
                   onClick={() => void saveTextCapture("refine")}
                 >
                   {isTextProcessing && saveIntent === "refine" ? (
-                    <span className="submit-button-content">
-                      <IdeaNetworkLoader label={textProcessingLabel} />
-                      {textSaveStage === "saving" ? "Tallennan..." : "Käsittelen..."}
-                    </span>
+                    textSaveStage === "saving" ? "Tallennan..." : "Käsittelen..."
                   ) : (
-                      "Jatka työstämistä"
+                    "Jatka työstämistä"
                   )}
                 </button>
               </div>
