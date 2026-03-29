@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { PointerEvent as ReactPointerEvent } from "react";
+import type { PointerEvent as ReactPointerEvent, RefObject } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -220,6 +220,278 @@ function formatDate(value: string) {
     dateStyle: "short",
     timeStyle: "short"
   });
+}
+
+type ThoughtInspectorThought = Pick<
+  ThoughtItem,
+  "id" | "title" | "tags" | "preview" | "idea" | "analysis" | "stageLabel"
+>;
+
+type ThoughtInspectorProps = {
+  thought: ThoughtInspectorThought;
+  rootClassName: string;
+  titleId: string;
+  inputId: string;
+  datalistId: string;
+  tagInput: string;
+  tagSuggestions: TagSuggestion[];
+  pendingAction: "tag" | "delete" | null;
+  feedback: string;
+  inputRef?: RefObject<HTMLInputElement>;
+  isDialog?: boolean;
+  onTagInputChange: (value: string) => void;
+  onAddTag: (nextValue?: string) => void | Promise<void>;
+  onDeleteThought: (thoughtId: string) => void | Promise<void>;
+  onClose?: () => void;
+  onNavigateAway?: () => void;
+};
+
+function buildThoughtInspectorCopy(thought: ThoughtInspectorThought) {
+  const idea = thought.idea.trim();
+  const analysis = thought.analysis.trim();
+  const preview = thought.preview.trim();
+  const bodyCopy = idea || preview || "Ajatusta ei ole viela kirjoitettu.";
+  const analysisCopy =
+    analysis || (idea && preview !== idea ? preview : "Syvennysta ei ole viela lisatty.");
+
+  return {
+    bodyCopy,
+    analysisCopy
+  };
+}
+
+function ThoughtInspector({
+  thought,
+  rootClassName,
+  titleId,
+  inputId,
+  datalistId,
+  tagInput,
+  tagSuggestions,
+  pendingAction,
+  feedback,
+  inputRef,
+  isDialog,
+  onTagInputChange,
+  onAddTag,
+  onDeleteThought,
+  onClose,
+  onNavigateAway
+}: ThoughtInspectorProps) {
+  const selectedThoughtTags = new Set(thought.tags.map((tag) => normalizeTagValue(tag)));
+  const availableTagSuggestions = tagSuggestions.filter(
+    (suggestion) => !selectedThoughtTags.has(normalizeTagValue(suggestion.tag))
+  );
+  const normalizedTagInput = normalizeTagValue(tagInput);
+  const matchingTagSuggestions = normalizedTagInput
+    ? availableTagSuggestions.filter((suggestion) => {
+        const normalizedSuggestion = normalizeTagValue(suggestion.tag);
+        return (
+          normalizedSuggestion.startsWith(normalizedTagInput) ||
+          normalizedSuggestion.includes(normalizedTagInput) ||
+          normalizedTagInput.includes(normalizedSuggestion)
+        );
+      })
+    : availableTagSuggestions;
+  const tagAutocompleteOptions = [...matchingTagSuggestions]
+    .sort(
+      (left, right) =>
+        Number(normalizeTagValue(right.tag).startsWith(normalizedTagInput)) -
+          Number(normalizeTagValue(left.tag).startsWith(normalizedTagInput)) ||
+        right.usageCount - left.usageCount ||
+        right.lastUsedAt.localeCompare(left.lastUsedAt) ||
+        left.tag.localeCompare(right.tag, "fi-FI")
+    )
+    .slice(0, 12);
+  const { bodyCopy, analysisCopy } = buildThoughtInspectorCopy(thought);
+  const isDeletePending = pendingAction === "delete";
+  const isTagPending = pendingAction === "tag";
+
+  return (
+    <div
+      className={rootClassName}
+      role={isDialog ? "dialog" : undefined}
+      aria-modal={isDialog ? true : undefined}
+      aria-labelledby={titleId}
+      onPointerDown={isDialog ? (event) => event.stopPropagation() : undefined}
+      onClick={isDialog ? (event) => event.stopPropagation() : undefined}
+    >
+      <div className="thought-network-modal-header">
+        <div className="thought-network-menu-header">
+          <span className="pill" data-variant="primary">
+            Ajatus
+          </span>
+          <strong id={titleId}>{thought.title}</strong>
+        </div>
+
+        {onClose ? (
+          <button
+            type="button"
+            className="thought-network-icon-button"
+            onClick={() => onClose()}
+            aria-label="Sulje ajatuksen tiedot"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M6 6l12 12M18 6 6 18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        ) : null}
+      </div>
+
+      <div className="thought-network-modal-body">
+        <div className="thought-network-modal-main">
+          <article className="card review-thought-panel thought-network-modal-thought-panel">
+            <div className="source-meta">
+              <span className="pill">{thought.stageLabel}</span>
+            </div>
+
+            {thought.tags.length ? (
+              <div className="review-tag-list">
+                {thought.tags.map((tag) => (
+                  <span key={tag} className="tag-chip tag-chip-network tag-chip-inline">
+                    <span className="tag-chip-mark" aria-hidden="true">
+                      #
+                    </span>
+                    <span>{tag}</span>
+                  </span>
+                ))}
+              </div>
+            ) : null}
+
+            <h3 className="review-thought-title">{thought.title}</h3>
+
+            {bodyCopy ? <div className="review-thought-block">{bodyCopy}</div> : null}
+            {analysisCopy && analysisCopy !== bodyCopy ? (
+              <div className="review-thought-block review-thought-block-analysis">{analysisCopy}</div>
+            ) : null}
+          </article>
+        </div>
+
+        <aside className="thought-network-modal-side">
+          <div className="thought-network-menu-section">
+            <label className="thought-network-menu-label" htmlFor={inputId}>
+              LisÃ¤Ã¤ tunniste
+            </label>
+            <div className="thought-network-menu-input-row">
+              <input
+                id={inputId}
+                ref={inputRef}
+                list={datalistId}
+                value={tagInput}
+                autoComplete="off"
+                onChange={(event) => onTagInputChange(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    void onAddTag();
+                  }
+                }}
+                placeholder="Kirjoita tunniste"
+                disabled={pendingAction !== null}
+              />
+              <button
+                type="button"
+                className="button-link secondary thought-network-menu-add-button"
+                onClick={() => void onAddTag()}
+                disabled={pendingAction !== null}
+              >
+                {isTagPending ? "LisÃ¤Ã¤n..." : "LisÃ¤Ã¤"}
+              </button>
+            </div>
+
+            <datalist id={datalistId}>
+              {tagAutocompleteOptions.map((suggestion) => (
+                <option key={`${suggestion.tag}-${suggestion.lastUsedAt}`} value={suggestion.tag} />
+              ))}
+            </datalist>
+          </div>
+
+          <div className="thought-network-menu-actions">
+            <Link
+              href={`/sources/${thought.id}?backTo=/ajatusverkko`}
+              className="thought-network-menu-item"
+              onClick={() => onNavigateAway?.()}
+            >
+              <span className="thought-network-menu-item-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M4 20h4l10-10-4-4L4 16v4zm10-12 4 4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span className="thought-network-menu-item-copy">
+                <strong>Muokkaa ajatusta</strong>
+                <span>Avaa ajatus editorissa</span>
+              </span>
+            </Link>
+
+            <button
+              type="button"
+              className="thought-network-menu-item is-danger"
+              onClick={() => void onDeleteThought(thought.id)}
+              disabled={pendingAction !== null}
+            >
+              <span className="thought-network-menu-item-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M5 7h14M10 11v5M14 11v5M8 7l1-2h6l1 2M7 7l1 12h8l1-12"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span className="thought-network-menu-item-copy">
+                <strong>{isDeletePending ? "Poistetaan..." : "Poista ajatus"}</strong>
+                <span>Poistaa ajatuksen ja siihen liittyvÃ¤t tehtÃ¤vÃ¤t</span>
+              </span>
+            </button>
+          </div>
+
+          <div className="thought-network-menu-divider" aria-hidden="true" />
+
+          <div className="thought-network-menu-section">
+            <span className="thought-network-menu-label">Luo uusi ajatus</span>
+            <div className="thought-network-quick-create">
+              {QUICK_CREATE_ACTIONS.map((action) => (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  className="thought-network-quick-create-card"
+                  onClick={() => onNavigateAway?.()}
+                >
+                  <span className="thought-network-quick-create-icon" aria-hidden="true">
+                    <Image src={action.iconSrc} alt="" width={44} height={44} />
+                  </span>
+                  <span>{action.title}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {feedback ? (
+            <p className="thought-network-menu-feedback" role="status">
+              {feedback}
+            </p>
+          ) : null}
+        </aside>
+      </div>
+    </div>
+  );
 }
 
 function hashString(value: string) {
@@ -557,7 +829,6 @@ export function ThoughtNetworkView({
   initialManualPositions
 }: ThoughtNetworkViewProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
-  const thoughtMenuRef = useRef<HTMLDivElement | null>(null);
   const tagInputRef = useRef<HTMLInputElement | null>(null);
   const dragStateRef = useRef<DragState | null>(null);
   const nodeDragStateRef = useRef<NodeDragState | null>(null);
@@ -681,51 +952,13 @@ export function ThoughtNetworkView({
   const menuThought = thoughtMenu
     ? thoughtItems.find((thought) => thought.id === thoughtMenu.thoughtId) ?? null
     : null;
-  const selectedMenuTags = new Set((menuThought?.tags ?? []).map((tag) => normalizeTagValue(tag)));
-  const availableTagSuggestions = tagSuggestions.filter(
-    (suggestion) => !selectedMenuTags.has(normalizeTagValue(suggestion.tag))
-  );
-  const normalizedTagInput = normalizeTagValue(tagInput);
-  const matchingTagSuggestions = normalizedTagInput
-    ? availableTagSuggestions.filter((suggestion) => {
-        const normalizedSuggestion = normalizeTagValue(suggestion.tag);
-        return (
-          normalizedSuggestion.startsWith(normalizedTagInput) ||
-          normalizedSuggestion.includes(normalizedTagInput) ||
-          normalizedTagInput.includes(normalizedSuggestion)
-        );
-      })
-    : [];
-  const orderedMatchingTagSuggestions = [...matchingTagSuggestions].sort(
-    (left, right) =>
-      Number(normalizeTagValue(right.tag).startsWith(normalizedTagInput)) -
-        Number(normalizeTagValue(left.tag).startsWith(normalizedTagInput)) ||
-      right.usageCount - left.usageCount ||
-      right.lastUsedAt.localeCompare(left.lastUsedAt)
-  );
-  const tagAutocompleteOptions = (normalizedTagInput
-    ? orderedMatchingTagSuggestions
-    : availableTagSuggestions
-  )
-    .slice(0, 12)
-    .sort(
-      (left, right) =>
-        right.usageCount - left.usageCount ||
-        right.lastUsedAt.localeCompare(left.lastUsedAt) ||
-        left.tag.localeCompare(right.tag, "fi-FI")
-    );
-
-  const menuIdea = menuThought?.idea.trim() ?? "";
-  const menuAnalysis = menuThought?.analysis.trim() ?? "";
-  const menuPreview = menuThought?.preview.trim() ?? "";
-  const menuBodyCopy = menuIdea || menuPreview || "Ajatusta ei ole viela kirjoitettu.";
-  const menuAnalysisCopy =
-    menuAnalysis ||
-    (menuIdea && menuPreview !== menuIdea
-      ? menuPreview
-      : "Syvennysta ei ole viela lisatty.");
+  const selectedThought = selectedNode?.type === "thought" ? selectedNode : null;
+  const inspectorThought = menuThought ?? selectedThought;
+  const menuBodyCopy = menuThought ? buildThoughtInspectorCopy(menuThought).bodyCopy : "";
+  const menuAnalysisCopy = menuThought ? buildThoughtInspectorCopy(menuThought).analysisCopy : "";
+  const visibleTagSuggestions: TagSuggestion[] = [];
+  const tagAutocompleteOptions: TagSuggestion[] = [];
   const isMenuDeletePending = pendingMenuAction === "delete";
-  const visibleTagSuggestions = tagAutocompleteOptions;
 
   function closeThoughtMenu() {
     setThoughtMenu(null);
@@ -959,13 +1192,18 @@ export function ThoughtNetworkView({
   }
 
   async function handleAddTag(nextValue?: string) {
-    if (!menuThought) return;
+    if (!inspectorThought) return;
 
     const cleanedValue = (nextValue ?? tagInput).replace(/^#+/, "").trim();
     if (!cleanedValue) {
       setMenuFeedback("Kirjoita tunniste ennen lisäämistä.");
       return;
     }
+
+    const currentThoughtTags = new Set(inspectorThought.tags.map((tag) => normalizeTagValue(tag)));
+    const availableTagSuggestions = tagSuggestions.filter(
+      (suggestion) => !currentThoughtTags.has(normalizeTagValue(suggestion.tag))
+    );
 
     const existingSuggestion =
       availableTagSuggestions.find(
@@ -979,14 +1217,14 @@ export function ThoughtNetworkView({
 
     try {
       const formData = new FormData();
-      formData.set("sourceId", menuThought.id);
+      formData.set("sourceId", inspectorThought.id);
       formData.set("tag", resolvedTag);
 
       const result = await addThoughtTagAction(formData);
 
       setThoughtItems((current) =>
         current.map((thought) =>
-          thought.id === menuThought.id
+          thought.id === inspectorThought.id
             ? {
                 ...thought,
                 tags: result.tags,
@@ -1393,78 +1631,35 @@ export function ThoughtNetworkView({
 
             {thoughtMenu && menuThought && typeof document !== "undefined" ? createPortal(
               <div className="thought-network-modal-backdrop" onPointerDown={() => closeThoughtMenu()}>
-                <div
-                  ref={thoughtMenuRef}
-                  className="thought-network-modal"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-labelledby="thought-network-modal-title"
-                  onPointerDown={(event) => event.stopPropagation()}
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <div className="thought-network-modal-header">
-                        <div className="thought-network-menu-header">
-                          <span className="pill" data-variant="primary">
-                            Ajatus
-                          </span>
-                          <strong id="thought-network-modal-title">{menuThought.title}</strong>
-                        </div>
-
-                    <button
-                      type="button"
-                      className="thought-network-icon-button"
-                      onClick={() => closeThoughtMenu()}
-                      aria-label="Sulje ajatuksen tiedot"
-                    >
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path
-                          d="M6 6l12 12M18 6 6 18"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-
-                  <div className="thought-network-modal-body">
-                    <div className="thought-network-modal-main">
-                      <article className="card review-thought-panel thought-network-modal-thought-panel">
-                        <div className="source-meta">
-                          <span className="pill">{menuThought.stageLabel}</span>
-                        </div>
-
-                        {menuThought.tags.length ? (
-                          <div className="review-tag-list">
-                            {menuThought.tags.map((tag) => (
-                              <span key={tag} className="tag-chip tag-chip-network tag-chip-inline">
-                                <span className="tag-chip-mark" aria-hidden="true">
-                                  #
-                                </span>
-                                <span>{tag}</span>
-                              </span>
-                            ))}
-                          </div>
-                        ) : null}
-
-                        <h3 className="review-thought-title">{menuThought.title}</h3>
-
-                        {menuBodyCopy ? <div className="review-thought-block">{menuBodyCopy}</div> : null}
-                        {menuAnalysisCopy && menuAnalysisCopy !== menuBodyCopy ? (
-                          <div className="review-thought-block review-thought-block-analysis">
-                            {menuAnalysisCopy}
-                          </div>
-                        ) : null}
-                      </article>
-                    </div>
-
-                    <aside className="thought-network-modal-side">
+                <ThoughtInspector
+                  thought={menuThought}
+                  rootClassName="thought-network-modal"
+                  titleId={`thought-network-modal-title-${menuThought.id}`}
+                  inputId={`thought-network-modal-tag-input-${menuThought.id}`}
+                  datalistId={`thought-network-modal-tag-options-${menuThought.id}`}
+                  tagInput={tagInput}
+                  tagSuggestions={tagSuggestions}
+                  pendingAction={pendingMenuAction}
+                  feedback={menuFeedback}
+                  inputRef={tagInputRef}
+                  isDialog
+                  onTagInputChange={(value) => {
+                    setTagInput(value);
+                    setMenuFeedback("");
+                  }}
+                  onAddTag={handleAddTag}
+                  onDeleteThought={handleDeleteThought}
+                  onClose={() => closeThoughtMenu()}
+                  onNavigateAway={() => closeThoughtMenu()}
+                />
+                {false ? (
+                  <>
+                    <div className="thought-network-modal-body">
+                      <aside className="thought-network-modal-side">
 
                 <div className="thought-network-menu-section">
                   <label className="thought-network-menu-label" htmlFor="thought-network-tag-input">
-                    Lisää tagi
+                              Lisää tunniste
                   </label>
                   <div className="thought-network-menu-input-row">
                     <input
@@ -1522,7 +1717,7 @@ export function ThoughtNetworkView({
 
                 <div className="thought-network-menu-actions">
                   <Link
-                    href={`/sources/${menuThought.id}?backTo=/ajatusverkko`}
+                    href={`/sources/${menuThought!.id}?backTo=/ajatusverkko`}
                     className="thought-network-menu-item"
                     onClick={() => closeThoughtMenu()}
                   >
@@ -1547,7 +1742,7 @@ export function ThoughtNetworkView({
                   <button
                     type="button"
                     className="thought-network-menu-item is-danger"
-                    onClick={() => void handleDeleteThought(menuThought.id)}
+                    onClick={() => void handleDeleteThought(menuThought!.id)}
                     disabled={pendingMenuAction !== null}
                   >
                     <span className="thought-network-menu-item-icon" aria-hidden="true">
@@ -1597,7 +1792,8 @@ export function ThoughtNetworkView({
                 ) : null}
                     </aside>
                   </div>
-                </div>
+                </>
+                ) : null}
               </div>,
               document.body
             ) : null}
@@ -1614,32 +1810,55 @@ export function ThoughtNetworkView({
       <aside className="thought-network-detail-panel">
         {selectedNode?.type === "thought" ? (
           <>
+            <ThoughtInspector
+              thought={selectedNode}
+              rootClassName="thought-network-detail-card"
+              titleId={`thought-network-panel-title-${selectedNode.id}`}
+              inputId={`thought-network-panel-tag-input-${selectedNode.id}`}
+              datalistId={`thought-network-panel-tag-options-${selectedNode.id}`}
+              tagInput={tagInput}
+              tagSuggestions={tagSuggestions}
+              pendingAction={pendingMenuAction}
+              feedback={menuFeedback}
+              onTagInputChange={(value) => {
+                setTagInput(value);
+                setMenuFeedback("");
+              }}
+              onAddTag={handleAddTag}
+              onDeleteThought={handleDeleteThought}
+              onClose={() => {
+                setSelectedNodeId(null);
+                closeThoughtMenu();
+              }}
+            />
+            {false ? (
+              <>
             <div className="thought-network-detail-header">
               <span className="pill" data-variant="primary">
                 Ajatus
               </span>
-              <h3>{selectedNode.title}</h3>
+              <h3>{selectedThought!.title}</h3>
               <p className="muted">
                 Tämä solmu kasvaa hieman sen mukaan, kuinka paljon ajatusta on jo työstetty.
               </p>
             </div>
 
             <div className="thought-network-detail-section">
-              <p>{selectedNode.preview || "Avaa ajatus nähdäksesi koko sisällön."}</p>
+              <p>{selectedThought!.preview || "Avaa ajatus nähdäksesi koko sisällön."}</p>
             </div>
 
             <div className="thought-network-detail-section">
               <div className="thought-network-chip-row">
-                <span className="pill">{selectedNode.stageLabel}</span>
-                <span className="pill">{selectedNode.hasCards ? "Tehtäviä mukana" : "Ei vielä tehtäviä"}</span>
-                <span className="pill">Tallennettu {formatDate(selectedNode.createdAt)}</span>
+                <span className="pill">{selectedThought!.stageLabel}</span>
+                <span className="pill">{selectedThought!.hasCards ? "Tehtäviä mukana" : "Ei vielä tehtäviä"}</span>
+                <span className="pill">Tallennettu {formatDate(selectedThought!.createdAt)}</span>
               </div>
             </div>
 
             <div className="thought-network-detail-section">
               <h4>Tunnisteet</h4>
               <div className="thought-network-chip-row">
-                {selectedNode.tags.map((tag) => (
+                {selectedThought!.tags.map((tag) => (
                   <button
                     key={tag}
                     type="button"
@@ -1654,13 +1873,15 @@ export function ThoughtNetworkView({
             </div>
 
             <div className="thought-network-detail-actions">
-              <Link href={`/sources/${selectedNode.id}`} className="button-link secondary">
+              <Link href={`/sources/${selectedThought!.id}`} className="button-link secondary">
                 Avaa ajatus
               </Link>
-              <Link href={`/sources/${selectedNode.id}`} className="button-link secondary">
+              <Link href={`/sources/${selectedThought!.id}`} className="button-link secondary">
                 Muokkaa nopeasti
               </Link>
             </div>
+              </>
+            ) : null}
           </>
         ) : selectedNode?.type === "tag" ? (
           <>

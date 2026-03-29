@@ -237,7 +237,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
                   {source.author ? <span>{source.author}</span> : null}
                   {source.tags?.map((tag) => (
                     <span className="tag-chip tag-chip-network tag-chip-inline" key={tag}>
-                      <span className="tag-chip-mark" aria-hidden="true">âˆž</span>
+                      <span className="tag-chip-mark" aria-hidden="true">#</span>
                       <span>{tag}</span>
                     </span>
                   ))}

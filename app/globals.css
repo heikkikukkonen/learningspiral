@@ -4571,6 +4571,35 @@ body::before {
   padding: 1rem;
 }
 
+.thought-network-detail-card {
+  display: grid;
+  gap: 1rem;
+  max-height: calc(100vh - 7.2rem);
+  overflow: auto;
+  padding: 1rem;
+  border-radius: 28px;
+  border: 1px solid rgba(164, 209, 217, 0.28);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.94), rgba(243, 251, 252, 0.92)),
+    rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 18px 34px rgba(73, 149, 169, 0.14),
+    0 0 0 1px rgba(196, 235, 225, 0.24);
+}
+
+.thought-network-detail-card .thought-network-modal-body {
+  grid-template-columns: 1fr;
+}
+
+.thought-network-detail-card .thought-network-modal-thought-panel {
+  height: auto;
+}
+
+.thought-network-detail-card .thought-network-modal-side {
+  gap: 0.9rem;
+}
+
 .thought-network-detail-header h3 {
   margin: 0.7rem 0 0.35rem;
   font-size: 1.45rem;
@@ -4664,6 +4693,10 @@ body::before {
 
   .thought-network-detail-panel {
     position: static;
+  }
+
+  .thought-network-detail-card {
+    max-height: none;
   }
 }
 
