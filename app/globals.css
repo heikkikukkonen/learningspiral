@@ -4312,6 +4312,11 @@ body::before {
   align-content: start;
 }
 
+.thought-network-modal-thought-panel {
+  height: 100%;
+  align-content: start;
+}
+
 .thought-network-modal-section,
 .thought-network-modal-side > .thought-network-menu-section,
 .thought-network-modal-side > .thought-network-menu-actions,
@@ -4433,8 +4438,11 @@ body::before {
 .thought-network-menu-item {
   display: flex;
   align-items: flex-start;
+  appearance: none;
+  -webkit-appearance: none;
   gap: 0.75rem;
   width: 100%;
+  margin: 0;
   padding: 0.8rem 0.9rem;
   border-radius: 18px;
   border: 1px solid rgba(165, 208, 216, 0.26);

@@ -1403,15 +1403,12 @@ export function ThoughtNetworkView({
                   onClick={(event) => event.stopPropagation()}
                 >
                   <div className="thought-network-modal-header">
-                    <div className="thought-network-menu-header">
-                      <span className="pill" data-variant="primary">
-                        Ajatus
-                      </span>
-                      <strong id="thought-network-modal-title">{menuThought.title}</strong>
-                      <p className="muted">
-                        Sama kooste kuin syvenna-nakymassa, mutta nyt suoraan verkosta avattuna.
-                      </p>
-                    </div>
+                        <div className="thought-network-menu-header">
+                          <span className="pill" data-variant="primary">
+                            Ajatus
+                          </span>
+                          <strong id="thought-network-modal-title">{menuThought.title}</strong>
+                        </div>
 
                     <button
                       type="button"
@@ -1434,38 +1431,33 @@ export function ThoughtNetworkView({
 
                   <div className="thought-network-modal-body">
                     <div className="thought-network-modal-main">
-                      <section className="thought-network-modal-section">
-                        <span className="thought-network-menu-label">Tunnisteet</span>
-                        <div className="thought-network-chip-row">
-                          {menuThought.tags.length ? (
-                            menuThought.tags.map((tag) => (
+                      <article className="card review-thought-panel thought-network-modal-thought-panel">
+                        <div className="source-meta">
+                          <span className="pill">{menuThought.stageLabel}</span>
+                        </div>
+
+                        {menuThought.tags.length ? (
+                          <div className="review-tag-list">
+                            {menuThought.tags.map((tag) => (
                               <span key={tag} className="tag-chip tag-chip-network tag-chip-inline">
                                 <span className="tag-chip-mark" aria-hidden="true">
                                   #
                                 </span>
-                                {tag}
+                                <span>{tag}</span>
                               </span>
-                            ))
-                          ) : (
-                            <p className="thought-network-modal-empty">Ajatuksella ei ole viela tunnisteita.</p>
-                          )}
-                        </div>
-                      </section>
+                            ))}
+                          </div>
+                        ) : null}
 
-                      <section className="thought-network-modal-section">
-                        <span className="thought-network-menu-label">Otsikko</span>
-                        <p className="thought-network-modal-copy is-title">{menuThought.title}</p>
-                      </section>
+                        <h3 className="review-thought-title">{menuThought.title}</h3>
 
-                      <section className="thought-network-modal-section">
-                        <span className="thought-network-menu-label">Ajatus</span>
-                        <p className="thought-network-modal-copy">{menuBodyCopy}</p>
-                      </section>
-
-                      <section className="thought-network-modal-section">
-                        <span className="thought-network-menu-label">Syvennys</span>
-                        <p className="thought-network-modal-copy">{menuAnalysisCopy}</p>
-                      </section>
+                        {menuBodyCopy ? <div className="review-thought-block">{menuBodyCopy}</div> : null}
+                        {menuAnalysisCopy && menuAnalysisCopy !== menuBodyCopy ? (
+                          <div className="review-thought-block review-thought-block-analysis">
+                            {menuAnalysisCopy}
+                          </div>
+                        ) : null}
+                      </article>
                     </div>
 
                     <aside className="thought-network-modal-side">
