@@ -28,7 +28,7 @@ export default async function ThoughtNetworkPage() {
             <div className="page-title-copy">
               <h1>Ajatusverkko</h1>
               <span className="pill thought-network-beta-symbol" data-variant="primary" aria-label="Beta">
-                β
+                Beta
               </span>
             </div>
           </div>
@@ -65,7 +65,7 @@ export default async function ThoughtNetworkPage() {
           <div className="page-title-copy">
             <h1>Ajatusverkko</h1>
             <span className="pill thought-network-beta-symbol" data-variant="primary" aria-label="Beta">
-              β
+              Beta
             </span>
           </div>
         </div>
