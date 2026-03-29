@@ -377,7 +377,7 @@ function ThoughtInspector({
         <aside className="thought-network-modal-side">
           <div className="thought-network-menu-section">
             <label className="thought-network-menu-label" htmlFor={inputId}>
-              LisÃ¤Ã¤ tunniste
+              Lisää tunniste
             </label>
             <div className="thought-network-menu-input-row">
               <input
@@ -402,7 +402,7 @@ function ThoughtInspector({
                 onClick={() => void onAddTag()}
                 disabled={pendingAction !== null}
               >
-                {isTagPending ? "LisÃ¤Ã¤n..." : "LisÃ¤Ã¤"}
+                {isTagPending ? "Lisään..." : "Lisää"}
               </button>
             </div>
 
@@ -457,7 +457,7 @@ function ThoughtInspector({
               </span>
               <span className="thought-network-menu-item-copy">
                 <strong>{isDeletePending ? "Poistetaan..." : "Poista ajatus"}</strong>
-                <span>Poistaa ajatuksen ja siihen liittyvÃ¤t tehtÃ¤vÃ¤t</span>
+                <span>Poistaa ajatuksen ja siihen liittyvät tehtävät</span>
               </span>
             </button>
           </div>
