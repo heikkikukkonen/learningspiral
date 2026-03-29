@@ -35,6 +35,7 @@ export async function saveUserSettingsAction(formData: FormData) {
   const settings = sanitizeUserSettings({
     responseLanguage: asString(formData.get("responseLanguage")),
     showDebug: hasTrueValue(formData, "showDebug"),
+    showBetaFeatures: hasTrueValue(formData, "showBetaFeatures"),
     analysisPromptRefresh: asString(formData.get("analysisPromptRefresh")),
     analysisPromptDeepen: asString(formData.get("analysisPromptDeepen")),
     analysisPromptSummarize: asString(formData.get("analysisPromptSummarize")),
@@ -79,6 +80,8 @@ export async function saveUserSettingsAction(formData: FormData) {
   revalidatePath("/login");
   revalidatePath("/capture");
   revalidatePath("/sources");
+  revalidatePath("/ajatusverkko");
+  revalidatePath("/", "layout");
   redirect("/settings?saved=1");
 }
 

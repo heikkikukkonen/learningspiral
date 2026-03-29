@@ -1562,6 +1562,13 @@ button.danger {
   flex-wrap: wrap;
 }
 
+.source-page-utility-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 .source-page-delete {
   min-width: 130px;
   min-height: 52px;
@@ -1577,6 +1584,14 @@ button.danger {
 
 .review-shell {
   max-width: 680px;
+}
+
+.review-queue-total {
+  margin: 0;
+  font-size: 0.96rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  color: #4a647d;
 }
 
 .review-card-shell {
@@ -1662,6 +1677,12 @@ button.danger {
   gap: 0.9rem;
 }
 
+.review-tag-list {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
 .review-answer-panel {
   border-radius: 24px;
   padding: 1rem 1.05rem;
@@ -1677,6 +1698,40 @@ button.danger {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #6c7f99;
+}
+
+.review-thought-panel {
+  display: grid;
+  gap: 0.85rem;
+  border-radius: 26px;
+  padding: 1.1rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(170, 226, 214, 0.18), rgba(255, 255, 255, 0) 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 250, 247, 0.96));
+}
+
+.review-thought-title {
+  margin: 0;
+  font-size: clamp(1.3rem, 3vw, 1.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: #21354c;
+}
+
+.review-thought-block {
+  padding: 1rem 1.05rem;
+  border-radius: 22px;
+  background: rgba(247, 250, 255, 0.92);
+  color: #40546e;
+  line-height: 1.68;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.review-thought-block-analysis {
+  background: rgba(241, 248, 245, 0.96);
+  color: #395b54;
 }
 
 .review-schedule-panel h3 {
@@ -3467,6 +3522,7 @@ button.danger {
   .source-edit-footer,
   .source-edit-save-group,
   .source-page-save-actions,
+  .source-page-utility-actions,
   .source-editor-topbar,
   .source-origin-header {
     align-items: stretch;
@@ -3801,6 +3857,14 @@ body::before {
     inset 0 1px 0 rgba(255, 255, 255, 0.62),
     0 10px 24px rgba(47, 164, 169, 0.12),
     0 0 0 2px rgba(164, 240, 241, 0.24);
+}
+
+.header-icon-network.is-active {
+  border-color: rgba(233, 146, 72, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    0 10px 24px rgba(185, 121, 57, 0.14),
+    0 0 0 2px rgba(245, 204, 160, 0.28);
 }
 
 .header-icon-settings.is-active {

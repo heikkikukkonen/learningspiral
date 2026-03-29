@@ -1,6 +1,7 @@
 export interface UserSettings {
   responseLanguage: string;
   showDebug: boolean;
+  showBetaFeatures: boolean;
   analysisPromptRefresh: string;
   analysisPromptDeepen: string;
   analysisPromptSummarize: string;
@@ -88,6 +89,7 @@ export const DEFAULT_TASK_GENERATION_PROMPTS = {
 export const DEFAULT_USER_SETTINGS: UserSettings = {
   responseLanguage: "Finnish",
   showDebug: false,
+  showBetaFeatures: false,
   analysisPromptRefresh: "",
   analysisPromptDeepen: "",
   analysisPromptSummarize: "",
@@ -108,6 +110,7 @@ export function sanitizeUserSettings(input: Partial<UserSettings> | null | undef
   return {
     responseLanguage: clamp(input?.responseLanguage || DEFAULT_USER_SETTINGS.responseLanguage, 80) || "Finnish",
     showDebug: Boolean(input?.showDebug),
+    showBetaFeatures: Boolean(input?.showBetaFeatures),
     analysisPromptRefresh: clamp(input?.analysisPromptRefresh || "", 1200),
     analysisPromptDeepen: clamp(input?.analysisPromptDeepen || "", 1200),
     analysisPromptSummarize: clamp(input?.analysisPromptSummarize || "", 1200),

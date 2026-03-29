@@ -30,11 +30,12 @@ function HeaderIcon({
   );
 }
 
-export function SiteNav() {
+export function SiteNav({ showBetaFeatures = false }: { showBetaFeatures?: boolean }) {
   const pathname = usePathname();
   const appHomeActive = pathname === "/app";
   const reviewActive = pathname === "/review";
   const sourcesActive = pathname === "/sources" || pathname.startsWith("/sources/");
+  const thoughtNetworkActive = pathname === "/ajatusverkko" || pathname.startsWith("/ajatusverkko/");
   const settingsActive = pathname === "/settings" || pathname === "/login";
   const primaryHref = "/app";
   const primaryLabel = "Tallenna ajatus";
@@ -62,6 +63,15 @@ export function SiteNav() {
         className="header-icon-search"
         iconSrc="/brand/action-icons/SelaaAjatuksia.PNG"
       />
+      {showBetaFeatures ? (
+        <HeaderIcon
+          href="/ajatusverkko"
+          label="Ajatusverkko (Beta)"
+          active={thoughtNetworkActive}
+          className="header-icon-network"
+          iconSrc="/brand/action-icons/SelaaAjatuksia.PNG"
+        />
+      ) : null}
       <HeaderIcon
         href="/settings"
         label="Asetukset"

@@ -1,11 +1,12 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { completeReviewAction } from "@/app/sources/actions";
+import { completeReviewAction, scheduleIdeaReviewAction } from "@/app/sources/actions";
 import { SubmitButton } from "@/app/components/submit-button";
 import type { CardAnswerHistoryItem, DueReviewCard, UnrefinedIdeaQueueItem } from "@/lib/db";
+import { parseSourceSummaryContent } from "@/lib/source-editor";
 import { cardTypeLabel } from "@/lib/types";
 
 type ReviewQueueItem =
@@ -20,52 +21,195 @@ type ReviewQueueItem =
     };
 
 type Props = {
-  reviewedToday: number;
   initialItems: ReviewQueueItem[];
 };
 
-function buildIdeaPreview(idea: UnrefinedIdeaQueueItem): string {
-  const primary = idea.raw_input?.trim() || idea.summary_content?.trim() || "";
-  if (!primary) {
-    return "Keskeneräinen ajatus odottaa vielä otsikointia ja työstämistä.";
+type ThoughtDetails = {
+  title: string;
+  tags: string[];
+  idea: string;
+  analysis: string;
+};
+
+const IDEA_SNOOZE_STORAGE_KEY = "review_idea_snoozes_v1";
+
+function queueLabel(count: number) {
+  return `${count} ${count === 1 ? "asia" : "asiaa"} syvennettävänä`;
+}
+
+function readIdeaSnoozes(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+
+  try {
+    const raw = window.localStorage.getItem(IDEA_SNOOZE_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeIdeaSnoozes(value: Record<string, string>) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(IDEA_SNOOZE_STORAGE_KEY, JSON.stringify(value));
+}
+
+function filterVisibleItems(items: ReviewQueueItem[]): ReviewQueueItem[] {
+  const snoozes = readIdeaSnoozes();
+  const nowIso = new Date().toISOString();
+  let changed = false;
+
+  const visibleItems = items.filter((item) => {
+    if (item.kind !== "idea") return true;
+    const snoozedUntil = snoozes[item.idea.id];
+    if (!snoozedUntil) return true;
+    if (snoozedUntil > nowIso) return false;
+    delete snoozes[item.idea.id];
+    changed = true;
+    return true;
+  });
+
+  if (changed) {
+    writeIdeaSnoozes(snoozes);
   }
 
-  return primary.length > 280 ? `${primary.slice(0, 277)}...` : primary;
+  return visibleItems;
+}
+
+function storeIdeaSnooze(sourceId: string, schedule: "near" | "later") {
+  const now = new Date();
+  const dueAt = new Date(now);
+
+  if (schedule === "later") {
+    const laterDays = Math.floor(Math.random() * 21) + 10;
+    dueAt.setUTCDate(dueAt.getUTCDate() + laterDays);
+  } else {
+    dueAt.setUTCDate(dueAt.getUTCDate() + 1);
+  }
+
+  const snoozes = readIdeaSnoozes();
+  snoozes[sourceId] = dueAt.toISOString();
+  writeIdeaSnoozes(snoozes);
+}
+
+function buildThoughtDetails(input: {
+  title: string;
+  tags?: string[] | null;
+  summaryContent?: string | null;
+  rawInput?: string | null;
+}): ThoughtDetails {
+  const parsed = parseSourceSummaryContent(input.summaryContent ?? null, input.rawInput ?? null);
+
+  return {
+    title: input.title.trim() || "Nimetön ajatus",
+    tags: input.tags?.filter((tag) => tag.trim().length > 0) ?? [],
+    idea: parsed.idea.trim(),
+    analysis: parsed.analysis.trim()
+  };
+}
+
+function TagList({ tags }: { tags: string[] }) {
+  if (!tags.length) return null;
+
+  return (
+    <div className="review-tag-list">
+      {tags.map((tag) => (
+        <span className="tag-chip tag-chip-network tag-chip-inline" key={tag}>
+          <span className="tag-chip-mark" aria-hidden="true">
+            #
+          </span>
+          <span>{tag}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function ThoughtPanel({
+  details,
+  sourceId,
+  showOpenLink = true,
+  closeLabel = "Palaa tähän tehtävään",
+  stageLabel
+}: {
+  details: ThoughtDetails;
+  sourceId: string;
+  showOpenLink?: boolean;
+  closeLabel?: string;
+  stageLabel?: string;
+}) {
+  return (
+    <article className="card review-thought-panel">
+      {stageLabel ? (
+        <div className="source-meta">
+          <span className="pill">{stageLabel}</span>
+        </div>
+      ) : null}
+
+      <TagList tags={details.tags} />
+      <h3 className="review-thought-title">{details.title}</h3>
+
+      {details.idea ? <div className="review-thought-block">{details.idea}</div> : null}
+      {details.analysis && details.analysis !== details.idea ? (
+        <div className="review-thought-block review-thought-block-analysis">{details.analysis}</div>
+      ) : null}
+
+      {showOpenLink || closeLabel ? (
+        <div className="actions">
+          {showOpenLink ? (
+            <Link
+              href={`/sources/${sourceId}?backTo=${encodeURIComponent("/review")}`}
+              className="button-link secondary"
+            >
+              Tarkastele ajatusta
+            </Link>
+          ) : null}
+          {closeLabel ? <span className="status">{closeLabel}</span> : null}
+        </div>
+      ) : null}
+    </article>
+  );
 }
 
 function ReviewCard({
   card,
   history,
-  currentIndex,
-  totalCount,
   onCompleted,
   pending
 }: {
   card: DueReviewCard;
   history: CardAnswerHistoryItem[];
-  currentIndex: number;
-  totalCount: number;
-  onCompleted: (formData: FormData) => void;
+  onCompleted: (formData: FormData, behavior: "remove" | "moveToEnd") => void;
   pending: boolean;
 }) {
   const [showAnswer, setShowAnswer] = useState(false);
+  const [showThought, setShowThought] = useState(false);
   const [userAnswer, setUserAnswer] = useState("");
+  const thoughtDetails = buildThoughtDetails({
+    title: card.source_title,
+    tags: card.source_tags,
+    summaryContent: card.summary_content,
+    rawInput: card.raw_input
+  });
+
+  function buildFormData(schedule: "queue" | "near" | "later") {
+    const formData = new FormData();
+    formData.set("cardId", card.id);
+    formData.set("userAnswer", userAnswer);
+    formData.set("schedule", schedule);
+    return formData;
+  }
 
   return (
     <article className="card review-card-shell">
-      <div className="review-card-progress">
-        <p className="review-card-counter">
-          {currentIndex} / {totalCount}
-        </p>
-      </div>
-
       <div className="review-card-head">
         <div className="source-meta">
           <span className="pill" data-variant="primary">
             {cardTypeLabel(card.card_type)}
           </span>
-          <span className="pill">{card.source_title}</span>
         </div>
+        <TagList tags={card.source_tags ?? []} />
         <h2 className="review-card-title">{card.prompt}</h2>
       </div>
 
@@ -76,8 +220,7 @@ function ReviewCard({
             name="draftAnswer"
             value={userAnswer}
             onChange={(event) => setUserAnswer(event.target.value)}
-            placeholder="Kirjoita oma vastauksesi ennen kuin painat 'Näytä tiedot'."
-            required
+            placeholder="Kirjoita oma vastauksesi ennen kuin katsot mallivastausta."
           />
         </label>
 
@@ -87,14 +230,11 @@ function ReviewCard({
             className="secondary review-reveal-button"
             onClick={() => setShowAnswer((current) => !current)}
           >
-            {showAnswer ? "Piilota tiedot" : "Näytä tiedot"}
+            {showAnswer ? "Piilota vastaus" : "Näytä vastaus"}
           </button>
           <form
-            action={(formData) => {
-              formData.set("cardId", card.id);
-              formData.set("userAnswer", userAnswer);
-              formData.set("schedule", "near");
-              onCompleted(formData);
+            action={() => {
+              onCompleted(buildFormData("near"), "remove");
             }}
           >
             <SubmitButton
@@ -102,7 +242,7 @@ function ReviewCard({
               pendingText="Tallennan..."
               disabled={pending}
             >
-              Ohita nyt
+              Ohita nyt (palaa huomenna)
             </SubmitButton>
           </form>
         </div>
@@ -114,13 +254,9 @@ function ReviewCard({
               <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{card.answer}</p>
             </article>
 
-            <article className="card review-answer-panel">
-              <p className="review-panel-label">Aiemmat vastauksesi</p>
-              {history.length === 0 ? (
-                <p className="muted" style={{ margin: 0 }}>
-                  Ei aiempia vastauksia.
-                </p>
-              ) : (
+            {history.length > 0 ? (
+              <article className="card review-answer-panel">
+                <p className="review-panel-label">Aiemmat vastaukset</p>
                 <div className="list">
                   {history.map((item, index) => (
                     <article key={`${item.created_at}-${index}`} className="card">
@@ -133,32 +269,27 @@ function ReviewCard({
                     </article>
                   ))}
                 </div>
-              )}
-            </article>
+              </article>
+            ) : null}
 
-            <details className="card review-answer-panel">
-              <summary style={{ cursor: "pointer", fontWeight: 700 }}>Avaa tehtävään liittyvä teoria</summary>
-              <div style={{ marginTop: "0.7rem" }}>
-                <p className="status" style={{ marginTop: 0 }}>
-                  Lähde: {card.source_title}
-                </p>
-                <p style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>
-                  {card.summary_content || "Teoriaa ei lÃ¶ytynyt tästä lähteestä vielä."}
-                </p>
-              </div>
-            </details>
+            <div className="actions">
+              <button
+                type="button"
+                className="secondary review-idea-button"
+                onClick={() => setShowThought((current) => !current)}
+              >
+                {showThought ? "Palaa tähän tehtävään" : "Näytä taustalla oleva ajatus"}
+              </button>
+            </div>
+
+            {showThought ? <ThoughtPanel details={thoughtDetails} sourceId={card.source_id} /> : null}
 
             <article className="card review-answer-panel review-schedule-panel">
-              <h3 style={{ marginTop: 0, marginBottom: "0.5rem" }}>
-                Kuinka vahvasti haluat palata tähän uudelleen?
-              </h3>
+              <h3 style={{ marginTop: 0, marginBottom: "0.5rem" }}>Milloin tämä nousee uudelleen?</h3>
               <div className="review-schedule-grid">
                 <form
-                  action={(formData) => {
-                    formData.set("cardId", card.id);
-                    formData.set("userAnswer", userAnswer);
-                    formData.set("schedule", "soon");
-                    onCompleted(formData);
+                  action={() => {
+                    onCompleted(buildFormData("queue"), "moveToEnd");
                   }}
                 >
                   <SubmitButton
@@ -166,15 +297,12 @@ function ReviewCard({
                     pendingText="Tallennan..."
                     disabled={pending || !userAnswer.trim()}
                   >
-                    Heti (3min)
+                    Heti
                   </SubmitButton>
                 </form>
                 <form
-                  action={(formData) => {
-                    formData.set("cardId", card.id);
-                    formData.set("userAnswer", userAnswer);
-                    formData.set("schedule", "near");
-                    onCompleted(formData);
+                  action={() => {
+                    onCompleted(buildFormData("near"), "remove");
                   }}
                 >
                   <SubmitButton
@@ -182,15 +310,12 @@ function ReviewCard({
                     pendingText="Tallennan..."
                     disabled={pending || !userAnswer.trim()}
                   >
-                    Pidä lähellä (1 päivä)
+                    Huomenna
                   </SubmitButton>
                 </form>
                 <form
-                  action={(formData) => {
-                    formData.set("cardId", card.id);
-                    formData.set("userAnswer", userAnswer);
-                    formData.set("schedule", "later");
-                    onCompleted(formData);
+                  action={() => {
+                    onCompleted(buildFormData("later"), "remove");
                   }}
                 >
                   <SubmitButton
@@ -198,7 +323,7 @@ function ReviewCard({
                     pendingText="Tallennan..."
                     disabled={pending || !userAnswer.trim()}
                   >
-                    Palaa myÃ¶hemmin ({">"}10 päivää)
+                    Myöhemmin ({">"}10 päivää)
                   </SubmitButton>
                 </form>
               </div>
@@ -212,89 +337,114 @@ function ReviewCard({
 
 function IdeaCard({
   idea,
-  currentIndex,
-  totalCount,
-  onSkip
+  onSchedule,
+  pending
 }: {
   idea: UnrefinedIdeaQueueItem;
-  currentIndex: number;
-  totalCount: number;
-  onSkip: () => void;
+  onSchedule: (formData: FormData) => void;
+  pending: boolean;
 }) {
+  const thoughtDetails = buildThoughtDetails({
+    title: idea.title,
+    tags: idea.tags,
+    summaryContent: idea.summary_content,
+    rawInput: idea.raw_input
+  });
+
   return (
     <article className="card review-card-shell review-card-shell-idea">
-      <div className="review-card-progress">
-        <p className="review-card-counter">
-          {currentIndex} / {totalCount}
-        </p>
-      </div>
-
-      <div className="review-card-head">
-        <div className="source-meta">
-          {idea.tags?.slice(0, 3).map((tag) => (
-            <span className="tag-chip tag-chip-network tag-chip-inline" key={tag}>
-              <span className="tag-chip-mark" aria-hidden="true">#</span>
-              <span>{tag}</span>
-            </span>
-          ))}
-        </div>
-        <h2 className="review-card-title">Haluatko työstää tätä ajatusta eteenpäin?</h2>
-        <p className="review-card-lead">{buildIdeaPreview(idea)}</p>
-      </div>
+      <ThoughtPanel
+        details={thoughtDetails}
+        sourceId={idea.id}
+        showOpenLink={false}
+        closeLabel=""
+        stageLabel="Työstössä"
+      />
 
       <div className="card review-answer-panel">
-        <p className="review-panel-label">Miksi tämä on nyt jonossa</p>
+        <p className="review-panel-label">Miksi tämä on jonossa</p>
         <p style={{ margin: 0 }}>
-          Ajatus on tallessa, mutta sitä ei ole vielä työstetty riittävästi eikä muutettu tehtäviksi.
+          Ajatus on tallessa, mutta siitä puuttuu vielä viimeistelyä tai tehtäviä, jotta se nousisi
+          jatkossa tehtäväjonoon valmiimpana.
         </p>
       </div>
 
       <div className="actions review-idea-actions">
-        <Link href={`/sources/${idea.id}`} className="button-link primary review-idea-button">
+        <Link
+          href={`/sources/${idea.id}?backTo=${encodeURIComponent("/review")}`}
+          className="button-link primary review-idea-button"
+        >
           Työstä nyt
         </Link>
-        <button type="button" className="secondary review-idea-button" onClick={onSkip}>
-          Jatka myöhemmin
-        </button>
+        <form
+          action={() => {
+            const formData = new FormData();
+            formData.set("sourceId", idea.id);
+            formData.set("schedule", "near");
+            onSchedule(formData);
+          }}
+        >
+          <SubmitButton className="secondary review-idea-button" pendingText="Tallennan..." disabled={pending}>
+            Jatka myöhemmin (palaa huomenna)
+          </SubmitButton>
+        </form>
       </div>
     </article>
   );
 }
 
-export function ReviewQueue({ reviewedToday, initialItems }: Props) {
-  const [items, setItems] = useState(initialItems);
+export function ReviewQueue({ initialItems }: Props) {
+  const [items, setItems] = useState(() => filterVisibleItems(initialItems));
   const [errorMessage, setErrorMessage] = useState("");
   const [isPending, startTransition] = useTransition();
-  const totalCount = initialItems.length;
-  const currentIndex = totalCount - items.length + 1;
   const currentItem = items[0] ?? null;
-  const headerLead =
-    currentItem?.kind === "review"
-      ? "Yksi asia kerrallaan. Yritä vastata ensin tehtävään itse, näytä vasta sitten tiedot."
-      : currentItem?.kind === "idea"
-        ? "Yksi asia kerrallaan. Nyt on hyvä hetki työstää aiemmin tallentamaasi ajatusta. Lisää siihen puuttuvat tagit ja luo tehtävät niin saat tehtävät automaattisesti nousemaan tälle sivulle."
-        : "Yksi asia kerrallaan. Vastaa ensin itse, näytä sitten tiedot tai nosta keskeneräinen ajatus työstettäväksi.";
-  const currentStageLabel =
-    currentItem?.kind === "review"
-      ? "Syvenee noemaksi"
-      : currentItem?.kind === "idea"
-        ? "Työstössä"
-        : null;
+  const headerLead = currentItem
+    ? "Yksi yhteinen jono kokoaa sekä tehtävät että keskeneräiset ajatukset. Tee tehtävä tai viimeistele ajatus, ja siirry sitten seuraavaan."
+    : "Jono on tyhjä juuri nyt. Voit tallentaa uusia ajatuksia tai jatkaa olemassa olevien työstämistä.";
 
   function removeCurrentItem() {
     setItems((current) => current.slice(1));
   }
 
-  function handleReviewCompleted(formData: FormData) {
+  function moveCurrentItemToEnd() {
+    setItems((current) => (current.length <= 1 ? current : [...current.slice(1), current[0]]));
+  }
+
+  function handleReviewCompleted(formData: FormData, behavior: "remove" | "moveToEnd") {
     setErrorMessage("");
 
     startTransition(async () => {
       try {
         await completeReviewAction(formData);
+        if (behavior === "moveToEnd") {
+          moveCurrentItemToEnd();
+          return;
+        }
+
         removeCurrentItem();
       } catch (error) {
         setErrorMessage(
-          error instanceof Error ? error.message : "Tehtavan tallennus epaonnistui. Yrita uudelleen."
+          error instanceof Error ? error.message : "Tehtävän tallennus epäonnistui. Yritä uudelleen."
+        );
+      }
+    });
+  }
+
+  function handleIdeaScheduled(formData: FormData) {
+    setErrorMessage("");
+
+    startTransition(async () => {
+      try {
+        const sourceId = formData.get("sourceId");
+        const scheduleValue = formData.get("schedule");
+        if (typeof sourceId === "string") {
+          storeIdeaSnooze(sourceId, scheduleValue === "later" ? "later" : "near");
+        }
+        await scheduleIdeaReviewAction(formData);
+        removeCurrentItem();
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error ? error.message : "Ajatuksen ajastus epäonnistui. Yritä uudelleen."
         );
       }
     });
@@ -314,11 +464,7 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
           />
           <h1>Syvenny</h1>
         </div>
-        {currentStageLabel ? (
-          <div className="source-workspace-status">
-            <span className="pill">{currentStageLabel}</span>
-          </div>
-        ) : null}
+        <p className="review-queue-total">{queueLabel(items.length)}</p>
         <p className="muted">{headerLead}</p>
       </div>
 
@@ -336,8 +482,6 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
             key={currentItem.card.id}
             card={currentItem.card}
             history={currentItem.history}
-            currentIndex={currentIndex}
-            totalCount={totalCount}
             onCompleted={handleReviewCompleted}
             pending={isPending}
           />
@@ -345,19 +489,15 @@ export function ReviewQueue({ reviewedToday, initialItems }: Props) {
           <IdeaCard
             key={currentItem.idea.id}
             idea={currentItem.idea}
-            currentIndex={currentIndex}
-            totalCount={totalCount}
-            onSkip={removeCurrentItem}
+            onSchedule={handleIdeaScheduled}
+            pending={isPending}
           />
         )
       ) : (
         <article className="card review-card-shell review-empty-card">
-          <p className="review-card-counter" style={{ marginBottom: "0.35rem" }}>
-            {totalCount === 0 ? 0 : totalCount} / {totalCount}
-          </p>
           <p className="muted" style={{ marginBottom: 0 }}>
-            Ei uusia tehtäviä juuri nyt. Voit tallentaa uusia ajatuksia tai syventää olemassa
-            olevia ajatuksia.
+            Ei uusia tehtäviä juuri nyt. Voit tallentaa uusia ajatuksia tai syventää olemassa olevia
+            ajatuksia.
           </p>
         </article>
       )}

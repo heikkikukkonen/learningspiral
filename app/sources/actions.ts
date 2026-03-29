@@ -11,6 +11,7 @@ import {
   generateSuggestedCard,
   getUserSettings,
   listUserTagStats,
+  scheduleUnrefinedIdea,
   sourceHasCards,
   updateSource,
   updateCard,
@@ -22,6 +23,11 @@ import { generateSourceTags, refineSourceDraft } from "@/lib/llm";
 
 function asString(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
+}
+
+function readSafeInternalPath(value: FormDataEntryValue | null): string | null {
+  const path = asString(value).trim();
+  return path.startsWith("/") ? path : null;
 }
 
 function readTags(value: string): string[] {
@@ -84,13 +90,24 @@ export async function completeReviewAction(formData: FormData) {
   const cardId = asString(formData.get("cardId"));
   const scheduleValue = asString(formData.get("schedule"));
   const schedule =
-    scheduleValue === "soon" || scheduleValue === "near" || scheduleValue === "later"
+    scheduleValue === "soon" ||
+    scheduleValue === "near" ||
+    scheduleValue === "later" ||
+    scheduleValue === "queue"
       ? scheduleValue
       : "near";
   const userAnswer = asString(formData.get("userAnswer"));
   await completeReview(cardId, schedule, userAnswer);
   revalidatePath("/review");
   revalidatePath("/progress");
+}
+
+export async function scheduleIdeaReviewAction(formData: FormData) {
+  const sourceId = asString(formData.get("sourceId"));
+  const scheduleValue = asString(formData.get("schedule"));
+  const schedule = scheduleValue === "later" ? "later" : "near";
+  await scheduleUnrefinedIdea(sourceId, schedule);
+  revalidatePath("/review");
 }
 
 export async function saveSummaryAction(formData: FormData) {
@@ -110,6 +127,7 @@ export async function saveSummaryAction(formData: FormData) {
 
 export async function saveSourceDraftAction(formData: FormData) {
   const sourceId = asString(formData.get("sourceId"));
+  const backTo = readSafeInternalPath(formData.get("backTo"));
   const title = asString(formData.get("title")).trim() || "Untitled idea";
   const idea = asString(formData.get("idea"));
   const analysis = asString(formData.get("analysis"));
@@ -146,6 +164,7 @@ export async function saveSourceDraftAction(formData: FormData) {
   revalidatePath(`/sources/${sourceId}`);
   revalidatePath(`/capture?sourceId=${sourceId}`);
   revalidatePath("/sources");
+  if (backTo) revalidatePath(backTo);
   revalidatePath("/progress");
 }
 
@@ -260,9 +279,10 @@ export async function deleteCardAction(formData: FormData) {
 
 export async function deleteSourceAction(formData: FormData) {
   const sourceId = asString(formData.get("sourceId"));
+  const backTo = readSafeInternalPath(formData.get("backTo"));
   await deleteSource(sourceId);
   revalidatePath("/sources");
   revalidatePath("/review");
   revalidatePath("/progress");
-  redirect("/sources");
+  redirect(backTo ?? "/sources");
 }

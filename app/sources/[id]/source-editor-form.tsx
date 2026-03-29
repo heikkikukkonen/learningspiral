@@ -23,6 +23,7 @@ type SourceEditorFormProps = {
   rawInput: string;
   inputModality: string;
   showDebug: boolean;
+  backTo?: string | null;
   captureDetails?: ReactNode;
 };
 
@@ -36,6 +37,7 @@ export function SourceEditorForm({
   rawInput,
   inputModality,
   showDebug,
+  backTo,
   captureDetails
 }: SourceEditorFormProps) {
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -268,11 +270,12 @@ export function SourceEditorForm({
         ref={formRef}
         className="form source-edit-form"
         action={saveSourceDraftAction}
-      >
-        <input type="hidden" name="sourceId" value={sourceId} />
-        <input type="hidden" name="rawInput" value={rawInput} />
-        <input type="hidden" name="inputModality" value={inputModality} />
-        <input type="hidden" name="tags" value={tags.join(",")} />
+        >
+          <input type="hidden" name="sourceId" value={sourceId} />
+          <input type="hidden" name="rawInput" value={rawInput} />
+          <input type="hidden" name="inputModality" value={inputModality} />
+          <input type="hidden" name="tags" value={tags.join(",")} />
+          <input type="hidden" name="backTo" value={backTo ?? ""} />
 
         <section className="source-form-section">
           <div className="source-form-section-header">
@@ -534,7 +537,6 @@ export function SourceEditorForm({
                 onChange={(event) => setAnalysis(event.target.value)}
                 className="source-analysis-textarea"
                 placeholder="Tähän ilmestyy uusi näkökulma, kun käytät toimintoa yllä."
-                required
               />
             </label>
 

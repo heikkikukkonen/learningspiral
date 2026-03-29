@@ -247,6 +247,25 @@ export default async function SettingsPage({
 
           <div className="settings-subsection">
             <div className="settings-subsection-copy">
+              <h3 style={{ margin: 0 }}>Beta-toiminnot</h3>
+              <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+                Ota keskeneraiset kokeilut näkyviin päävalikkoon. Ensimmäinen beta-toiminto on Ajatusverkko.
+              </p>
+            </div>
+            <label className="form-row settings-toggle-row">
+              <input type="hidden" name="showBetaFeatures" value="false" />
+              <span>Näytä beta-toiminnot</span>
+              <input
+                type="checkbox"
+                name="showBetaFeatures"
+                value="true"
+                defaultChecked={settings.showBetaFeatures}
+              />
+            </label>
+          </div>
+
+          <div className="settings-subsection">
+            <div className="settings-subsection-copy">
               <h3 style={{ margin: 0 }}>Debug</h3>
               <p className="muted" style={{ margin: "0.35rem 0 0" }}>
                 Näytä käyttöliittymässä debug-tietoja, kuten tunnisteiden luonnissa käytetty prompti.
@@ -273,6 +292,9 @@ export default async function SettingsPage({
         />
 
         <div className="actions settings-form-actions settings-progress-link-row">
+          <Link href="/toiminnallisuudet" className="button-link secondary">
+            Noeman toiminnallisuudet
+          </Link>
           <Link href="/progress" className="button-link secondary">
             Katso eteneminen (Beta)
           </Link>

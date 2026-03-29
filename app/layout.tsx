@@ -4,6 +4,7 @@ import { PwaRegister } from "./components/pwa-register";
 import { SiteNav } from "./components/site-nav";
 import { UserAuthControls } from "./components/user-auth-controls";
 import { getCurrentUser } from "@/lib/auth";
+import { getUserSettings } from "@/lib/db";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default async function RootLayout({
 }>) {
   const buildVersion = process.env.NEXT_PUBLIC_BUILD_VERSION ?? "dev";
   const user = await getCurrentUser();
+  const settings = user ? await getUserSettings(user.id) : null;
 
   return (
     <html lang="fi">
@@ -42,7 +44,7 @@ export default async function RootLayout({
               </Link>
             </div>
             <div className="topbar-actions">
-              {user ? <SiteNav /> : null}
+              {user ? <SiteNav showBetaFeatures={settings?.showBetaFeatures ?? false} /> : null}
               <UserAuthControls user={user} />
             </div>
           </div>

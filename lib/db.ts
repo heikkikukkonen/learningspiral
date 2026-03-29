@@ -45,6 +45,7 @@ export interface SourceRow {
   tags: string[] | null;
   capture_mode: string;
   idea_status: IdeaStatus;
+  review_due_at?: string | null;
   created_at: string;
   summary_content?: string | null;
   raw_input?: string | null;
@@ -86,7 +87,9 @@ export interface CardRow {
 
 export interface DueReviewCard extends CardRow {
   source_title: string;
+  source_tags: string[] | null;
   summary_content: string | null;
+  raw_input: string | null;
 }
 
 export interface UnrefinedIdeaQueueItem {
@@ -214,6 +217,12 @@ function isMissingIdeaStatusColumnError(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
   const message = "message" in error && typeof error.message === "string" ? error.message : "";
   return message.includes("idea_status");
+}
+
+function isMissingReviewDueAtColumnError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const message = "message" in error && typeof error.message === "string" ? error.message : "";
+  return message.includes("review_due_at");
 }
 
 function toIsoDate(value: Date): string {
@@ -469,6 +478,7 @@ export async function getUserSettings(userId?: string): Promise<UserSettings> {
   return sanitizeUserSettings({
     responseLanguage: data.response_language,
     showDebug: data.show_debug,
+    showBetaFeatures: data.show_beta_features,
     analysisPromptRefresh: data.analysis_prompt_refresh,
     analysisPromptDeepen: data.analysis_prompt_deepen,
     analysisPromptSummarize: data.analysis_prompt_summarize,
@@ -493,6 +503,7 @@ export async function upsertUserSettings(input: UserSettings, userId?: string) {
       user_id: resolvedUserId,
       response_language: settings.responseLanguage,
       show_debug: settings.showDebug,
+      show_beta_features: settings.showBetaFeatures,
       analysis_prompt_refresh: settings.analysisPromptRefresh,
       analysis_prompt_deepen: settings.analysisPromptDeepen,
       analysis_prompt_summarize: settings.analysisPromptSummarize,
@@ -513,6 +524,7 @@ export async function upsertUserSettings(input: UserSettings, userId?: string) {
     user_id: data.user_id,
     responseLanguage: data.response_language,
     showDebug: Boolean(data.show_debug),
+    showBetaFeatures: Boolean(data.show_beta_features),
     analysisPromptRefresh: data.analysis_prompt_refresh ?? "",
     analysisPromptDeepen: data.analysis_prompt_deepen ?? "",
     analysisPromptSummarize: data.analysis_prompt_summarize ?? "",
@@ -811,7 +823,11 @@ export async function listUnrefinedIdeas(
   const supabase = getSupabaseAdmin();
   const userId = await appUserId();
   const sources = await listSources();
-  const queue = sources.filter((source) => !source.has_cards).slice(0, limit);
+  const nowIso = new Date().toISOString();
+  const queue = sources
+    .filter((source) => !source.has_cards)
+    .filter((source) => !source.review_due_at || source.review_due_at <= nowIso)
+    .slice(0, limit);
 
   if (!queue.length) return [];
 
@@ -861,10 +877,21 @@ export async function countReviewQueueItems(): Promise<number> {
 export async function countUnrefinedIdeas(userId?: string): Promise<number> {
   const supabase = getSupabaseAdmin();
   const resolvedUserId = userId ?? (await appUserId());
+  const nowIso = new Date().toISOString();
+
+  const primarySourcesResult = await supabase
+    .from("sources")
+    .select("id, review_due_at")
+    .eq("user_id", resolvedUserId);
+
+  const fallbackSourcesResult =
+    primarySourcesResult.error && isMissingReviewDueAtColumnError(primarySourcesResult.error)
+      ? await supabase.from("sources").select("id").eq("user_id", resolvedUserId)
+      : null;
 
   const [{ data: sources, error: sourcesError }, { data: cards, error: cardsError }] =
     await Promise.all([
-      supabase.from("sources").select("id").eq("user_id", resolvedUserId),
+      Promise.resolve(fallbackSourcesResult ?? primarySourcesResult),
       supabase.from("cards").select("source_id").eq("user_id", resolvedUserId)
     ]);
 
@@ -872,7 +899,11 @@ export async function countUnrefinedIdeas(userId?: string): Promise<number> {
   if (cardsError) throw cardsError;
 
   const sourceIdsWithCards = new Set((cards ?? []).map((card) => card.source_id));
-  return (sources ?? []).filter((source) => !sourceIdsWithCards.has(source.id)).length;
+  return (sources ?? []).filter((source) => {
+    if (sourceIdsWithCards.has(source.id)) return false;
+    if (!("review_due_at" in source) || !source.review_due_at) return true;
+    return source.review_due_at <= nowIso;
+  }).length;
 }
 
 export async function createSource(input: {
@@ -1654,25 +1685,37 @@ export async function listDueCardsWithContext(): Promise<DueReviewCard[]> {
   const sourceIds = Array.from(new Set(dueCards.map((card) => card.source_id)));
 
   const [{ data: sources, error: sourcesError }, { data: summaries, error: summariesError }] =
-    await Promise.all([
-      supabase.from("sources").select("id, title").eq("user_id", userId).in("id", sourceIds),
-      supabase
-        .from("summaries")
-        .select("source_id, content")
-        .eq("user_id", userId)
-        .in("source_id", sourceIds)
-    ]);
+      await Promise.all([
+        supabase.from("sources").select("id, title, tags").eq("user_id", userId).in("id", sourceIds),
+        supabase
+          .from("summaries")
+          .select("source_id, content, raw_input")
+          .eq("user_id", userId)
+          .in("source_id", sourceIds)
+      ]);
 
   if (sourcesError) throw sourcesError;
   if (summariesError) throw summariesError;
 
-  const sourceTitleById = new Map((sources ?? []).map((item) => [item.id, item.title]));
-  const summaryBySourceId = new Map((summaries ?? []).map((item) => [item.source_id, item.content]));
+  const sourceById = new Map(
+    (sources ?? []).map((item) => [item.id, { title: item.title, tags: item.tags ?? [] }])
+  );
+  const summaryBySourceId = new Map(
+    (summaries ?? []).map((item) => [
+      item.source_id,
+      {
+        content: item.content ?? null,
+        raw_input: item.raw_input ?? null
+      }
+    ])
+  );
 
   return dueCards.map((card) => ({
     ...card,
-    source_title: sourceTitleById.get(card.source_id) ?? "Unknown source",
-    summary_content: summaryBySourceId.get(card.source_id) ?? null
+    source_title: sourceById.get(card.source_id)?.title ?? "Unknown source",
+    source_tags: sourceById.get(card.source_id)?.tags ?? [],
+    summary_content: summaryBySourceId.get(card.source_id)?.content ?? null,
+    raw_input: summaryBySourceId.get(card.source_id)?.raw_input ?? null
   }));
 }
 
@@ -1761,7 +1804,7 @@ export async function countReviewsCompletedToday(): Promise<number> {
 
 export async function completeReview(
   cardId: string,
-  schedule: "soon" | "near" | "later",
+  schedule: "soon" | "near" | "later" | "queue",
   userAnswer?: string
 ) {
   const supabase = getSupabaseAdmin();
@@ -1769,13 +1812,16 @@ export async function completeReview(
   const reviewedAt = new Date();
   const laterDays = schedule === "later" ? randomIntInclusive(10, 50) : null;
   const dueAt =
-    schedule === "soon"
-      ? shiftMinutes(reviewedAt, 3)
-      : schedule === "near"
-        ? shiftDays(reviewedAt, 1)
-        : shiftDays(reviewedAt, laterDays ?? 10);
-  const rating = schedule === "soon" ? 0 : schedule === "near" ? 1 : 2;
-  const intervalDays = schedule === "soon" ? 0 : schedule === "near" ? 1 : (laterDays ?? 10);
+    schedule === "queue"
+      ? reviewedAt
+      : schedule === "soon"
+        ? shiftMinutes(reviewedAt, 3)
+        : schedule === "near"
+          ? shiftDays(reviewedAt, 1)
+          : shiftDays(reviewedAt, laterDays ?? 10);
+  const rating = schedule === "queue" || schedule === "soon" ? 0 : schedule === "near" ? 1 : 2;
+  const intervalDays =
+    schedule === "queue" || schedule === "soon" ? 0 : schedule === "near" ? 1 : (laterDays ?? 10);
 
   const { error: logError } = await supabase.from("review_logs").insert({
     user_id: userId,
@@ -1806,6 +1852,33 @@ export async function completeReview(
       user_answer: userAnswer?.trim() || null
     }
   });
+}
+
+export async function scheduleUnrefinedIdea(
+  sourceId: string,
+  schedule: "near" | "later"
+) {
+  const supabase = getSupabaseAdmin();
+  const userId = await appUserId();
+  const now = new Date();
+  const laterDays = schedule === "later" ? randomIntInclusive(10, 30) : 1;
+  const dueAt = shiftDays(now, laterDays);
+
+  let result = await supabase
+    .from("sources")
+    .update({
+      review_due_at: dueAt.toISOString()
+    })
+    .eq("id", sourceId)
+    .eq("user_id", userId)
+    .select("id")
+    .single();
+
+  if (result.error && isMissingReviewDueAtColumnError(result.error)) {
+    return;
+  }
+
+  if (result.error) throw result.error;
 }
 
 function normalize(value: number, cap: number): number {

@@ -1,6 +1,5 @@
 import {
   type CardAnswerHistoryItem,
-  countReviewsCompletedToday,
   listCardAnswerHistoryMap,
   listDueCardsWithContext,
   listUnrefinedIdeas
@@ -11,7 +10,6 @@ export const dynamic = "force-dynamic";
 
 export default async function ReviewPage() {
   let loadError = "";
-  let reviewedToday = 0;
 
   const [dueCards, ideaQueue] = await Promise.all([
     listDueCardsWithContext().catch((error) => {
@@ -29,10 +27,6 @@ export default async function ReviewPage() {
       return [];
     })
   ]);
-
-  if (!loadError) {
-    reviewedToday = await countReviewsCompletedToday().catch(() => 0);
-  }
 
   const historyByCardId: Record<string, CardAnswerHistoryItem[]> = dueCards.length
     ? await listCardAnswerHistoryMap(dueCards.map((card) => card.id)).catch(
@@ -61,7 +55,7 @@ export default async function ReviewPage() {
           </p>
         </article>
       ) : (
-        <ReviewQueue reviewedToday={reviewedToday} initialItems={initialItems} />
+        <ReviewQueue initialItems={initialItems} />
       )}
     </section>
   );

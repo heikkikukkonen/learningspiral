@@ -58,9 +58,11 @@ function assetUrl(mimeType: string, base64Data: string): string {
 }
 
 export default async function SourceDetailsPage({
-  params
+  params,
+  searchParams
 }: {
   params: { id: string };
+  searchParams?: { backTo?: string };
 }) {
   let source: SourceDetails | null = null;
   let summary: SummaryDetails | null = null;
@@ -137,6 +139,11 @@ export default async function SourceDetailsPage({
         ? "Luo vähintään yksi tunniste ja tehtävä, jotta ajatus siirtyy seuraavaan vaiheeseen."
         : "Aloita kirkastamalla ajatuksen ydin ja jatka sitten tunnisteisiin.";
 
+  const backHref =
+    typeof searchParams?.backTo === "string" && searchParams.backTo.startsWith("/")
+      ? searchParams.backTo
+      : null;
+
   return (
     <section className="grid source-workspace">
       <div className="page-header source-workspace-header">
@@ -186,6 +193,7 @@ export default async function SourceDetailsPage({
             rawInput={summary?.raw_input ?? ""}
             inputModality={summary?.input_modality ?? "text"}
             showDebug={settings?.showDebug ?? false}
+            backTo={backHref}
             captureDetails={
               <div className="source-origin-panel source-origin-panel-inline">
                 <details className="capture-details source-capture-details">
@@ -260,7 +268,7 @@ export default async function SourceDetailsPage({
         </article>
       </div>
 
-      <SourcePageActions sourceId={source.id} lastSavedLabel={lastSavedLabel} />
+      <SourcePageActions sourceId={source.id} lastSavedLabel={lastSavedLabel} backHref={backHref} />
     </section>
   );
 }
